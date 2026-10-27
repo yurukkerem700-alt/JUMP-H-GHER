@@ -25,6 +25,17 @@ Android/iOS hazırlığı ve dokunmatik kontroller kaynaklarda bulunur. Gerçek 
 
 `docs/` hikâye ve geliştirme planını içerir. Bunlar oynanabilir uygulama arşivlerine eklenmez.
 
+## Cihaza yükleme ve çevrimdışı oynama (PWA)
+
+WebGL derlemesi yüklenebilir uygulama (PWA) olarak üretilir: `manifest.webmanifest`, `sw.js` ve ikonlar `web/` içine otomatik yazılır (`Assets/Editor/WebPwaExport.cs`; `ReleaseBuildQueue` WebGL derlemesinin sonunda çalıştırır). Mevcut bir `web/` klasörüne eklemek için Unity menüsünden **Cihazlar ▸ Web Klasorune PWA Ekle**.
+
+Kullanım (Vercel adresi HTTPS olmalı):
+
+- Bir kez internetle aç; oyun dosyaları cihaza önbelleklenir ve "çevrimdışı oynanmaya hazır" bildirimi çıkar. Sonrasında internetsiz açılır.
+- Android/Chrome ve bilgisayarda Chrome/Edge: ekrandaki **Cihaza yükle** düğmesi veya adres çubuğundaki yükle simgesi.
+- iPhone/iPad (Safari): Paylaş ▸ **Ana Ekrana Ekle**.
+- Yeni derleme yayınlanınca `sw.js` sürümü değişir; cihaz bir sonraki çevrimiçi açılışta güncellenir.
+
 ## Son oturum durumu
 
 Oynanabilir Windows sürümü hazır. Tarayıcı çıktısının ikinci derlemesi başlatıldı; henüz tarayıcıda doğrulanıp depoya eklenmedi. **Vercel yayını için önce `docs/DEVAM_NOKTASI.md` içindeki WebGL adımı tamamlanmalı.** Mevcut `vercel.json` hazır çıktıyı yayınlamak içindir; Unity projesini sunucuda derlemez.

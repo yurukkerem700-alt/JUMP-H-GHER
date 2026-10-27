@@ -47,7 +47,7 @@ public static class ReleaseBuildQueue
                 foreach(string suffix in new[]{"loader.js","framework.js","data","wasm"})
                 {string path=Directory.GetFiles(folder+"/Build","*."+suffix).Single();html=html.Replace("__"+suffix.ToUpperInvariant().Replace('.','_')+"__","Build/"+Path.GetFileName(path));}
                 File.WriteAllText(folder+"/index.html",html);
-                File.Copy(Application.dataPath+"/CarGameArt/GameIcon.png",folder+"/icon.png",true);
+                WebPwaExport.Apply(folder);
                 File.WriteAllText("Library/ReleaseBuild.stage","done");
             }
         }
