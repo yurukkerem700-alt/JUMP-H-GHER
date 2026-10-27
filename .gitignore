@@ -26,5 +26,3 @@ Recordings/
 .DS_Store
 Thumbs.db
 
-# WebGL output is incomplete; remove after successful build and browser verification.
-/web/
