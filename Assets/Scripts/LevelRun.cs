@@ -89,7 +89,38 @@ public class LevelRun : MonoBehaviour
         door.gameObject.SetActive(platform);
         if (platform)
         {
-            door.position = new Vector3(platform.transform.position.x, platform.Top + .57f, 0);
+            var nextPlatform = tower.GetPlatform(Def.target);
+            var platformCollider = platform.GetComponent<Collider2D>();
+            float platformHalfWidth = platformCollider ? platformCollider.bounds.extents.x : .65f;
+            float doorHalfWidth = .38f;
+            float maxDoorX = Mathf.Max(.4f, GameDeviceLayout.HorizontalLimit - doorHalfWidth - .05f);
+            float leftX = Mathf.Clamp(platform.transform.position.x - platformHalfWidth - doorHalfWidth - .2f, -maxDoorX, maxDoorX);
+            float rightX = Mathf.Clamp(platform.transform.position.x + platformHalfWidth + doorHalfWidth + .2f, -maxDoorX, maxDoorX);
+            float doorX = Mathf.Abs(leftX - platform.transform.position.x) >= Mathf.Abs(rightX - platform.transform.position.x) ? leftX : rightX;
+            float doorY = platform.Top + .75f;
+
+            if (nextPlatform)
+            {
+                var nextCollider = nextPlatform.GetComponent<Collider2D>();
+                float nextHalfWidth = nextCollider ? nextCollider.bounds.extents.x : .65f;
+                float separation = nextPlatform.transform.position.x - platform.transform.position.x;
+                if (Mathf.Abs(separation) > platformHalfWidth + nextHalfWidth + doorHalfWidth + .25f)
+                {
+                    // Büyük yatay açıklık varsa kapı iki basamağın arasındaki boşlukta kalır.
+                    doorX = (platform.transform.position.x + nextPlatform.transform.position.x) * .5f;
+                }
+                else
+                {
+                    // Açıklık darsa kapıyı üst basamaktan uzak olan yana taşı.
+                    float leftDistance = Mathf.Abs(leftX - nextPlatform.transform.position.x);
+                    float rightDistance = Mathf.Abs(rightX - nextPlatform.transform.position.x);
+                    doorX = leftDistance > rightDistance ? leftX : rightX;
+                }
+                doorY = (platform.Top + nextPlatform.Top) * .5f + .18f;
+            }
+
+            // Kapı artık basamağın üstüne oturmaz; iki basamak arasındaki havada asılı durur.
+            door.position = new Vector3(doorX, doorY, 0);
             doorGlow.color = new Color(.45f, .95f, 1f, .6f + .25f * Mathf.Sin(Time.time * 3f));
         }
         if (!Active || finished) return;

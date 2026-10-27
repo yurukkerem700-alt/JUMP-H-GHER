@@ -30,7 +30,8 @@ public static class LevelDefs
         n = Mathf.Clamp(n, 1, Count);
         var d = new LevelDef { number = n };
         d.kind = n == Count || n % 2 == 1 ? GoalKind.Floor : GoalKind.Coins;
-        d.target = Mathf.RoundToInt(5 + (n - 1) * 95f / 99f);
+        // İlk hedefler 5 kattan başlamak yerine 10'a çıkar; oyuncu kısa sürede bölüm atlamaz.
+        d.target = Mathf.RoundToInt(10 + (n - 1) * 90f / 99f);
         float two = Round5(15 + d.target * 5f), three = Round5(10 + d.target * 3.2f);
         if (n % 5 == 0 && n < Count) { d.limit = two; two = Round5(two * .8f); }
         d.twoStarTime = two; d.threeStarTime = Mathf.Min(three, two - 5);
