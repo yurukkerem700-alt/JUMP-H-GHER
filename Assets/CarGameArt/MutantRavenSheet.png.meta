@@ -1,0 +1,1963 @@
+fileFormatVersion: 2
+guid: 8652e1feb96fe2d4da0dddd9d385e75a
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -524443602828639039
+    second: MutantRavenSheet_0
+  - first:
+      213: -5414982157847098577
+    second: MutantRavenSheet_1
+  - first:
+      213: 5183148107036553264
+    second: MutantRavenSheet_2
+  - first:
+      213: -23351772453854059
+    second: MutantRavenSheet_3
+  - first:
+      213: -2786227344012629071
+    second: MutantRavenSheet_4
+  - first:
+      213: 2077018819999414797
+    second: MutantRavenSheet_5
+  - first:
+      213: 6931680069997170918
+    second: MutantRavenSheet_6
+  - first:
+      213: -3649737458454505564
+    second: MutantRavenSheet_7
+  - first:
+      213: -7834108201794265739
+    second: MutantRavenSheet_8
+  - first:
+      213: 8822851613864134487
+    second: MutantRavenSheet_9
+  - first:
+      213: 3993740910459420788
+    second: MutantRavenSheet_10
+  - first:
+      213: -3859694947570119988
+    second: MutantRavenSheet_11
+  - first:
+      213: 3885592501425486899
+    second: MutantRavenSheet_12
+  - first:
+      213: 7276859483118316027
+    second: MutantRavenSheet_13
+  - first:
+      213: -597427282730703529
+    second: MutantRavenSheet_14
+  - first:
+      213: 5336859831560830636
+    second: MutantRavenSheet_15
+  - first:
+      213: -8709980084391940448
+    second: MutantRavenSheet_16
+  - first:
+      213: -9080324699898927027
+    second: MutantRavenSheet_17
+  - first:
+      213: -6462677699268052026
+    second: MutantRavenSheet_18
+  - first:
+      213: -332263601992285789
+    second: MutantRavenSheet_19
+  - first:
+      213: 6993374501715957285
+    second: MutantRavenSheet_20
+  - first:
+      213: -7883335654422586387
+    second: MutantRavenSheet_21
+  - first:
+      213: -2394038859029808015
+    second: MutantRavenSheet_22
+  - first:
+      213: 1126236670749613092
+    second: MutantRavenSheet_23
+  - first:
+      213: 8593911467136406506
+    second: MutantRavenSheet_24
+  - first:
+      213: 6765905865187335360
+    second: MutantRavenSheet_25
+  - first:
+      213: -1244397696158561026
+    second: MutantRavenSheet_26
+  - first:
+      213: 6627992438691267244
+    second: MutantRavenSheet_27
+  - first:
+      213: 2320524068123163849
+    second: MutantRavenSheet_28
+  - first:
+      213: -8546466560161479253
+    second: MutantRavenSheet_29
+  - first:
+      213: -2605864165873547039
+    second: MutantRavenSheet_30
+  - first:
+      213: 7785060306792114229
+    second: MutantRavenSheet_31
+  - first:
+      213: 5317405270130044587
+    second: MutantRavenSheet_32
+  - first:
+      213: 3493192790978959001
+    second: MutantRavenSheet_33
+  - first:
+      213: 6954869799146151337
+    second: MutantRavenSheet_34
+  - first:
+      213: -1586686250631925587
+    second: MutantRavenSheet_35
+  - first:
+      213: -6172925050792085756
+    second: MutantRavenSheet_36
+  - first:
+      213: 1136987633059450505
+    second: MutantRavenSheet_37
+  - first:
+      213: 8930579086691651532
+    second: MutantRavenSheet_38
+  - first:
+      213: 8670297640120109512
+    second: MutantRavenSheet_39
+  - first:
+      213: 5588428242536752393
+    second: MutantRavenSheet_40
+  - first:
+      213: 9127353928028545704
+    second: MutantRavenSheet_41
+  - first:
+      213: 8864263879183518704
+    second: MutantRavenSheet_42
+  - first:
+      213: -5855161940961193682
+    second: MutantRavenSheet_43
+  - first:
+      213: 6510005859441151653
+    second: MutantRavenSheet_44
+  - first:
+      213: 1909867276993701018
+    second: MutantRavenSheet_45
+  - first:
+      213: -2225017535160935900
+    second: MutantRavenSheet_46
+  - first:
+      213: 4133002102209011000
+    second: MutantRavenSheet_47
+  - first:
+      213: 5710617302880594191
+    second: MutantRavenSheet_48
+  - first:
+      213: -4769515922686925483
+    second: MutantRavenSheet_49
+  - first:
+      213: 6652003490598082349
+    second: MutantRavenSheet_50
+  - first:
+      213: -6010616826957255230
+    second: MutantRavenSheet_51
+  - first:
+      213: -2289782287254061374
+    second: MutantRavenSheet_52
+  - first:
+      213: 155680527766960355
+    second: MutantRavenSheet_53
+  - first:
+      213: 9039548102651626755
+    second: MutantRavenSheet_54
+  - first:
+      213: 1060373560451330796
+    second: MutantRavenSheet_55
+  - first:
+      213: -3253559931916826405
+    second: MutantRavenSheet_56
+  - first:
+      213: -1036460208977426256
+    second: MutantRavenSheet_57
+  - first:
+      213: 8633406156422816462
+    second: MutantRavenSheet_58
+  - first:
+      213: -5730193428043994442
+    second: MutantRavenSheet_59
+  - first:
+      213: 2040412519663157754
+    second: MutantRavenSheet_60
+  - first:
+      213: 2002633966074660951
+    second: MutantRavenSheet_61
+  - first:
+      213: -8699767262548313189
+    second: MutantRavenSheet_62
+  - first:
+      213: -3519821632534526417
+    second: MutantRavenSheet_63
+  - first:
+      213: 6705473708634365201
+    second: MutantRavenSheet_64
+  - first:
+      213: 4935891483211404951
+    second: MutantRavenSheet_65
+  - first:
+      213: 3317864934850650823
+    second: MutantRavenSheet_66
+  - first:
+      213: 6017714099156434591
+    second: MutantRavenSheet_67
+  - first:
+      213: -6680652920442527014
+    second: MutantRavenSheet_68
+  - first:
+      213: 2950254806991392394
+    second: MutantRavenSheet_69
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 1
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: MutantRavenSheet_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 483
+        width: 628
+        height: 771
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1c44ca4625dc8b8f0800000000000000
+      internalID: -524443602828639039
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_1
+      rect:
+        serializedVersion: 2
+        x: 635
+        y: 465
+        width: 619
+        height: 722
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f2b0270da6e1ad4b0800000000000000
+      internalID: -5414982157847098577
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_2
+      rect:
+        serializedVersion: 2
+        x: 762
+        y: 1217
+        width: 21
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 030f62aedbd3ee740800000000000000
+      internalID: 5183148107036553264
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_3
+      rect:
+        serializedVersion: 2
+        x: 772
+        y: 1182
+        width: 111
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 594230acfa90daff0800000000000000
+      internalID: -23351772453854059
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_4
+      rect:
+        serializedVersion: 2
+        x: 458
+        y: 626
+        width: 7
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1bba5a02ef45559d0800000000000000
+      internalID: -2786227344012629071
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_5
+      rect:
+        serializedVersion: 2
+        x: 528
+        y: 612
+        width: 34
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d0abdddbc9d03dc10800000000000000
+      internalID: 2077018819999414797
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_6
+      rect:
+        serializedVersion: 2
+        x: 1174
+        y: 612
+        width: 7
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6e016dc4c46423060800000000000000
+      internalID: 6931680069997170918
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_7
+      rect:
+        serializedVersion: 2
+        x: 1180
+        y: 610
+        width: 7
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4a7d1616e17895dc0800000000000000
+      internalID: -3649737458454505564
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_8
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 594
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 57d141ce818a74390800000000000000
+      internalID: -7834108201794265739
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_9
+      rect:
+        serializedVersion: 2
+        x: 480
+        y: 590
+        width: 17
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7578a5e1cc0117a70800000000000000
+      internalID: 8822851613864134487
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_10
+      rect:
+        serializedVersion: 2
+        x: 514
+        y: 610
+        width: 14
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 47001e4c23e9c6730800000000000000
+      internalID: 3993740910459420788
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_11
+      rect:
+        serializedVersion: 2
+        x: 561
+        y: 592
+        width: 17
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cca86bc05eb9f6ac0800000000000000
+      internalID: -3859694947570119988
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_12
+      rect:
+        serializedVersion: 2
+        x: 868
+        y: 610
+        width: 7
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 33c33651bc56ce530800000000000000
+      internalID: 3885592501425486899
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_13
+      rect:
+        serializedVersion: 2
+        x: 874
+        y: 610
+        width: 9
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bf923bb35299cf460800000000000000
+      internalID: 7276859483118316027
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_14
+      rect:
+        serializedVersion: 2
+        x: 1061
+        y: 596
+        width: 11
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 755a5b93d0385b7f0800000000000000
+      internalID: -597427282730703529
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_15
+      rect:
+        serializedVersion: 2
+        x: 1066
+        y: 576
+        width: 42
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: caefb3cadb5501a40800000000000000
+      internalID: 5336859831560830636
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_16
+      rect:
+        serializedVersion: 2
+        x: 1071
+        y: 596
+        width: 7
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0ae671db24fef1780800000000000000
+      internalID: -8709980084391940448
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_17
+      rect:
+        serializedVersion: 2
+        x: 1139
+        y: 602
+        width: 7
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d48a1598bc43cf180800000000000000
+      internalID: -9080324699898927027
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_18
+      rect:
+        serializedVersion: 2
+        x: 1147
+        y: 596
+        width: 28
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6cbf94d8fd4ff46a0800000000000000
+      internalID: -6462677699268052026
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_19
+      rect:
+        serializedVersion: 2
+        x: 494
+        y: 568
+        width: 15
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3a1457fa300936bf0800000000000000
+      internalID: -332263601992285789
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_20
+      rect:
+        serializedVersion: 2
+        x: 508
+        y: 586
+        width: 10
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 526dd0c8e057d0160800000000000000
+      internalID: 6993374501715957285
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_21
+      rect:
+        serializedVersion: 2
+        x: 514
+        y: 588
+        width: 10
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: deb58f07df3c89290800000000000000
+      internalID: -7883335654422586387
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_22
+      rect:
+        serializedVersion: 2
+        x: 555
+        y: 586
+        width: 7
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 17cfb05875aa6ced0800000000000000
+      internalID: -2394038859029808015
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_23
+      rect:
+        serializedVersion: 2
+        x: 900
+        y: 533
+        width: 64
+        height: 66
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 42c9c05f84231af00800000000000000
+      internalID: 1126236670749613092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_24
+      rect:
+        serializedVersion: 2
+        x: 1005
+        y: 581
+        width: 7
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ae352d562f4b34770800000000000000
+      internalID: 8593911467136406506
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_25
+      rect:
+        serializedVersion: 2
+        x: 1009
+        y: 566
+        width: 19
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0cc193e798355ed50800000000000000
+      internalID: 6765905865187335360
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_26
+      rect:
+        serializedVersion: 2
+        x: 1027
+        y: 554
+        width: 17
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: efc872173e20bbee0800000000000000
+      internalID: -1244397696158561026
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_27
+      rect:
+        serializedVersion: 2
+        x: 1051
+        y: 576
+        width: 17
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ca20b22a10c5bfb50800000000000000
+      internalID: 6627992438691267244
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_28
+      rect:
+        serializedVersion: 2
+        x: 305
+        y: 561
+        width: 18
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9ccb9356858243020800000000000000
+      internalID: 2320524068123163849
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_29
+      rect:
+        serializedVersion: 2
+        x: 334
+        y: 544
+        width: 19
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba502d4d1f9d46980800000000000000
+      internalID: -8546466560161479253
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_30
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 566
+        width: 9
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1e8003cf85c16dbd0800000000000000
+      internalID: -2605864165873547039
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_31
+      rect:
+        serializedVersion: 2
+        x: 458
+        y: 564
+        width: 15
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 538665d1a171a0c60800000000000000
+      internalID: 7785060306792114229
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_32
+      rect:
+        serializedVersion: 2
+        x: 965
+        y: 562
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bae24ec9be73bc940800000000000000
+      internalID: 5317405270130044587
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_33
+      rect:
+        serializedVersion: 2
+        x: 1073
+        y: 554
+        width: 21
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 996914ee5505a7030800000000000000
+      internalID: 3493192790978959001
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_34
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 526
+        width: 19
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9add23ddb39a48060800000000000000
+      internalID: 6954869799146151337
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_35
+      rect:
+        serializedVersion: 2
+        x: 94
+        y: 546
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: da0761df245faf9e0800000000000000
+      internalID: -1586686250631925587
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_36
+      rect:
+        serializedVersion: 2
+        x: 102
+        y: 546
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4077d623f5d555aa0800000000000000
+      internalID: -6172925050792085756
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_37
+      rect:
+        serializedVersion: 2
+        x: 289
+        y: 527
+        width: 39
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 98e458e6a3467cf00800000000000000
+      internalID: 1136987633059450505
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_38
+      rect:
+        serializedVersion: 2
+        x: 329
+        y: 548
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ccfc9c4fc5acfeb70800000000000000
+      internalID: 8930579086691651532
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_39
+      rect:
+        serializedVersion: 2
+        x: 420
+        y: 546
+        width: 13
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8c9444834c5135870800000000000000
+      internalID: 8670297640120109512
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_40
+      rect:
+        serializedVersion: 2
+        x: 432
+        y: 551
+        width: 7
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 905e929b0e51e8d40800000000000000
+      internalID: 5588428242536752393
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_41
+      rect:
+        serializedVersion: 2
+        x: 665
+        y: 545
+        width: 9
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8a2686be900eaae70800000000000000
+      internalID: 9127353928028545704
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_42
+      rect:
+        serializedVersion: 2
+        x: 673
+        y: 546
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0fb4f028801340b70800000000000000
+      internalID: 8864263879183518704
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_43
+      rect:
+        serializedVersion: 2
+        x: 842
+        y: 537
+        width: 13
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e211f969c394ebea0800000000000000
+      internalID: -5855161940961193682
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_44
+      rect:
+        serializedVersion: 2
+        x: 1051
+        y: 546
+        width: 25
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5ae83b176df285a50800000000000000
+      internalID: 6510005859441151653
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_45
+      rect:
+        serializedVersion: 2
+        x: 52
+        y: 525
+        width: 9
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a942a556b26318a10800000000000000
+      internalID: 1909867276993701018
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_46
+      rect:
+        serializedVersion: 2
+        x: 74
+        y: 532
+        width: 7
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 42a97b527562f11e0800000000000000
+      internalID: -2225017535160935900
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_47
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 503
+        width: 40
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 83d5c1ea38f5b5930800000000000000
+      internalID: 4133002102209011000
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_48
+      rect:
+        serializedVersion: 2
+        x: 151
+        y: 513
+        width: 23
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f09a56a4e20304f40800000000000000
+      internalID: 5710617302880594191
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_49
+      rect:
+        serializedVersion: 2
+        x: 191
+        y: 473
+        width: 79
+        height: 68
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5552dadc9864fcdb0800000000000000
+      internalID: -4769515922686925483
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_50
+      rect:
+        serializedVersion: 2
+        x: 699
+        y: 513
+        width: 34
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d27d1cd4ee9a05c50800000000000000
+      internalID: 6652003490598082349
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_51
+      rect:
+        serializedVersion: 2
+        x: 739
+        y: 511
+        width: 36
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2cd2a3c67dff59ca0800000000000000
+      internalID: -6010616826957255230
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_52
+      rect:
+        serializedVersion: 2
+        x: 778
+        y: 524
+        width: 13
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ce7d3b342f0930e0800000000000000
+      internalID: -2289782287254061374
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_53
+      rect:
+        serializedVersion: 2
+        x: 920
+        y: 533
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3e8befb7d96192200800000000000000
+      internalID: 155680527766960355
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_54
+      rect:
+        serializedVersion: 2
+        x: 440
+        y: 515
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3054b941b1de27d70800000000000000
+      internalID: 9039548102651626755
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_55
+      rect:
+        serializedVersion: 2
+        x: 693
+        y: 518
+        width: 7
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ce2fae7922437be00800000000000000
+      internalID: 1060373560451330796
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_56
+      rect:
+        serializedVersion: 2
+        x: 842
+        y: 512
+        width: 9
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bd847a2ea7809d2d0800000000000000
+      internalID: -3253559931916826405
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_57
+      rect:
+        serializedVersion: 2
+        x: 264
+        y: 505
+        width: 8
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0b8c21c6ee0cd91f0800000000000000
+      internalID: -1036460208977426256
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_58
+      rect:
+        serializedVersion: 2
+        x: 108
+        y: 479
+        width: 22
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ec2a043582500d770800000000000000
+      internalID: 8633406156422816462
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_59
+      rect:
+        serializedVersion: 2
+        x: 207
+        y: 475
+        width: 17
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6bae823ef634a70b0800000000000000
+      internalID: -5730193428043994442
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_60
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 15
+        width: 628
+        height: 453
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: af148c54060015c10800000000000000
+      internalID: 2040412519663157754
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_61
+      rect:
+        serializedVersion: 2
+        x: 637
+        y: 15
+        width: 617
+        height: 447
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 75803035bf8cacb10800000000000000
+      internalID: 2002633966074660951
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_62
+      rect:
+        serializedVersion: 2
+        x: 659
+        y: 103
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b9b3c3f94c7344780800000000000000
+      internalID: -8699767262548313189
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_63
+      rect:
+        serializedVersion: 2
+        x: 673
+        y: 95
+        width: 17
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f264b00cfd4172fc0800000000000000
+      internalID: -3519821632534526417
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_64
+      rect:
+        serializedVersion: 2
+        x: 689
+        y: 97
+        width: 9
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 11d5fd59fc0ae0d50800000000000000
+      internalID: 6705473708634365201
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_65
+      rect:
+        serializedVersion: 2
+        x: 709
+        y: 65
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 79611ba072fcf7440800000000000000
+      internalID: 4935891483211404951
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_66
+      rect:
+        serializedVersion: 2
+        x: 713
+        y: 83
+        width: 13
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7c26f76549c6b0e20800000000000000
+      internalID: 3317864934850650823
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_67
+      rect:
+        serializedVersion: 2
+        x: 725
+        y: 87
+        width: 10
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f9e34180717338350800000000000000
+      internalID: 6017714099156434591
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_68
+      rect:
+        serializedVersion: 2
+        x: 729
+        y: 81
+        width: 12
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ad2e851809d8943a0800000000000000
+      internalID: -6680652920442527014
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MutantRavenSheet_69
+      rect:
+        serializedVersion: 2
+        x: 735
+        y: 117
+        width: 8
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a8e4c97ad1961f820800000000000000
+      internalID: 2950254806991392394
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      MutantRavenSheet_0: -524443602828639039
+      MutantRavenSheet_1: -5414982157847098577
+      MutantRavenSheet_10: 3993740910459420788
+      MutantRavenSheet_11: -3859694947570119988
+      MutantRavenSheet_12: 3885592501425486899
+      MutantRavenSheet_13: 7276859483118316027
+      MutantRavenSheet_14: -597427282730703529
+      MutantRavenSheet_15: 5336859831560830636
+      MutantRavenSheet_16: -8709980084391940448
+      MutantRavenSheet_17: -9080324699898927027
+      MutantRavenSheet_18: -6462677699268052026
+      MutantRavenSheet_19: -332263601992285789
+      MutantRavenSheet_2: 5183148107036553264
+      MutantRavenSheet_20: 6993374501715957285
+      MutantRavenSheet_21: -7883335654422586387
+      MutantRavenSheet_22: -2394038859029808015
+      MutantRavenSheet_23: 1126236670749613092
+      MutantRavenSheet_24: 8593911467136406506
+      MutantRavenSheet_25: 6765905865187335360
+      MutantRavenSheet_26: -1244397696158561026
+      MutantRavenSheet_27: 6627992438691267244
+      MutantRavenSheet_28: 2320524068123163849
+      MutantRavenSheet_29: -8546466560161479253
+      MutantRavenSheet_3: -23351772453854059
+      MutantRavenSheet_30: -2605864165873547039
+      MutantRavenSheet_31: 7785060306792114229
+      MutantRavenSheet_32: 5317405270130044587
+      MutantRavenSheet_33: 3493192790978959001
+      MutantRavenSheet_34: 6954869799146151337
+      MutantRavenSheet_35: -1586686250631925587
+      MutantRavenSheet_36: -6172925050792085756
+      MutantRavenSheet_37: 1136987633059450505
+      MutantRavenSheet_38: 8930579086691651532
+      MutantRavenSheet_39: 8670297640120109512
+      MutantRavenSheet_4: -2786227344012629071
+      MutantRavenSheet_40: 5588428242536752393
+      MutantRavenSheet_41: 9127353928028545704
+      MutantRavenSheet_42: 8864263879183518704
+      MutantRavenSheet_43: -5855161940961193682
+      MutantRavenSheet_44: 6510005859441151653
+      MutantRavenSheet_45: 1909867276993701018
+      MutantRavenSheet_46: -2225017535160935900
+      MutantRavenSheet_47: 4133002102209011000
+      MutantRavenSheet_48: 5710617302880594191
+      MutantRavenSheet_49: -4769515922686925483
+      MutantRavenSheet_5: 2077018819999414797
+      MutantRavenSheet_50: 6652003490598082349
+      MutantRavenSheet_51: -6010616826957255230
+      MutantRavenSheet_52: -2289782287254061374
+      MutantRavenSheet_53: 155680527766960355
+      MutantRavenSheet_54: 9039548102651626755
+      MutantRavenSheet_55: 1060373560451330796
+      MutantRavenSheet_56: -3253559931916826405
+      MutantRavenSheet_57: -1036460208977426256
+      MutantRavenSheet_58: 8633406156422816462
+      MutantRavenSheet_59: -5730193428043994442
+      MutantRavenSheet_6: 6931680069997170918
+      MutantRavenSheet_60: 2040412519663157754
+      MutantRavenSheet_61: 2002633966074660951
+      MutantRavenSheet_62: -8699767262548313189
+      MutantRavenSheet_63: -3519821632534526417
+      MutantRavenSheet_64: 6705473708634365201
+      MutantRavenSheet_65: 4935891483211404951
+      MutantRavenSheet_66: 3317864934850650823
+      MutantRavenSheet_67: 6017714099156434591
+      MutantRavenSheet_68: -6680652920442527014
+      MutantRavenSheet_69: 2950254806991392394
+      MutantRavenSheet_7: -3649737458454505564
+      MutantRavenSheet_8: -7834108201794265739
+      MutantRavenSheet_9: 8822851613864134487
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

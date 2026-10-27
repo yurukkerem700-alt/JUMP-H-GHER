@@ -1,0 +1,1339 @@
+fileFormatVersion: 2
+guid: e0fde43f35ea74c4da931f917a6aa073
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 7458741872108031202
+    second: RootWandererSheet_0
+  - first:
+      213: -4778590984559327231
+    second: RootWandererSheet_1
+  - first:
+      213: -4916218186799467351
+    second: RootWandererSheet_2
+  - first:
+      213: -6795999521600434196
+    second: RootWandererSheet_3
+  - first:
+      213: -3324815299832947572
+    second: RootWandererSheet_4
+  - first:
+      213: 2473098348901673367
+    second: RootWandererSheet_5
+  - first:
+      213: -3182419610112884750
+    second: RootWandererSheet_6
+  - first:
+      213: -5831430907058317869
+    second: RootWandererSheet_7
+  - first:
+      213: 5578735002255607153
+    second: RootWandererSheet_8
+  - first:
+      213: 6104150720478484514
+    second: RootWandererSheet_9
+  - first:
+      213: 8886667881461634206
+    second: RootWandererSheet_10
+  - first:
+      213: -8403972562959327460
+    second: RootWandererSheet_11
+  - first:
+      213: -6003863456936996646
+    second: RootWandererSheet_12
+  - first:
+      213: 393677834281907912
+    second: RootWandererSheet_13
+  - first:
+      213: 24298685141683646
+    second: RootWandererSheet_14
+  - first:
+      213: -6265072239183192840
+    second: RootWandererSheet_15
+  - first:
+      213: 2225647157098058084
+    second: RootWandererSheet_16
+  - first:
+      213: -3772673828880082376
+    second: RootWandererSheet_17
+  - first:
+      213: 4744340967976942272
+    second: RootWandererSheet_18
+  - first:
+      213: 780538427484296542
+    second: RootWandererSheet_19
+  - first:
+      213: 612286464555883511
+    second: RootWandererSheet_20
+  - first:
+      213: 8643259510445832499
+    second: RootWandererSheet_21
+  - first:
+      213: 3434663635619924896
+    second: RootWandererSheet_22
+  - first:
+      213: 2282267611716716202
+    second: RootWandererSheet_23
+  - first:
+      213: 8433830339986296667
+    second: RootWandererSheet_24
+  - first:
+      213: -677687346045332300
+    second: RootWandererSheet_25
+  - first:
+      213: -6323084414039757109
+    second: RootWandererSheet_26
+  - first:
+      213: -8157020189492244749
+    second: RootWandererSheet_27
+  - first:
+      213: 1593678730822585865
+    second: RootWandererSheet_28
+  - first:
+      213: 8998928175676914037
+    second: RootWandererSheet_29
+  - first:
+      213: -8310784864631066690
+    second: RootWandererSheet_30
+  - first:
+      213: -3291498627785179110
+    second: RootWandererSheet_31
+  - first:
+      213: 7942738256672989848
+    second: RootWandererSheet_32
+  - first:
+      213: 308902455706251157
+    second: RootWandererSheet_33
+  - first:
+      213: -1103861098470246705
+    second: RootWandererSheet_34
+  - first:
+      213: -1132518079884022153
+    second: RootWandererSheet_35
+  - first:
+      213: -3680952304519683790
+    second: RootWandererSheet_36
+  - first:
+      213: 9041700357484799908
+    second: RootWandererSheet_37
+  - first:
+      213: 3407639087000198485
+    second: RootWandererSheet_38
+  - first:
+      213: -3627350847373939569
+    second: RootWandererSheet_39
+  - first:
+      213: -7121821519955301682
+    second: RootWandererSheet_40
+  - first:
+      213: 2890685311333930620
+    second: RootWandererSheet_41
+  - first:
+      213: 5812262308953144653
+    second: RootWandererSheet_42
+  - first:
+      213: 7049384394624669059
+    second: RootWandererSheet_43
+  - first:
+      213: -5444029573484445534
+    second: RootWandererSheet_44
+  - first:
+      213: 6633049527792254161
+    second: RootWandererSheet_45
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 1
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: RootWandererSheet_0
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 913
+        width: 133
+        height: 89
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ecc45ee636c28760800000000000000
+      internalID: 7458741872108031202
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_1
+      rect:
+        serializedVersion: 2
+        x: 268
+        y: 901
+        width: 183
+        height: 109
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 108057e41d80fadb0800000000000000
+      internalID: -4778590984559327231
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_2
+      rect:
+        serializedVersion: 2
+        x: 462
+        y: 975
+        width: 55
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9a4b0893b9516cbb0800000000000000
+      internalID: -4916218186799467351
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_3
+      rect:
+        serializedVersion: 2
+        x: 678
+        y: 791
+        width: 151
+        height: 225
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cef084d1172cfa1a0800000000000000
+      internalID: -6795999521600434196
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_4
+      rect:
+        serializedVersion: 2
+        x: 982
+        y: 949
+        width: 143
+        height: 69
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c8c5ca5b912ebd1d0800000000000000
+      internalID: -3324815299832947572
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_5
+      rect:
+        serializedVersion: 2
+        x: 1138
+        y: 859
+        width: 273
+        height: 147
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 799a3e468d5325220800000000000000
+      internalID: 2473098348901673367
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_6
+      rect:
+        serializedVersion: 2
+        x: 1446
+        y: 913
+        width: 67
+        height: 73
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2fffbfcc936c5d3d0800000000000000
+      internalID: -3182419610112884750
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_7
+      rect:
+        serializedVersion: 2
+        x: 350
+        y: 482
+        width: 357
+        height: 472
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3d51e8c7c78921fa0800000000000000
+      internalID: -5831430907058317869
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_8
+      rect:
+        serializedVersion: 2
+        x: 432
+        y: 937
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 175cb795de5ab6d40800000000000000
+      internalID: 5578735002255607153
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_9
+      rect:
+        serializedVersion: 2
+        x: 732
+        y: 427
+        width: 421
+        height: 525
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 22890953dbc46b450800000000000000
+      internalID: 6104150720478484514
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_10
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 503
+        width: 319
+        height: 420
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e94d467ca59c35b70800000000000000
+      internalID: 8886667881461634206
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_11
+      rect:
+        serializedVersion: 2
+        x: 360
+        y: 754
+        width: 29
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c1f1eaaea771f5b80800000000000000
+      internalID: -8403972562959327460
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_12
+      rect:
+        serializedVersion: 2
+        x: 1152
+        y: 383
+        width: 365
+        height: 547
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ad05259eefdfdaca0800000000000000
+      internalID: -6003863456936996646
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_13
+      rect:
+        serializedVersion: 2
+        x: 787
+        y: 549
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8c6715c87ef967500800000000000000
+      internalID: 393677834281907912
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_14
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 527
+        width: 19
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ebd01608683565000800000000000000
+      internalID: 24298685141683646
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_15
+      rect:
+        serializedVersion: 2
+        x: 800
+        y: 527
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8fc13530efdfd09a0800000000000000
+      internalID: -6265072239183192840
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_16
+      rect:
+        serializedVersion: 2
+        x: 1144
+        y: 485
+        width: 47
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 46110322c4613ee10800000000000000
+      internalID: 2225647157098058084
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_17
+      rect:
+        serializedVersion: 2
+        x: 1066
+        y: 478
+        width: 23
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 83a90302425c4abc0800000000000000
+      internalID: -3772673828880082376
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_18
+      rect:
+        serializedVersion: 2
+        x: 1075
+        y: 501
+        width: 10
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0ca399949f847d140800000000000000
+      internalID: 4744340967976942272
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_19
+      rect:
+        serializedVersion: 2
+        x: 1510
+        y: 477
+        width: 26
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e555eb7709705da00800000000000000
+      internalID: 780538427484296542
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_20
+      rect:
+        serializedVersion: 2
+        x: 282
+        y: 477
+        width: 25
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7fb12a4ab474f7800800000000000000
+      internalID: 612286464555883511
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_21
+      rect:
+        serializedVersion: 2
+        x: 294
+        y: 453
+        width: 23
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 339f3a51bb603f770800000000000000
+      internalID: 8643259510445832499
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_22
+      rect:
+        serializedVersion: 2
+        x: 356
+        y: 0
+        width: 435
+        height: 498
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0abc31401606aaf20800000000000000
+      internalID: 3434663635619924896
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_23
+      rect:
+        serializedVersion: 2
+        x: 1092
+        y: 469
+        width: 15
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aa601c60d4e3caf10800000000000000
+      internalID: 2282267611716716202
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_24
+      rect:
+        serializedVersion: 2
+        x: 1500
+        y: 479
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b5f8bc6820cfa0570800000000000000
+      internalID: 8433830339986296667
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_25
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 425
+        width: 41
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4b4d03603fe5896f0800000000000000
+      internalID: -677687346045332300
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_26
+      rect:
+        serializedVersion: 2
+        x: 1168
+        y: 461
+        width: 15
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bcee9500a34ef38a0800000000000000
+      internalID: -6323084414039757109
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_27
+      rect:
+        serializedVersion: 2
+        x: 1216
+        y: 463
+        width: 7
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3fe00abfa517cce80800000000000000
+      internalID: -8157020189492244749
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_28
+      rect:
+        serializedVersion: 2
+        x: 8
+        y: 0
+        width: 337
+        height: 451
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 90e86ccac52ed1610800000000000000
+      internalID: 1593678730822585865
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_29
+      rect:
+        serializedVersion: 2
+        x: 790
+        y: 33
+        width: 379
+        height: 412
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 579f9765f7d92ec70800000000000000
+      internalID: 8998928175676914037
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_30
+      rect:
+        serializedVersion: 2
+        x: 1166
+        y: 437
+        width: 21
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ebfe8f2b2392aac80800000000000000
+      internalID: -8310784864631066690
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_31
+      rect:
+        serializedVersion: 2
+        x: 1160
+        y: 325
+        width: 27
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a10cd28ef6f3252d0800000000000000
+      internalID: -3291498627785179110
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_32
+      rect:
+        serializedVersion: 2
+        x: 1174
+        y: 25
+        width: 347
+        height: 350
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 89226ecac564a3e60800000000000000
+      internalID: 7942738256672989848
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_33
+      rect:
+        serializedVersion: 2
+        x: 726
+        y: 137
+        width: 9
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 59fed969521794400800000000000000
+      internalID: 308902455706251157
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_34
+      rect:
+        serializedVersion: 2
+        x: 693
+        y: 79
+        width: 12
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fc6fe40fd2c4ea0f0800000000000000
+      internalID: -1103861098470246705
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_35
+      rect:
+        serializedVersion: 2
+        x: 704
+        y: 81
+        width: 7
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 77e2ec28ecc7840f0800000000000000
+      internalID: -1132518079884022153
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_36
+      rect:
+        serializedVersion: 2
+        x: 709
+        y: 85
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 231e2fda161aaecc0800000000000000
+      internalID: -3680952304519683790
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_37
+      rect:
+        serializedVersion: 2
+        x: 710
+        y: 79
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4a76765f1929a7d70800000000000000
+      internalID: 9041700357484799908
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_38
+      rect:
+        serializedVersion: 2
+        x: 416
+        y: 66
+        width: 7
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 55d1267f1bd5a4f20800000000000000
+      internalID: 3407639087000198485
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_39
+      rect:
+        serializedVersion: 2
+        x: 422
+        y: 65
+        width: 9
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f8c60927f9f09adc0800000000000000
+      internalID: -3627350847373939569
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_40
+      rect:
+        serializedVersion: 2
+        x: 632
+        y: 63
+        width: 17
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ecae4558f053a2d90800000000000000
+      internalID: -7121821519955301682
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_41
+      rect:
+        serializedVersion: 2
+        x: 844
+        y: 41
+        width: 21
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c769f73a9f6cd1820800000000000000
+      internalID: 2890685311333930620
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_42
+      rect:
+        serializedVersion: 2
+        x: 898
+        y: 31
+        width: 15
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d4d3b8a76cd49a050800000000000000
+      internalID: 5812262308953144653
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_43
+      rect:
+        serializedVersion: 2
+        x: 702
+        y: 0
+        width: 33
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 38519c6f1c174d160800000000000000
+      internalID: 7049384394624669059
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_44
+      rect:
+        serializedVersion: 2
+        x: 718
+        y: 23
+        width: 9
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2a00db552fbe274b0800000000000000
+      internalID: -5444029573484445534
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RootWandererSheet_45
+      rect:
+        serializedVersion: 2
+        x: 872
+        y: 0
+        width: 63
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1dc31a1f6635d0c50800000000000000
+      internalID: 6633049527792254161
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      RootWandererSheet_0: 7458741872108031202
+      RootWandererSheet_1: -4778590984559327231
+      RootWandererSheet_10: 8886667881461634206
+      RootWandererSheet_11: -8403972562959327460
+      RootWandererSheet_12: -6003863456936996646
+      RootWandererSheet_13: 393677834281907912
+      RootWandererSheet_14: 24298685141683646
+      RootWandererSheet_15: -6265072239183192840
+      RootWandererSheet_16: 2225647157098058084
+      RootWandererSheet_17: -3772673828880082376
+      RootWandererSheet_18: 4744340967976942272
+      RootWandererSheet_19: 780538427484296542
+      RootWandererSheet_2: -4916218186799467351
+      RootWandererSheet_20: 612286464555883511
+      RootWandererSheet_21: 8643259510445832499
+      RootWandererSheet_22: 3434663635619924896
+      RootWandererSheet_23: 2282267611716716202
+      RootWandererSheet_24: 8433830339986296667
+      RootWandererSheet_25: -677687346045332300
+      RootWandererSheet_26: -6323084414039757109
+      RootWandererSheet_27: -8157020189492244749
+      RootWandererSheet_28: 1593678730822585865
+      RootWandererSheet_29: 8998928175676914037
+      RootWandererSheet_3: -6795999521600434196
+      RootWandererSheet_30: -8310784864631066690
+      RootWandererSheet_31: -3291498627785179110
+      RootWandererSheet_32: 7942738256672989848
+      RootWandererSheet_33: 308902455706251157
+      RootWandererSheet_34: -1103861098470246705
+      RootWandererSheet_35: -1132518079884022153
+      RootWandererSheet_36: -3680952304519683790
+      RootWandererSheet_37: 9041700357484799908
+      RootWandererSheet_38: 3407639087000198485
+      RootWandererSheet_39: -3627350847373939569
+      RootWandererSheet_4: -3324815299832947572
+      RootWandererSheet_40: -7121821519955301682
+      RootWandererSheet_41: 2890685311333930620
+      RootWandererSheet_42: 5812262308953144653
+      RootWandererSheet_43: 7049384394624669059
+      RootWandererSheet_44: -5444029573484445534
+      RootWandererSheet_45: 6633049527792254161
+      RootWandererSheet_5: 2473098348901673367
+      RootWandererSheet_6: -3182419610112884750
+      RootWandererSheet_7: -5831430907058317869
+      RootWandererSheet_8: 5578735002255607153
+      RootWandererSheet_9: 6104150720478484514
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
