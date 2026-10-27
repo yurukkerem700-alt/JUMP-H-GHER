@@ -2,6 +2,12 @@
 
 Her zaman daha yükseğe zıpla. Özgün 2D karakterli sonsuz dikey platform oyunu.
 
+> **Hocam,** oyunu hiçbir şekilde Selim'e gönderemediğim için buradan ulaşmanız gerekti, kusura bakmayın.
+>
+> Ad Soyad: Kerem Yürük — Numara: 254309044
+>
+> Oyunun exe sürümü (RAR): https://drive.google.com/file/d/1sAuMBDEwUAN1VcH9UxGrSdXmXFVMtLz0/view?usp=sharing — indirip tüm klasörü çıkardıktan sonra `KokYankisi.exe` dosyasını çalıştırın (Windows 64 bit).
+
 Unity projesi: **6000.0.84f1**. Ana sahne: `Assets/Scenes/SampleScene.unity`.
 
 ## Oynanış
