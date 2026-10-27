@@ -129,6 +129,7 @@ public class PlayerController : MonoBehaviour
         var tower = FindFirstObjectByType<InfiniteTower>();
         if (tower) tower.ResetTower();
         if (coinSequence) coinSequence.ResetSequence();
+        if (LevelRun.Instance) LevelRun.Instance.OnRunRestarted();
         Respawn();
     }
 

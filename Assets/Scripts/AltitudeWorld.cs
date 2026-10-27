@@ -65,7 +65,7 @@ public class AltitudeWorld : MonoBehaviour
 
     void LateUpdate()
     {
-        const float bandHeight = 20 * InfiniteTower.FloorGap;
+        const float bandHeight = TowerThemes.FloorsPerTheme * InfiniteTower.FloorGap;
         int band = Mathf.Max(0, Mathf.FloorToInt((view.transform.position.y - 8) / bandHeight));
         float width = Mathf.Max(21.7f, view.orthographicSize * view.aspect * 2 + 1);
         for (int i = 0; i < skies.Length; i++)
@@ -76,8 +76,10 @@ public class AltitudeWorld : MonoBehaviour
             int theme = worldBand % 5;
             var sprite = theme > 0 && themeFrames[theme-1] ? themeFrames[theme-1] : skySprite;
             skies[i].sprite = sprite;
-            float center = worldBand == 0 ? 14 : InfiniteTower.FirstSurface + worldBand * bandHeight + bandHeight * .5f;
-            float height = worldBand == 0 ? 20 : bandHeight + 5;
+            // 0. bölge 4. birimden ilk bölge sınırının 3,25 birim üstüne kadar uzanır
+            float top0 = InfiniteTower.FirstSurface + bandHeight + 3.25f;
+            float center = worldBand == 0 ? (4 + top0) / 2 : InfiniteTower.FirstSurface + worldBand * bandHeight + bandHeight * .5f;
+            float height = worldBand == 0 ? top0 - 4 : bandHeight + 5;
             skies[i].transform.position = new Vector3(0, center, 0);
             skies[i].transform.localScale = new Vector3(width / sprite.bounds.size.x, height / sprite.bounds.size.y, 1);
             skies[i].color = Color.white;

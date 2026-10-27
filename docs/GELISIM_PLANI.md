@@ -199,7 +199,7 @@ Ek kaynak dosyaları: `GameInput.cs`, `TouchControlButton.cs`, `GameDeviceLayout
 
 9. katı aşamama bildirimi sonrası üretim önden sürekli kat hazırlayacak şekilde değiştirildi. Her yeni coin tam bir üst katta doğar; rastgele alt kat seçimi kaldırıldı. 100 artan coin, çift zıplama gücü, tek ek hava zıplaması, mıknatıs toplaması ve 8–22. katlar arası gerçek fizik tırmanışı doğrulandı.
 
-Bölgeler her 20 katta değişir ve daha yüksek irtifalarda tekrar eder. İlk beşli: Kül Mezarlığı, Yitik Bulutlar, Fırtına Geçidi, Kızıl Kökler, Yıldız Külleri. Her üst bölgenin ayrı arka plan resmi vardır. Platform renkleri de bölgeye uyar. İçerik sayısı sonludur; yükseklik ve coin sayısı sınırsızdır.
+Bölgeler her 35 katta değişir ve daha yüksek irtifalarda tekrar eder. İlk beşli: Kül Mezarlığı, Yitik Bulutlar, Fırtına Geçidi, Kızıl Kökler, Yıldız Külleri. Her üst bölgenin ayrı arka plan resmi vardır. Platform renkleri de bölgeye uyar. İçerik sayısı sonludur; yükseklik ve coin sayısı sınırsızdır.
 
 2X: 20 saniyelik çift zıplama; M: 15 saniyelik 2.5 birim toplama yarıçapı. Güçler yaklaşık her on katta dönüşümlü görünür; alınmaları zorunlu değildir. Bulut ve fırtına bölgesinde yukarı hava akımı bulunur. Güçler temel atlayış rotasının gereği değildir.
 

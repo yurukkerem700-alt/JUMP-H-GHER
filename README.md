@@ -12,8 +12,15 @@ Unity projesi: **6000.0.84f1**. Ana sahne: `Assets/Scenes/SampleScene.unity`.
 - Telefon/tablette ekran düğmeleri; T ile bilgisayarda dokunmatik önizleme.
 - Tek aktif coin vardır. Her yeni coin bir öncekinin üst katında doğar; yerde coin oluşmaz.
 - Kat ve coin sayısında sınır yoktur. Basamaklar gerçek dünya yüksekliğinde üretilir, kamera yukarı ilerler.
-- Her 20 katta bölge değişir: Kül Mezarlığı, Yitik Bulutlar, Fırtına Geçidi, Kızıl Kökler, Yıldız Külleri. Bölgeler daha yüksek irtifalarda tekrar eder.
-- 2X (turuncu çift ok) 20 saniye boyunca tek ek hava zıplaması; mıknatıs (mor nal) 15 saniye coin çeker. Etkinken karakterin çevresinde renkli aura, mıknatısta çekim alanını gösteren dalga görünür; son 3 saniyede aura yanıp söner. Bulut/fırtına bölgesinde yukarı hava akımı vardır.
+- Her 35 katta bölge değişir: Kül Mezarlığı, Yitik Bulutlar, Fırtına Geçidi, Kızıl Kökler, Yıldız Külleri. Bölgeler daha yüksek irtifalarda tekrar eder.
+- 2X (turuncu çift ok) 10 saniye boyunca tek ek hava zıplaması; mıknatıs (mor nal) 7,5 saniye coin çeker. Etkinken karakterin çevresinde renkli aura, mıknatısta çekim alanını gösteren dalga görünür; son 3 saniyede aura yanıp söner. Bulut/fırtına bölgesinde yukarı hava akımı vardır.
+
+## Bölüm haritası
+
+- **OYNA** kıvrımlı bir harita açar: 100 bölüm, 1. bölüm en altta. Bir bölüm ancak öncekini bitirince açılır; ilerleme ve yıldızlar cihazda saklanır.
+- Hedefler: **kata çık** (o katta platformla birlikte kayan bir kapıdan geçmek gerekir, ona ulaşırken düşülebilir) ve **coin topla**. 100. bölüm en yüksek kat hedefidir; bitince oyun tamamlanır.
+- Yıldızlar: 1 = bölümü bitir, 2 = ikinci süre sınırı içinde bitir, 3 = daha sıkı süre içinde bitir. Her 5. bölüm (100 hariç) süreli: süre dolarsa bölüm kaybedilir.
+- Eski sonsuz mod haritanın üstündeki **SONSUZ MOD** düğmesiyle sürer. Bölüm kuralları `Assets/Scripts/LevelDefs.cs` içindedir.
 
 ## Kaynaklar ve derleme
 

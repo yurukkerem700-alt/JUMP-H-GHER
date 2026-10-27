@@ -30,7 +30,7 @@ public static class NextVerification
                     if(!coins.TryCollect(collider))throw new Exception("Collect rejected at "+n);
                     typeof(CoinSequence).GetField("nextCollectTime",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).SetValue(coins,0f);
                 }
-                if(TowerThemes.ThemeAtFloor(19)!=0||TowerThemes.ThemeAtFloor(20)!=1||TowerThemes.ThemeAtFloor(40)!=2||TowerThemes.ThemeAtFloor(100)!=0)throw new Exception("20-floor theme boundary incorrect");
+                if(TowerThemes.ThemeAtFloor(34)!=0||TowerThemes.ThemeAtFloor(35)!=1||TowerThemes.ThemeAtFloor(70)!=2||TowerThemes.ThemeAtFloor(175)!=0)throw new Exception("35-floor theme boundary incorrect");
                 var powers=TowerPowers.Instance;
                 var powerStep=tower.GetPlatform(4);
                 body.position=new Vector2(powerStep.transform.position.x,powerStep.Top+.8f);
@@ -42,7 +42,7 @@ public static class NextVerification
                 if(body.linearVelocity.y<7.5f)throw new Exception("Powered air jump failed");
                 body.linearVelocity=Vector2.down;tower.player.ZiplamayiDene();
                 if(body.linearVelocity.y>0)throw new Exception("Third jump was allowed");
-                typeof(TowerPowers).GetField("magnetUntil",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).SetValue(powers,Time.time+15);
+                typeof(TowerPowers).GetField("magnetUntil",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).SetValue(powers,Time.time+7.5f);
                 body.position=coins.GetCoinPosition();body.transform.position=body.position;
                 int before=tower.player.Score;powers.TickGameplay();
                 if(tower.player.Score!=before+1)throw new Exception("Magnet collection failed");
@@ -58,7 +58,7 @@ public static class NextVerification
                 if(grounded&&support)
                 {
                     PlayerController.VerificationMovement=0;
-                    if(support.floorIndex>=target){lastSupport=support.floorIndex;target=lastSupport+1;phaseAt=now;if(target>21){Finish("PASS: 100 strictly rising coin spawns; double jump pickup and single extra air jump; magnet coin collection; 20-floor theme boundaries; actual physics climb from floor 8 through 22, including floor 9; continuous generation and upward camera.");return;}}
+                    if(support.floorIndex>=target){lastSupport=support.floorIndex;target=lastSupport+1;phaseAt=now;if(target>21){Finish("PASS: 100 strictly rising coin spawns; double jump pickup and single extra air jump; magnet coin collection; 35-floor theme boundaries; actual physics climb from floor 8 through 22, including floor 9; continuous generation and upward camera.");return;}}
                     else if(now-jumpAt>.7f&&Mathf.Abs(support.transform.position.x)<.35f){tower.player.ZiplamayiDene();jumpAt=now;}
                 }
                 else

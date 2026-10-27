@@ -7,10 +7,10 @@ Kullanıcı limit nedeniyle çalışmayı durdurdu. Sonraki oturumda bu dosyadan
 - Unity 6000.0.84f1 kaynak projesi bu deponun kökünde. Ana sahne `Assets/Scenes/SampleScene.unity`.
 - Gerçek yukarı ilerleyen sonsuz katlar; kamera yükselir, mezarlık aşağıda kalır.
 - Her yeni coin tam bir üst katta doğar; tek aktif coin, sınırsız skor, yerde coin yok.
-- 20 katta bir değişen beş bölge; ayrı üst bölge görselleri, hareketli mutant kuşlar ve özgün animasyonlu Kök Gezgin.
+- 35 katta bir değişen beş bölge; ayrı üst bölge görselleri, hareketli mutant kuşlar ve özgün animasyonlu Kök Gezgin.
 - Ana menü, açılış görseli, ikon, duraklat/devam et, dokunmatik kontrol ve yerel en yüksek kat kaydı.
 - Süreli çift zıplama ve mıknatıs; bulut/fırtına bölgesinde yukarı hava akımı.
-- Editör testleri: 100 kesin artan coin; tek ek hava zıplaması; mıknatıs toplaması; 20 kat sınırları; fizik motoruyla 8–22. katlar arası gerçek tırmanış geçti.
+- Editör testleri: 100 kesin artan coin; tek ek hava zıplaması; mıknatıs toplaması; 35 kat sınırları; fizik motoruyla 8–22. katlar arası gerçek tırmanış geçti.
 - Güncel Windows sürümü 0 hatayla derlendi. Menü/Oyna/duraklat/çıkış gerçek EXE'de kontrol edildi; sonrasında güç rozeti küçültülerek tekrar 0 hatayla derlendi.
 
 ## Yerel oynanabilir çıktı

@@ -9,14 +9,15 @@ public class TowerThemes : MonoBehaviour
     public int ThemeCycle { get; private set; }
     public string CurrentName => Names[CurrentTheme];
     InfiniteTower tower;
-    public static int ThemeAtFloor(int floor)=>Mathf.Max(0,floor)/20%Names.Length;
+    public const int FloorsPerTheme=35;
+    public static int ThemeAtFloor(int floor)=>Mathf.Max(0,floor)/FloorsPerTheme%Names.Length;
     public static Color TintAtFloor(int floor)=>Tints[ThemeAtFloor(floor)];
     void Awake(){Instance=this;}
     void Start(){tower=FindFirstObjectByType<InfiniteTower>();}
     void LateUpdate()
     {
         int floor=Mathf.Max(0,tower.HighestReachedFloor);
-        CurrentTheme=ThemeAtFloor(floor);ThemeCycle=floor/20;
+        CurrentTheme=ThemeAtFloor(floor);ThemeCycle=floor/FloorsPerTheme;
         foreach(var step in tower.coins.steps)
         {
             Color tint=TintAtFloor(step.floorIndex);
