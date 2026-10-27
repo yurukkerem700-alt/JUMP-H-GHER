@@ -19,7 +19,7 @@ public static class ReleaseBuildQueue
         if(EditorApplication.timeSinceStartup<next)return;next=EditorApplication.timeSinceStartup+2;
         if(!File.Exists("Library/ReleaseBuild.stage")||EditorApplication.isCompiling||EditorApplication.isUpdating||BuildPipeline.isBuildingPlayer)return;
         if(EditorApplication.isPlayingOrWillChangePlaymode){EditorApplication.isPlaying=false;return;}
-        string stage=File.ReadAllText("Library/ReleaseBuild.stage");
+        string stage=File.ReadAllText("Library/ReleaseBuild.stage").Trim();
         if(stage=="done"||stage.StartsWith("FAILED"))return;
         try
         {
@@ -61,3 +61,4 @@ public static class ReleaseBuildQueue
         if(s.result!=BuildResult.Succeeded || s.totalErrors>0)throw new Exception(label+" build failed, errors="+s.totalErrors);
     }
 }
+

@@ -24,3 +24,7 @@ Unity projesi: **6000.0.84f1**. Ana sahne: `Assets/Scenes/SampleScene.unity`.
 Android/iOS hazırlığı ve dokunmatik kontroller kaynaklarda bulunur. Gerçek telefon/tablet testleri ayrı yapılmalıdır. iOS son uygulama derlemesi ve imzalama macOS/Xcode gerektirir.
 
 `docs/` hikâye ve geliştirme planını içerir. Bunlar oynanabilir uygulama arşivlerine eklenmez.
+
+## Son oturum durumu
+
+Oynanabilir Windows sürümü hazır. Tarayıcı çıktısının ikinci derlemesi başlatıldı; henüz tarayıcıda doğrulanıp depoya eklenmedi. **Vercel yayını için önce `docs/DEVAM_NOKTASI.md` içindeki WebGL adımı tamamlanmalı.** Mevcut `vercel.json` hazır çıktıyı yayınlamak içindir; Unity projesini sunucuda derlemez.
