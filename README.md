@@ -12,8 +12,22 @@ Unity projesi: **6000.0.84f1**. Ana sahne: `Assets/Scenes/SampleScene.unity`.
 - Telefon/tablette ekran düğmeleri; T ile bilgisayarda dokunmatik önizleme.
 - Tek aktif coin vardır. Her yeni coin bir öncekinin üst katında doğar; yerde coin oluşmaz.
 - Kat ve coin sayısında sınır yoktur. Basamaklar gerçek dünya yüksekliğinde üretilir, kamera yukarı ilerler.
-- Her 20 katta bölge değişir: Kül Mezarlığı, Yitik Bulutlar, Fırtına Geçidi, Kızıl Kökler, Yıldız Külleri. Bölgeler daha yüksek irtifalarda tekrar eder.
-- 2X (turuncu çift ok) 20 saniye boyunca tek ek hava zıplaması; mıknatıs (mor nal) 15 saniye coin çeker. Etkinken karakterin çevresinde renkli aura, mıknatısta çekim alanını gösteren dalga görünür; son 3 saniyede aura yanıp söner. Bulut/fırtına bölgesinde yukarı hava akımı vardır.
+- Her 35 katta bölge değişir: Kül Mezarlığı, Yitik Bulutlar, Fırtına Geçidi, Kızıl Kökler, Yıldız Külleri. Bölgeler daha yüksek irtifalarda tekrar eder.
+- 2X (turuncu çift ok) 10 saniye boyunca tek ek hava zıplaması; mıknatıs (mor nal) 7,5 saniye coin çeker. Etkinken karakterin çevresinde renkli aura, mıknatısta çekim alanını gösteren dalga görünür; son 3 saniyede aura yanıp söner. Bulut/fırtına bölgesinde yukarı hava akımı vardır.
+
+## Bölüm haritası
+
+- **OYNA** kıvrımlı bir harita açar: 100 bölüm, 1. bölüm en altta. Bir bölüm ancak öncekini bitirince açılır; ilerleme ve yıldızlar cihazda saklanır.
+- Hedefler: **kata çık** (o katta platformla birlikte kayan bir kapıdan geçmek gerekir, ona ulaşırken düşülebilir) ve **coin topla**. 100. bölüm en yüksek kat hedefidir; bitince oyun tamamlanır.
+- Yıldızlar: 1 = bölümü bitir, 2 = ikinci süre sınırı içinde bitir, 3 = daha sıkı süre içinde bitir. Her 5. bölüm (100 hariç) süreli: süre dolarsa bölüm kaybedilir.
+- Eski sonsuz mod haritanın üstündeki **SONSUZ MOD** düğmesiyle sürer. Bölüm kuralları `Assets/Scripts/LevelDefs.cs` içindedir.
+
+## Can ve düşmanlar
+
+- Üç canlık can barı (sol üstte kalpler). Düşman darbesi 1 can götürür, ardından 1,6 sn dokunulmazlık vardır. Zemine kadar düşmek de 1 can götürür ve başlangıca döndürür. Can bitince bölüm kaybedilir (sonsuz modda koşu yeniden başlar).
+- **Zombi**: aşağıdan gelir, üstteki basamağın kenarına zıplayıp asılır, tırmanır, sonra oyuncuya yürür. **Goblin**: oyuncu gibi basamaktan basamağa doğrudan zıplar, ayakta hızlı koşar. Ekranın altında kalan düşman altta kırmızı bir noktayla gösterilir. Düşmanlar bölüm başladıktan 6 sn sonra, oyuncu 4. kata çıkınca belirir.
+- Dağılım (`LevelDefs.AssignEnemies`): 1–30 düşmansız; 31–50 yalnız zombi (31–40: 1, 41–50: 2); 51–70 yalnız goblin (51–60: 1, 61–70: 2); 71–99 dört bölümlük döngü — 4'e bölünenler 3 zombi, 4k+2'ler 3 goblin, 4k+1'ler zombi + goblin, 4k+3'ler goblin + zombi (85'ten sonra tek tür 2'ye çıkar); 100. bölüm 2 zombi + 2 goblin. Düşman hızı 31. bölümden itibaren %1 artar (en çok %50).
+- Düşman sprite'ları Mixamo FBX modellerinden üretilir (`Assets/Editor/EnemyBake.cs`, menü: Cihazlar ▸ Düşman Sprite Üret). Kaynak FBX'ler depoda değildir (`ENEMY_FBX_DIR` ya da Downloads klasörü); üretilen küçük sprite sayfaları `Assets/Resources/Enemies/` içindedir.
 
 ## Kaynaklar ve derleme
 

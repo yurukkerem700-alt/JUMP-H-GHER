@@ -43,7 +43,7 @@ public class PlayerController : MonoBehaviour
         movementX = GameInput.Horizontal;
         if (GameInput.ConsumeJump()) ZiplamayiDene();
         if (Input.GetKeyDown(KeyCode.R)) RestartRun();
-        if (rb.position.y < -5.5f) Respawn();
+        if (rb.position.y < -5.5f) FallToGround();
     }
 
     public MovingPlatform2D GroundPlatform(out bool grounded)
@@ -129,7 +129,16 @@ public class PlayerController : MonoBehaviour
         var tower = FindFirstObjectByType<InfiniteTower>();
         if (tower) tower.ResetTower();
         if (coinSequence) coinSequence.ResetSequence();
+        if (PlayerHealth.Instance) PlayerHealth.Instance.Refill();
+        if (LevelRun.Instance) LevelRun.Instance.OnRunRestarted();
         Respawn();
+    }
+
+    // Zemine kadar düşmek 1 can götürür ve başlangıca döndürür.
+    void FallToGround()
+    {
+        Respawn();
+        if (PlayerHealth.Instance) PlayerHealth.Instance.Hit(true);
     }
 
     private void Respawn()

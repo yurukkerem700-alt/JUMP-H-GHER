@@ -9,7 +9,7 @@ public class TowerPowers : MonoBehaviour
     public string Status=>DoubleJumpActive?"ÇİFT ZIPLAMA "+Mathf.CeilToInt(doubleUntil-Time.time)+" sn":MagnetActive?"MIKNATIS "+Mathf.CeilToInt(magnetUntil-Time.time)+" sn":"";
     float doubleUntil,magnetUntil;
     int pickupFloor=4,pickupKind;
-    const float DoubleSeconds=20,MagnetSeconds=15,MagnetRadius=2.5f;
+    const float DoubleSeconds=10,MagnetSeconds=7.5f,MagnetRadius=2.5f;
     static readonly Color DoubleColor=new Color(1f,.62f,.22f),MagnetColor=new Color(.72f,.45f,1f);
     InfiniteTower tower; Transform pickup;
     SpriteRenderer halo,rim,ring,icon,tips,aura,pulse,burst;
@@ -70,12 +70,12 @@ public class TowerPowers : MonoBehaviour
             var collider=tower.coins.coin.GetComponent<Collider2D>();
             if(Vector2.Distance(tower.player.transform.position,tower.coins.coin.position)<MagnetRadius)tower.player.CollectCoin(collider);
         }
-        int section=Mathf.Max(0,tower.HighestReachedFloor)/20;
+        int section=Mathf.Max(0,tower.HighestReachedFloor)/TowerThemes.FloorsPerTheme;
         bool inClouds=section%5==1||section%5==2;
         wind.gameObject.SetActive(inClouds);
         if(inClouds)
         {
-            int floor=section*20+8;
+            int floor=section*TowerThemes.FloorsPerTheme+8;
             wind.position=new Vector3(0,InfiniteTower.SurfaceFor(floor)+1.4f,0);
             wind.localScale=new Vector3(1.6f,3.8f,1);
             windArt.color=new Color(.5f,.85f,1,.06f+.025f*Mathf.Sin(Time.time*4));
