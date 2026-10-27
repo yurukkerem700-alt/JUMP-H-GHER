@@ -13,7 +13,7 @@ Unity projesi: **6000.0.84f1**. Ana sahne: `Assets/Scenes/SampleScene.unity`.
 - Tek aktif coin vardır. Her yeni coin bir öncekinin üst katında doğar; yerde coin oluşmaz.
 - Kat ve coin sayısında sınır yoktur. Basamaklar gerçek dünya yüksekliğinde üretilir, kamera yukarı ilerler.
 - Her 20 katta bölge değişir: Kül Mezarlığı, Yitik Bulutlar, Fırtına Geçidi, Kızıl Kökler, Yıldız Külleri. Bölgeler daha yüksek irtifalarda tekrar eder.
-- 2X güçlendirmesi 20 saniye boyunca tek ek hava zıplaması; M güçlendirmesi 15 saniye mıknatıs verir. Bulut/fırtına bölgesinde yukarı hava akımı vardır.
+- 2X (turuncu çift ok) 20 saniye boyunca tek ek hava zıplaması; mıknatıs (mor nal) 15 saniye coin çeker. Etkinken karakterin çevresinde renkli aura, mıknatısta çekim alanını gösteren dalga görünür; son 3 saniyede aura yanıp söner. Bulut/fırtına bölgesinde yukarı hava akımı vardır.
 
 ## Kaynaklar ve derleme
 
