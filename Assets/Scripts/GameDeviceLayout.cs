@@ -19,7 +19,10 @@ public class GameDeviceLayout : MonoBehaviour
     int lastWidth, lastHeight;
     Rect lastSafeArea;
     bool touchEnabled;
+    bool buttonMode;
+    const string ControlPreference = "MobileControlMode";
     public bool TouchEnabled => touchEnabled;
+    public bool ButtonMode => buttonMode;
 
     void Awake()
     {
@@ -32,26 +35,46 @@ public class GameDeviceLayout : MonoBehaviour
     {
         Application.targetFrameRate = 60;
         touchEnabled = Application.isMobilePlatform || Input.touchSupported;
+        buttonMode = PlayerPrefs.GetInt(ControlPreference, 0) == 1;
+        GameInput.Configure(touchEnabled, buttonMode);
         Apply();
     }
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.T)) { touchEnabled = !touchEnabled; GameInput.Clear(); Apply(); }
+        if (Input.GetKeyDown(KeyCode.T)) { touchEnabled = !touchEnabled; GameInput.Configure(touchEnabled, buttonMode); Apply(); }
         if (Screen.width != lastWidth || Screen.height != lastHeight || Screen.safeArea != lastSafeArea) Apply();
     }
+    void LateUpdate() { GameInput.UpdateGesture(); }
 
-    public void SetTouchPreview(bool enabled) { touchEnabled = enabled; GameInput.Clear(); Apply(); }
+    public void SetTouchPreview(bool enabled)
+    {
+        touchEnabled = enabled;
+        buttonMode = enabled;
+        GameInput.Configure(touchEnabled, buttonMode);
+        Apply();
+    }
+
+    public void SetButtonControls(bool enabled)
+    {
+        buttonMode = enabled;
+        PlayerPrefs.SetInt(ControlPreference, enabled ? 1 : 0);
+        PlayerPrefs.Save();
+        GameInput.Configure(touchEnabled, buttonMode);
+        Apply();
+    }
 
     public void Apply()
     {
         lastWidth = Screen.width; lastHeight = Screen.height; lastSafeArea = Screen.safeArea;
+        GameInput.Configure(touchEnabled, buttonMode);
         ApplyLayout(Screen.width, Screen.height, Screen.safeArea);
     }
 
     public void ApplyLayout(int width, int height, Rect area)
     {
         bool portrait = height > width;
-        gameCamera.rect = touchEnabled && portrait ? new Rect(0, .16f, 1, .84f) : new Rect(0, 0, 1, 1);
+        bool reserveForButtons = touchEnabled && buttonMode && portrait;
+        gameCamera.rect = reserveForButtons ? new Rect(0, .16f, 1, .84f) : new Rect(0, 0, 1, 1);
         float aspect = (float)width / (height * gameCamera.rect.height);
         gameCamera.aspect = aspect;
         HorizontalLimit = Mathf.Clamp(gameCamera.orthographicSize * aspect - .3f, 1.7f, 9.5f);
@@ -70,7 +93,7 @@ public class GameDeviceLayout : MonoBehaviour
         var background = GameObject.Find("Mezarlik").GetComponent<SpriteRenderer>();
         float backgroundWidth = Mathf.Max(21.7f, 2 * gameCamera.orthographicSize * aspect);
         background.transform.localScale = new Vector3(backgroundWidth / background.sprite.bounds.size.x, 12.2f / background.sprite.bounds.size.y, 1);
-        touchControls.SetActive(touchEnabled);
+        if (touchControls) touchControls.SetActive(touchEnabled && buttonMode);
         if (desktopHelp) desktopHelp.SetActive(!touchEnabled);
         if (desktopControlsText) desktopControlsText.SetActive(!touchEnabled);
         if (desktopHintText) desktopHintText.SetActive(!touchEnabled);

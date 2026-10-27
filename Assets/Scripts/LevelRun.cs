@@ -11,10 +11,11 @@ public class LevelRun : MonoBehaviour
     public LevelDef Def { get; private set; }
     public float Elapsed { get; private set; }
     GameFlow flow; InfiniteTower tower; TMP_FontAsset font;
-    Canvas canvas; TextMeshProUGUI hud; GameObject result;
+    Canvas canvas; TextMeshProUGUI hud; GameObject result; Button reviveButton; TextMeshProUGUI reviveStatus;
     Transform door; SpriteRenderer doorGlow;
     EnemyManager enemies;
-    bool finished;
+    bool finished, reviveUsed, reviveOfferReady;
+    float hardLimitGraceUntil;
     static readonly Color Gold = new Color(1f, .77f, .3f), Dim = new Color(.25f, .2f, .26f);
 
     void Awake() { Instance = this; }
@@ -58,13 +59,13 @@ public class LevelRun : MonoBehaviour
         Def = LevelDefs.Get(number); Active = true;
         CloseResult();
         tower.player.RestartRun();
-        Elapsed = 0; finished = false;
+        Elapsed = 0; finished = false; reviveUsed = false; hardLimitGraceUntil = 0;
     }
 
     public void Stop() { Active = false; finished = false; enemies.Clear(); CloseResult(); hud.gameObject.SetActive(false); door.gameObject.SetActive(false); }
 
     // R ile yeniden başlatma bölümün süresini ve durumunu da sıfırlar.
-    public void OnRunRestarted() { if (!Active) return; Elapsed = 0; finished = false; enemies.Begin(Def); }
+    public void OnRunRestarted() { if (!Active) return; CloseResult(); Elapsed = 0; finished = false; reviveUsed = false; hardLimitGraceUntil = 0; enemies.Begin(Def); }
 
     void Update()
     {
@@ -78,7 +79,7 @@ public class LevelRun : MonoBehaviour
             done = door.gameObject.activeSelf && Mathf.Abs(p.x - door.position.x) < .4f && Mathf.Abs(p.y - door.position.y) < .7f;
         }
         if (done) Finish(true);
-        else if (Def.HardLimit && Elapsed >= Def.limit) Finish(false, "SÜRE DOLDU");
+        else if (Def.HardLimit && Elapsed >= Def.limit && Time.time >= hardLimitGraceUntil) Finish(false, "SÜRE DOLDU");
     }
 
     void LateUpdate()
@@ -97,7 +98,8 @@ public class LevelRun : MonoBehaviour
             ? "BÖLÜM " + Def.number + "  •  KAT " + Mathf.Max(0, tower.HighestReachedFloor + 1) + " / " + Def.target + foes
             : "BÖLÜM " + Def.number + "  •  COIN " + tower.player.Score + " / " + Def.target + foes;
         string time;
-        if (Def.HardLimit) time = "KALAN SÜRE " + LevelDefs.Clock(Def.limit - Elapsed);
+        if (Def.HardLimit && Time.time < hardLimitGraceUntil) time = "DEVAM SÜRESİ " + LevelDefs.Clock(hardLimitGraceUntil - Time.time);
+        else if (Def.HardLimit) time = "KALAN SÜRE " + LevelDefs.Clock(Def.limit - Elapsed);
         else time = "SÜRE " + LevelDefs.Clock(Elapsed);
         string next = Elapsed <= Def.threeStarTime ? "  •  3 YILDIZ: " + LevelDefs.Clock(Def.threeStarTime)
             : Elapsed <= Def.twoStarTime ? "  •  2 YILDIZ: " + LevelDefs.Clock(Def.twoStarTime) : "  •  1 YILDIZ";
@@ -134,12 +136,72 @@ public class LevelRun : MonoBehaviour
             Condition(t, .40f, LevelDefs.Clock(Def.twoStarTime) + " içinde bitir", Elapsed <= Def.twoStarTime);
             Condition(t, .35f, LevelDefs.Clock(Def.threeStarTime) + " içinde bitir", Elapsed <= Def.threeStarTime);
         }
-        else UiArt.Label(t, font, reason == "CAN BİTTİ" ? "Üç darbede düştün. Bir daha dene." : "Bu bölümü " + LevelDefs.Clock(Def.limit) + " içinde bitirmelisin.", .5f, .50f, 900, 60, 24, new Color(.85f, .75f, .7f));
+        else UiArt.Label(t, font, reason == "CAN BİTTİ" ? "Son güvenli basamaktan bir kez devam edebilirsin." : reason == "SÜRE DOLDU" ? "Reklam izleyip son güvenli basamağından devam et." : "Bu bölümü " + LevelDefs.Clock(Def.limit) + " içinde bitirmelisin.", .5f, .50f, 900, 60, 24, new Color(.85f, .75f, .7f));
         int n = Def.number;
-        float y = .24f;
+        bool canContinue = !win && !reviveUsed && (reason == "CAN BİTTİ" || reason == "SÜRE DOLDU");
+        if (canContinue)
+        {
+            reviveStatus = UiArt.Label(t, font, "Reklam seçeneği kontrol ediliyor…", .5f, .355f, 900, 42, 18, new Color(.75f, .67f, .62f));
+            reviveButton = UiArt.Btn(t, font, "REKLAMLA DEVAM ET  •  +1 CAN", .5f, .29f, 500, 70, () =>
+            {
+                if (reviveOfferReady)
+                {
+                    reviveStatus.text = "Reklam açılıyor…";
+                    reviveButton.interactable = false;
+                    if (!RewardedAdBridge.Instance || !RewardedAdBridge.Instance.ShowOffer()) SetReviveUnavailable();
+                }
+                else RequestReviveOffer();
+            });
+            reviveButton.gameObject.SetActive(false);
+            RequestReviveOffer();
+        }
+        float y = canContinue ? .19f : .24f;
         if (win && n < LevelDefs.Count) { UiArt.Btn(t, font, "SONRAKİ BÖLÜM", .5f, y, 440, 70, () => { flow.Hold(false); flow.StartLevel(n + 1); }); y -= .09f; }
         UiArt.Btn(t, font, "TEKRAR", .5f, y, 440, 70, () => { flow.Hold(false); flow.StartLevel(n); }); y -= .09f;
         UiArt.Btn(t, font, "HARİTA", .5f, y, 440, 70, () => { flow.Hold(false); flow.OpenMap(); });
+    }
+
+    void RequestReviveOffer()
+    {
+        reviveOfferReady = false;
+        if (reviveStatus) reviveStatus.text = "Reklam aranıyor…";
+        if (reviveButton) { reviveButton.interactable = false; reviveButton.GetComponentInChildren<TextMeshProUGUI>().text = "REKLAM ARANIYOR…"; }
+        if (!RewardedAdBridge.Instance) { SetReviveUnavailable(); return; }
+        RewardedAdBridge.Instance.RequestOffer(
+            () =>
+            {
+                reviveOfferReady = true;
+                if (reviveStatus) reviveStatus.text = "Reklam hazır. İzleyerek bir kez devam edebilirsin.";
+                if (reviveButton && !reviveUsed) { reviveButton.GetComponentInChildren<TextMeshProUGUI>().text = "REKLAMLA DEVAM ET  •  +1 CAN"; reviveButton.interactable = true; reviveButton.gameObject.SetActive(true); }
+            },
+            OnReviveRewarded,
+            SetReviveUnavailable);
+    }
+
+    void SetReviveUnavailable()
+    {
+        reviveOfferReady = false;
+        if (reviveStatus) reviveStatus.text = "Şu an reklam yok. İstersen yeniden arayabilirsin.";
+        if (reviveButton && !reviveUsed) { reviveButton.GetComponentInChildren<TextMeshProUGUI>().text = "REKLAMI YENİDEN DENE"; reviveButton.interactable = true; reviveButton.gameObject.SetActive(true); }
+    }
+
+    void OnReviveRewarded()
+    {
+        if (!finished || reviveUsed || !result) return;
+        reviveUsed = true;
+        reviveOfferReady = false;
+        if (!tower.player.ReviveAtCheckpoint())
+        {
+            if (reviveStatus) reviveStatus.text = "Devam basamağı bulunamadı. Bölümü yeniden başlat.";
+            if (reviveButton) reviveButton.gameObject.SetActive(false);
+            return;
+        }
+        if (Def.HardLimit) { Elapsed += 5f; hardLimitGraceUntil = Time.time + 8f; }
+        if (PlayerHealth.Instance) PlayerHealth.Instance.ContinueAfterRewardedAd();
+        finished = false;
+        CloseResult();
+        enemies.Begin(Def);
+        flow.Hold(false);
     }
 
     void Condition(Transform parent, float y, string text, bool met)
@@ -149,7 +211,12 @@ public class LevelRun : MonoBehaviour
         label.alignment = TextAlignmentOptions.Left; label.rectTransform.anchoredPosition = new Vector2(20, 0);
     }
 
-    void CloseResult() { if (result) { Destroy(result); result = null; } }
+    void CloseResult()
+    {
+        if (RewardedAdBridge.Instance) RewardedAdBridge.Instance.CancelOffer();
+        if (result) { Destroy(result); result = null; }
+        reviveButton = null; reviveStatus = null; reviveOfferReady = false;
+    }
 
     void OnDestroy() { Instance = null; if (PlayerHealth.Instance) PlayerHealth.Instance.Died -= OnPlayerDied; if (canvas) Destroy(canvas.gameObject); if (door) Destroy(door.gameObject); }
 }

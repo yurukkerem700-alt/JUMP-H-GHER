@@ -15,6 +15,17 @@ public static class WebPwaExport
     public static void Apply(string folder)
     {
         if(!File.Exists(folder+"/index.html"))throw new Exception("index.html yok: "+folder);
+        File.Copy(Application.dataPath+"/WebTemplates/rewarded-ads.js",folder+"/rewarded-ads.js",true);
+        string index=File.ReadAllText(folder+"/index.html");
+        string clientId=Environment.GetEnvironmentVariable("ADSENSE_CLIENT_ID");
+        if(!string.IsNullOrEmpty(clientId)&&clientId.StartsWith("ca-pub-")&&clientId.Length>7&&clientId.Substring(7).All(char.IsDigit))
+        {
+            string testAttribute=Environment.GetEnvironmentVariable("ADSENSE_TEST_MODE")=="1"?" data-adbreak-test=\"on\"":"";
+            string ads="<script async"+testAttribute+" src=\"https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client="+clientId+"\" crossorigin=\"anonymous\"></script>\n"
+                +"<script>window.adsbygoogle=window.adsbygoogle||[];window.adBreak=window.adConfig=function(o){window.adsbygoogle.push(o);};window.adConfig({preloadAdBreaks:'on',sound:'off',onReady:function(){window.__jacAdPlacementReady=true;}});</script>\n";
+            index=index.Replace("</head>",ads+"</head>");
+        }
+        File.WriteAllText(folder+"/index.html",index,new UTF8Encoding(false));
         string source=Application.dataPath+"/CarGameArt/GameIcon.png";
         File.Copy(source,folder+"/icon.png",true);
         WriteIcon(source,folder+"/icon-192.png",192,1f);

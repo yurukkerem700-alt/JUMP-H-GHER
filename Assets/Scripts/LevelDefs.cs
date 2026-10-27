@@ -11,11 +11,11 @@ public struct LevelDef
     public int number, target;
     public GoalKind kind;
     public float twoStarTime, threeStarTime, limit; // limit > 0: süre dolunca bölüm kaybedilir
-    public int zombies, goblins;
+    public int enemies;
     public float enemySpeed;
     public bool HardLimit => limit > 0;
-    public bool HasEnemies => zombies + goblins > 0;
-    public string EnemyText => zombies > 0 && goblins > 0 ? "ZOMBİ x" + zombies + " + GOBLİN x" + goblins : zombies > 0 ? "ZOMBİ x" + zombies : goblins > 0 ? "GOBLİN x" + goblins : "";
+    public bool HasEnemies => enemies > 0;
+    public string EnemyText => enemies > 0 ? "YARATIK x" + enemies : "";
     public string Goal => kind == GoalKind.Floor ? target + ". kata çık, kapıdan geç" : target + " coin topla";
 }
 
@@ -38,24 +38,13 @@ public static class LevelDefs
         return d;
     }
 
-    // 1-30: düşman yok. 31-50: yalnız zombi (1, sonra 2). 51-70: yalnız goblin (1, sonra 2).
-    // 71-99: dört bölümlük döngü — zombi sürüsü(3), karışık, goblin sürüsü(3), karışık. 100: 2 zombi + 2 goblin.
+    // Tehditler erken ve yumuşak başlar; yoğunluk ve hız bölüm ilerledikçe kontrollü artar.
     static void AssignEnemies(ref LevelDef d)
     {
         int n = d.number;
-        if (n <= 30) return;
-        d.enemySpeed = Mathf.Min(1.5f, 1 + (n - 31) * .01f);
-        if (n <= 50) d.zombies = n < 41 ? 1 : 2;
-        else if (n <= 70) d.goblins = n < 61 ? 1 : 2;
-        else if (n == Count) { d.zombies = 2; d.goblins = 2; }
-        else
-            switch (n % 4)
-            {
-                case 0: d.zombies = 3; break;
-                case 2: d.goblins = 3; break;
-                case 1: d.zombies = n < 85 ? 1 : 2; d.goblins = 1; break;
-                default: d.zombies = 1; d.goblins = n < 85 ? 1 : 2; break;
-            }
+        if (n <= 7) return;
+        d.enemies = n < 24 ? 1 : n < 56 ? (n % 5 == 0 ? 2 : 1) : n < 82 ? 2 : (n % 6 == 0 ? 3 : 2);
+        d.enemySpeed = Mathf.Lerp(.82f, 1.12f, Mathf.Clamp01((n - 8) / 92f));
     }
 
     static float Round5(float v) => Mathf.Max(5, Mathf.Round(v / 5) * 5);

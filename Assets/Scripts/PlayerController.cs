@@ -131,7 +131,26 @@ public class PlayerController : MonoBehaviour
         if (coinSequence) coinSequence.ResetSequence();
         if (PlayerHealth.Instance) PlayerHealth.Instance.Refill();
         if (LevelRun.Instance) LevelRun.Instance.OnRunRestarted();
+        if (GameFlow.Instance) GameFlow.Instance.OnRunRestarted();
         Respawn();
+    }
+
+    // Rewarded revive: keep score, coins, powers and reached floors; return to the
+    // highest platform the player stood on instead of restarting the tower.
+    public bool ReviveAtCheckpoint()
+    {
+        var tower = FindFirstObjectByType<InfiniteTower>();
+        if (!tower || !rb || !oyuncuCollider) return false;
+        int floor = Mathf.Max(0, tower.HighestReachedFloor);
+        tower.EnsureThroughFloor(floor + 1);
+        var platform = tower.GetPlatform(floor);
+        if (!platform) return false;
+        float footOffset = rb.position.y - oyuncuCollider.bounds.min.y;
+        rb.position = new Vector2(platform.transform.position.x, platform.Top + footOffset + .04f);
+        rb.linearVelocity = Vector2.zero;
+        standingPlatform = null; supportCollider = null; lastGroundContact = -100; airJumpUsed = false;
+        tower.AdvanceFromFloor(floor);
+        return true;
     }
 
     // Zemine kadar düşmek 1 can götürür ve başlangıca döndürür.

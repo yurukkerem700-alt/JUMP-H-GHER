@@ -81,7 +81,9 @@ public class AltitudeWorld : MonoBehaviour
             float center = worldBand == 0 ? (4 + top0) / 2 : InfiniteTower.FirstSurface + worldBand * bandHeight + bandHeight * .5f;
             float height = worldBand == 0 ? top0 - 4 : bandHeight + 5;
             skies[i].transform.position = new Vector3(0, center, 0);
-            skies[i].transform.localScale = new Vector3(width / sprite.bounds.size.x, height / sprite.bounds.size.y, 1);
+            // Use a uniform cover scale: atlas panels keep their painted proportions and crop at the sides.
+            float cover = Mathf.Max(width / sprite.bounds.size.x, height / sprite.bounds.size.y);
+            skies[i].transform.localScale = new Vector3(cover, cover, 1);
             skies[i].color = Color.white;
             Vector4 uv = theme > 0 ? new Vector4(((theme-1)%2)*.5f,(1-(theme-1)/2)*.5f,.5f,.5f) : new Vector4(0,0,1,1);
             skyProps.SetVector("_UVRect",uv);skies[i].SetPropertyBlock(skyProps);

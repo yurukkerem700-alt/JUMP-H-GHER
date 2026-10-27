@@ -41,6 +41,13 @@ public class PlayerHealth : MonoBehaviour
 
     public void Refill() { Hearts = Max; invulnerableUntil = 0; Refresh(); }
 
+    public void ContinueAfterRewardedAd()
+    {
+        Hearts = Mathf.Max(1, Mathf.Min(Max, Hearts + 1));
+        invulnerableUntil = Time.time + 2.4f;
+        Refresh();
+    }
+
     void Refresh()
     {
         for (int i = 0; i < Max; i++) icons[i].color = i < Hearts ? Full : Empty;

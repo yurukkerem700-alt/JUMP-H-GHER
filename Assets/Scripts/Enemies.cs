@@ -2,50 +2,122 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum EnemyKind { Zombie, Goblin }
+public enum EnemyKind { CinderCrow, CloudMoth, StormLeech, RootStalker, StarWisp }
 
-// Resources/Enemies altındaki sprite sayfasını (EnemyBake ile üretilir) kare kare Sprite'a böler.
+// Four-pose, 2x2 creature sheets are loaded from Resources/Enemies. A drawn fallback
+// keeps the game playable until a matching art sheet is present.
 class EnemyArt
 {
-    [System.Serializable] class Meta { public int frames, cols, cellW, cellH; }
     public Sprite[] frames;
-    public float height; // ayakta duran karenin oyundaki yüksekliği (birim)
+    public float height;
     static readonly Dictionary<EnemyKind, EnemyArt> cache = new Dictionary<EnemyKind, EnemyArt>();
+    static readonly List<Texture2D> OwnedTextures = new List<Texture2D>();
+    static readonly string[] Names = { "CinderCrow", "CloudMoth", "StormLeech", "RootStalker", "StarWisp" };
+    static readonly float[] Heights = { 1.18f, 1.12f, 1.05f, 1.38f, 1.0f };
+    static readonly Color[] Colors = {
+        new Color(.48f,.22f,.19f), new Color(.74f,.75f,.86f), new Color(.31f,.55f,.78f),
+        new Color(.49f,.34f,.22f), new Color(.62f,.46f,.91f)
+    };
 
-    // Ölçek: referans karenin piksel yüksekliği, hedef yüksekliğe denk gelsin.
     public static EnemyArt Get(EnemyKind kind)
     {
-        if (cache.TryGetValue(kind, out var art) && art.frames[0]) return art;
-        string name = kind == EnemyKind.Zombie ? "Zombie" : "Goblin";
-        float referencePixels = kind == EnemyKind.Zombie ? 305 : 229; // 21. / 22. karenin sıkı yüksekliği
-        float target = kind == EnemyKind.Zombie ? 1.35f : 1.0f;
-        var texture = Resources.Load<Texture2D>("Enemies/" + name);
-        var meta = JsonUtility.FromJson<Meta>(Resources.Load<TextAsset>("Enemies/" + name).text);
-        int rows = Mathf.CeilToInt(meta.frames / (float)meta.cols);
-        art = new EnemyArt { frames = new Sprite[meta.frames], height = target };
-        for (int i = 0; i < meta.frames; i++)
-            art.frames[i] = Sprite.Create(texture, new Rect((i % meta.cols) * meta.cellW, (rows - 1 - i / meta.cols) * meta.cellH, meta.cellW, meta.cellH), new Vector2(.5f, 0), referencePixels / target);
-        cache[kind] = art; return art;
+        if (cache.TryGetValue(kind, out var cached) && cached.frames != null && cached.frames[0]) return cached;
+        int index = Mathf.Clamp((int)kind, 0, Names.Length - 1);
+        var texture = Resources.Load<Texture2D>("Enemies/" + Names[index]);
+        if (!texture || texture.width < 2 || texture.height < 2) return cache[kind] = MakeFallback(kind, index);
+
+        int columns = kind == EnemyKind.RootStalker ? 4 : 2;
+        int cellW = texture.width / columns, cellH = texture.height / 2;
+        var art = new EnemyArt { frames = new Sprite[4], height = Heights[index] };
+        // Visual order is idle, move, leap, landing. RootWandererSheet uses four columns;
+        // its leap and landing poses are the second and third cells in the bottom row.
+        int[] cells = kind == EnemyKind.RootStalker ? new[] { 0, 1, 5, 6 } : new[] { 0, 1, 2, 3 };
+        for (int i = 0; i < art.frames.Length; i++)
+        {
+            int cell = cells[i];
+            int x = (cell % columns) * cellW, y = (1 - cell / columns) * cellH;
+            art.frames[i] = Sprite.Create(texture, new Rect(x, y, cellW, cellH), new Vector2(.5f, 0), cellH / art.height);
+        }
+        return cache[kind] = art;
     }
 
-    public static void Release() { foreach (var a in cache.Values) foreach (var f in a.frames) if (f) Object.Destroy(f); cache.Clear(); }
+    static EnemyArt MakeFallback(EnemyKind kind, int index)
+    {
+        var art = new EnemyArt { frames = new Sprite[4], height = Heights[index] };
+        for (int frame = 0; frame < art.frames.Length; frame++)
+        {
+            const int w = 96, h = 112;
+            var tex = new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
+            var pixels = new Color32[w * h];
+            Color body = Colors[index], dark = Color.Lerp(body, new Color(.08f,.06f,.12f), .72f);
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                {
+                    float px = x - w * .5f, py = y;
+                    bool torso = Ellipse(px, py, 0, 47, 20, 29);
+                    bool head = Ellipse(px, py, 0, 78, 16, 16);
+                    bool shape = torso || head;
+                    if (kind == EnemyKind.CinderCrow)
+                        shape |= Ellipse(px, py, -22, 58, 16, 7) || Ellipse(px, py, 22, 58, 16, 7) || Triangle(px, py, 12, 78, 27, 73, 14, 68);
+                    else if (kind == EnemyKind.CloudMoth)
+                        shape |= Ellipse(px, py, -28, 56, 17, 24) || Ellipse(px, py, 28, 56, 17, 24) || (Mathf.Abs(px) < 2 && py > 91 && py < 108);
+                    else if (kind == EnemyKind.StormLeech)
+                        shape |= Triangle(px, py, -8, 88, -20, 108, -3, 94) || Triangle(px, py, 8, 88, 20, 108, 3, 94) || Ellipse(px, py, 0, 18, 7, 17);
+                    else if (kind == EnemyKind.RootStalker)
+                        shape |= Triangle(px, py, -7, 86, -24, 109, -3, 95) || Triangle(px, py, 7, 86, 24, 109, 3, 95) || Ellipse(px, py, -23, 30, 8, 19) || Ellipse(px, py, 23, 30, 8, 19);
+                    else
+                        shape |= Ellipse(px, py, 0, 22, 8, 19) || Ellipse(px, py, -27, 78, 4, 4) || Ellipse(px, py, 28, 52, 3, 3);
+                    if (frame == 1) shape &= !(torso && py < 32); // moving pose lifts the lower edge
+                    if (frame == 2) shape |= Ellipse(px, py, -7, 28, 6, 9) || Ellipse(px, py, 8, 23, 6, 8);
+                    if (frame == 3) shape |= Ellipse(px, py, -19, 46, 7, 8) || Ellipse(px, py, 19, 46, 7, 8);
+                    bool eye = Ellipse(px, py, -6, 80, 2.2f, 2.2f) || Ellipse(px, py, 6, 80, 2.2f, 2.2f);
+                    if (!shape && !eye) continue;
+                    pixels[y * w + x] = eye ? new Color32(255, 223, 132, 255) : (torso || head ? body : dark);
+                }
+            tex.SetPixels32(pixels); tex.Apply(false, true); OwnedTextures.Add(tex);
+            art.frames[frame] = Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(.5f, 0), h / art.height);
+        }
+        return art;
+    }
+
+    static bool Ellipse(float x, float y, float cx, float cy, float rx, float ry)
+    {
+        float dx = (x - cx) / rx, dy = (y - cy) / ry;
+        return dx * dx + dy * dy <= 1;
+    }
+
+    static bool Triangle(float x, float y, float ax, float ay, float bx, float by, float cx, float cy)
+    {
+        float d1 = Sign(x, y, ax, ay, bx, by), d2 = Sign(x, y, bx, by, cx, cy), d3 = Sign(x, y, cx, cy, ax, ay);
+        return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0));
+    }
+
+    static float Sign(float x, float y, float ax, float ay, float bx, float by) => (x - bx) * (ay - by) - (ax - bx) * (y - by);
+
+    public static void Release()
+    {
+        foreach (var art in cache.Values)
+            foreach (var frame in art.frames) if (frame) Object.Destroy(frame);
+        foreach (var texture in OwnedTextures) if (texture) Object.Destroy(texture);
+        OwnedTextures.Clear();
+        cache.Clear();
+    }
 }
 
 class Enemy
 {
-    public const int Stand = 0, Leap = 1, Climb = 2, Land = 3;
+    public const int Stand = 0, Leap = 1, Land = 2;
     public EnemyKind kind; public GameObject go; public SpriteRenderer sr; public EnemyArt art;
-    public int floor, state, toFloor; public float offset, toOffset, side = 1, t0, dur, readyAt, staggerUntil, spawnedAt, waitSince;
+    public int floor, state, toFloor; public float offset, toOffset, t0, dur, readyAt, staggerUntil, spawnedAt;
     public Vector3 from; public bool faceRight = true, dead;
 }
 
-class EnemySlot { public EnemyKind kind; public Enemy enemy; public float readyAt; }
+class EnemySlot { public Enemy enemy; public float readyAt; }
 
-// Bölümün düşmanlarını doğurur, yönlendirir ve oyuncuya değince can götürür.
-// Zombi: basamağın kenarına zıplayıp asılır, tırmanır. Goblin: basamaktan basamağa doğrudan zıplar.
+// The threat species change with the biome and keep a readable, shared movement pattern.
 public class EnemyManager : MonoBehaviour
 {
-    const float FirstDelay = 6f, RespawnDelay = 2.5f;
+    const float FirstDelay = 5f, RespawnDelay = 2.4f;
     InfiniteTower tower; Material material; Canvas canvas; Image[] markers;
     readonly List<EnemySlot> slots = new List<EnemySlot>();
     LevelDef def; bool active; float startAt; int playerFloor;
@@ -57,14 +129,13 @@ public class EnemyManager : MonoBehaviour
         tower = t; material = t.coins.coin.GetComponentInChildren<SpriteRenderer>().sharedMaterial;
         canvas = UiArt.NewCanvas("Düşman Göstergeleri", 870);
         markers = new Image[6];
-        for (int i = 0; i < markers.Length; i++) { markers[i] = UiArt.Pic(canvas.transform, UiArt.Disc, new Color(1, .2f, .2f, .9f), 0, 0, 34, 34); markers[i].gameObject.SetActive(false); }
+        for (int i = 0; i < markers.Length; i++) { markers[i] = UiArt.Pic(canvas.transform, UiArt.Disc, new Color(1, .46f, .24f, .9f), 0, 0, 34, 34); markers[i].gameObject.SetActive(false); }
     }
 
     public void Begin(LevelDef level)
     {
         Clear(); def = level; active = level.HasEnemies; startAt = Time.time + FirstDelay; playerFloor = 0;
-        for (int i = 0; i < level.zombies; i++) slots.Add(new EnemySlot { kind = EnemyKind.Zombie, readyAt = startAt + i * 1.5f });
-        for (int i = 0; i < level.goblins; i++) slots.Add(new EnemySlot { kind = EnemyKind.Goblin, readyAt = startAt + .75f + i * 1.5f });
+        for (int i = 0; i < level.enemies; i++) slots.Add(new EnemySlot { readyAt = startAt + i * 1.45f });
     }
 
     public void Clear()
@@ -99,170 +170,150 @@ public class EnemyManager : MonoBehaviour
     void Spawn(EnemySlot slot)
     {
         int floor = Mathf.Max(0, playerFloor - Random.Range(3, 5));
-        var plat = tower.GetPlatform(floor);
-        if (!plat) { slot.readyAt = Time.time + 1; return; }
-        var art = EnemyArt.Get(slot.kind);
-        var go = new GameObject(slot.kind == EnemyKind.Zombie ? "Zombi" : "Goblin", typeof(SpriteRenderer));
-        var sr = go.GetComponent<SpriteRenderer>(); sr.sharedMaterial = material; sr.sortingOrder = 18; sr.sprite = art.frames[slot.kind == EnemyKind.Zombie ? 21 : 22];
-        float half = Half(plat);
-        var e = new Enemy { kind = slot.kind, go = go, sr = sr, art = art, floor = floor, offset = Random.Range(-half + .3f, half - .3f), spawnedAt = Time.time, readyAt = Time.time + .4f, waitSince = Time.time };
-        slot.enemy = e; Place(e, StandPos(plat, e.offset));
+        var platform = tower.GetPlatform(floor);
+        if (!platform) { slot.readyAt = Time.time + 1; return; }
+        var kind = (EnemyKind)TowerThemes.ThemeAtFloor(floor);
+        var art = EnemyArt.Get(kind);
+        var go = new GameObject(NameFor(kind), typeof(SpriteRenderer));
+        var sr = go.GetComponent<SpriteRenderer>(); sr.sharedMaterial = material; sr.sortingOrder = 18; sr.sprite = art.frames[0];
+        float half = Half(platform);
+        var enemy = new Enemy { kind = kind, go = go, sr = sr, art = art, floor = floor, offset = Random.Range(-half + .3f, half - .3f), spawnedAt = Time.time, readyAt = Time.time + .45f };
+        slot.enemy = enemy; Place(enemy, StandPos(platform, enemy.offset));
     }
 
-    static float Half(MovingPlatform2D plat)
+    static string NameFor(EnemyKind kind)
     {
-        var c = plat.GetComponent<Collider2D>(); if (!c) c = plat.GetComponentInChildren<Collider2D>();
-        return c ? c.bounds.extents.x : 1.2f;
+        switch (kind)
+        {
+            case EnemyKind.CinderCrow: return "Kül Kargası";
+            case EnemyKind.CloudMoth: return "Bulut Güvesi";
+            case EnemyKind.StormLeech: return "Fırtına Sülüğü";
+            case EnemyKind.RootStalker: return "Kök Pusucusu";
+            default: return "Yıldız Cini";
+        }
     }
-    static Vector3 StandPos(MovingPlatform2D plat, float offset) => new Vector3(plat.transform.position.x + offset, plat.Top, 0);
-    static Vector3 HangPos(MovingPlatform2D plat, float side, float height) => new Vector3(plat.transform.position.x + side * (Half(plat) + .12f), plat.Top - height * .95f, 0);
-    static void Place(Enemy e, Vector3 pos) { e.go.transform.position = pos; }
 
-    void Tick(Enemy e, float dt, float now)
+    static float Half(MovingPlatform2D platform)
+    {
+        var collider = platform.GetComponent<Collider2D>(); if (!collider) collider = platform.GetComponentInChildren<Collider2D>();
+        return collider ? collider.bounds.extents.x : 1.2f;
+    }
+    static Vector3 StandPos(MovingPlatform2D platform, float offset) => new Vector3(platform.transform.position.x + offset, platform.Top, 0);
+    static void Place(Enemy enemy, Vector3 pos) { enemy.go.transform.position = pos; }
+
+    void Tick(Enemy enemy, float dt, float now)
     {
         float speed = def.enemySpeed;
         var player = tower.player.transform.position;
-        bool zombie = e.kind == EnemyKind.Zombie;
-        float alpha = Mathf.Clamp01((now - e.spawnedAt) / .6f);
-        e.sr.color = new Color(1, 1, 1, alpha);
-        if (e.state == Enemy.Stand)
+        float alpha = Mathf.Clamp01((now - enemy.spawnedAt) / .55f);
+        enemy.sr.color = new Color(1, 1, 1, alpha);
+        if (enemy.state == Enemy.Stand)
         {
-            var plat = tower.GetPlatform(e.floor); if (!plat) { e.dead = true; return; }
-            float half = Half(plat), limit = half - .25f;
-            bool staggered = now < e.staggerUntil;
-            float posX = plat.transform.position.x + e.offset;
-            if (e.floor == playerFloor || staggered)
+            var platform = tower.GetPlatform(enemy.floor); if (!platform) { enemy.dead = true; return; }
+            float half = Half(platform), limit = half - .25f;
+            float posX = platform.transform.position.x + enemy.offset;
+            bool staggered = now < enemy.staggerUntil;
+            if (enemy.floor == playerFloor || staggered)
             {
-                float want = Mathf.Clamp(player.x - plat.transform.position.x, -limit, limit);
-                float dir = Mathf.Abs(want - e.offset) < .06f ? 0 : Mathf.Sign(want - e.offset);
-                if (staggered) dir = -dir; // darbeden sonra geri çekilir
-                float run = (zombie ? 1.35f : 2.7f) * speed * (staggered ? 1.3f : 1);
-                e.offset = Mathf.Clamp(e.offset + dir * run * dt, -limit, limit);
-                if (dir != 0) e.faceRight = staggered ? dir < 0 : dir > 0; else e.faceRight = player.x > posX;
+                float want = Mathf.Clamp(player.x - platform.transform.position.x, -limit, limit);
+                float dir = Mathf.Abs(want - enemy.offset) < .06f ? 0 : Mathf.Sign(want - enemy.offset);
+                if (staggered) dir = -dir;
+                float run = RunSpeed(enemy.kind) * speed * (staggered ? 1.3f : 1);
+                enemy.offset = Mathf.Clamp(enemy.offset + dir * run * dt, -limit, limit);
+                if (dir != 0) enemy.faceRight = staggered ? dir < 0 : dir > 0; else enemy.faceRight = player.x > posX;
             }
-            else if (now >= e.readyAt)
+            else if (now >= enemy.readyAt)
             {
-                int to = e.floor < playerFloor ? e.floor + 1 : e.floor - 1;
+                int to = enemy.floor < playerFloor ? enemy.floor + 1 : enemy.floor - 1;
                 var next = tower.GetPlatform(to);
-                if (!next) { e.dead = true; return; }
-                if (zombie && to > e.floor)
-                {
-                    // Zombi, üstteki basamağın yakın kenarına yaklaşıp o zaman sıçrar.
-                    float side = posX >= next.transform.position.x ? 1 : -1;
-                    float hangX = HangPos(next, side, e.art.height).x;
-                    float want = Mathf.Clamp(hangX - plat.transform.position.x, -limit, limit);
-                    float dir = Mathf.Abs(want - e.offset) < .06f ? 0 : Mathf.Sign(want - e.offset);
-                    e.offset = Mathf.Clamp(e.offset + dir * 1.35f * speed * dt, -limit, limit);
-                    if (dir != 0) e.faceRight = dir > 0;
-                    if (Mathf.Abs(hangX - (plat.transform.position.x + e.offset)) < 3.2f || now - e.waitSince > 3f) StartLeap(e, to, side, 0, now, .75f / speed);
-                }
-                else
-                {
-                    float toLimit = Half(next) - .25f;
-                    float toOffset = Mathf.Clamp(player.x - next.transform.position.x, -toLimit, toLimit);
-                    StartLeap(e, to, 0, toOffset, now, (zombie ? .6f : .8f) / speed);
-                }
+                if (!next) { enemy.dead = true; return; }
+                float toLimit = Half(next) - .25f;
+                float toOffset = Mathf.Clamp(player.x - next.transform.position.x, -toLimit, toLimit);
+                StartLeap(enemy, to, toOffset, now, LeapDuration(enemy.kind) / speed);
             }
-            if (e.state == Enemy.Stand) { var p = tower.GetPlatform(e.floor); if (p) Place(e, StandPos(p, e.offset) + Vector3.up * Bob(e, now)); }
+            if (enemy.state == Enemy.Stand)
+            {
+                var p = tower.GetPlatform(enemy.floor);
+                if (p) Place(enemy, StandPos(p, enemy.offset) + Vector3.up * Bob(enemy.kind, now));
+            }
         }
-        else if (e.state == Enemy.Leap) TickLeap(e, now);
-        else if (e.state == Enemy.Climb) TickClimb(e, now);
-        else TickLand(e, now);
-        e.sr.flipX = !e.faceRight;
-        e.sr.sprite = e.art.frames[FrameFor(e, now)];
+        else if (enemy.state == Enemy.Leap) TickLeap(enemy, now);
+        else TickLand(enemy, now);
+        enemy.sr.flipX = !enemy.faceRight;
+        enemy.sr.sprite = enemy.art.frames[FrameFor(enemy, now)];
     }
 
-    static float Bob(Enemy e, float now) => e.kind == EnemyKind.Goblin ? Mathf.Abs(Mathf.Sin(now * 11f)) * .06f : Mathf.Sin(now * 4f) * .025f;
-
-    void StartLeap(Enemy e, int to, float side, float toOffset, float now, float duration)
+    static float RunSpeed(EnemyKind kind)
     {
-        e.state = Enemy.Leap; e.t0 = now; e.dur = Mathf.Max(.25f, duration); e.toFloor = to; e.side = side; e.toOffset = toOffset;
-        e.from = e.go.transform.position;
+        switch (kind)
+        {
+            case EnemyKind.CinderCrow: return 1.55f;
+            case EnemyKind.CloudMoth: return 1.3f;
+            case EnemyKind.StormLeech: return 1.7f;
+            case EnemyKind.RootStalker: return 1.15f;
+            default: return 1.45f;
+        }
     }
 
-    void TickLeap(Enemy e, float now)
+    static float LeapDuration(EnemyKind kind) => kind == EnemyKind.RootStalker ? .95f : kind == EnemyKind.StormLeech ? .74f : .88f;
+    static float Bob(EnemyKind kind, float now) => kind == EnemyKind.CloudMoth ? Mathf.Abs(Mathf.Sin(now * 7f)) * .12f : kind == EnemyKind.StarWisp ? Mathf.Sin(now * 4f) * .09f : Mathf.Sin(now * 4f) * .025f;
+
+    void StartLeap(Enemy enemy, int to, float toOffset, float now, float duration)
     {
-        var dest = tower.GetPlatform(e.toFloor); if (!dest) { e.dead = true; return; }
-        bool hang = e.kind == EnemyKind.Zombie && e.toFloor > e.floor;
-        Vector3 target = hang ? HangPos(dest, e.side, e.art.height) : StandPos(dest, e.toOffset);
-        float s = Mathf.Clamp01((now - e.t0) / e.dur);
-        float arc = hang ? .55f : (e.toFloor > e.floor ? 1.15f : .6f);
-        Vector3 pos = Vector3.Lerp(e.from, target, s * s * (3 - 2 * s)); pos.y += Mathf.Sin(Mathf.PI * s) * arc;
-        Place(e, pos);
-        e.faceRight = hang ? e.side < 0 : target.x >= e.from.x;
+        enemy.state = Enemy.Leap; enemy.t0 = now; enemy.dur = Mathf.Max(.3f, duration); enemy.toFloor = to; enemy.toOffset = toOffset;
+        enemy.from = enemy.go.transform.position;
+    }
+
+    void TickLeap(Enemy enemy, float now)
+    {
+        var dest = tower.GetPlatform(enemy.toFloor); if (!dest) { enemy.dead = true; return; }
+        Vector3 target = StandPos(dest, enemy.toOffset);
+        float s = Mathf.Clamp01((now - enemy.t0) / enemy.dur);
+        float arc = enemy.toFloor > enemy.floor ? 1.05f : .55f;
+        Vector3 pos = Vector3.Lerp(enemy.from, target, s * s * (3 - 2 * s)); pos.y += Mathf.Sin(Mathf.PI * s) * arc;
+        Place(enemy, pos); enemy.faceRight = target.x >= enemy.from.x;
         if (s < 1) return;
-        e.floor = e.toFloor;
-        if (hang) { e.state = Enemy.Climb; e.t0 = now; e.dur = 1.5f / def.enemySpeed; }
-        else
-        {
-            e.offset = e.toOffset; e.state = e.kind == EnemyKind.Goblin ? Enemy.Land : Enemy.Stand; e.t0 = now; e.dur = .55f;
-            e.readyAt = now + (e.kind == EnemyKind.Goblin ? .95f : .6f) / def.enemySpeed;
-        }
+        enemy.floor = enemy.toFloor; enemy.offset = enemy.toOffset; enemy.state = Enemy.Land; enemy.t0 = now; enemy.dur = .38f;
+        enemy.readyAt = now + .65f / def.enemySpeed;
     }
 
-    void TickClimb(Enemy e, float now)
+    void TickLand(Enemy enemy, float now)
     {
-        var plat = tower.GetPlatform(e.floor); if (!plat) { e.dead = true; return; }
-        float s = Mathf.Clamp01((now - e.t0) / e.dur), half = Half(plat);
-        float x = plat.transform.position.x + e.side * Mathf.Lerp(half + .12f, half - .45f, s);
-        float y = Mathf.Lerp(plat.Top - e.art.height * .95f, plat.Top, s);
-        Place(e, new Vector3(x, y, 0)); e.faceRight = e.side < 0;
-        if (s < 1) return;
-        e.offset = e.side * (half - .45f); e.state = Enemy.Stand; e.readyAt = now + .6f / def.enemySpeed; e.waitSince = now;
+        var platform = tower.GetPlatform(enemy.floor); if (!platform) { enemy.dead = true; return; }
+        Place(enemy, StandPos(platform, enemy.offset));
+        if (now - enemy.t0 >= enemy.dur) enemy.state = Enemy.Stand;
     }
 
-    void TickLand(Enemy e, float now)
+    static int FrameFor(Enemy enemy, float now)
     {
-        var plat = tower.GetPlatform(e.floor); if (!plat) { e.dead = true; return; }
-        Place(e, StandPos(plat, e.offset));
-        if (now - e.t0 >= e.dur) { e.state = Enemy.Stand; e.waitSince = now; }
+        if (enemy.state == Enemy.Leap) return 2;
+        if (enemy.state == Enemy.Land) return 3;
+        return Mathf.FloorToInt(now * 5f) % 2;
     }
 
-    // Kare seçimi: sprite sayfasının kare numaraları EnemyBake çıktısına göredir.
-    static int FrameFor(Enemy e, float now)
-    {
-        if (e.kind == EnemyKind.Zombie)
-        {
-            if (e.state == Enemy.Leap) return 10 + Mathf.Min(3, Mathf.FloorToInt(Mathf.Clamp01((now - e.t0) / e.dur) * 4));
-            if (e.state == Enemy.Climb) return new[] { 14, 15, 8, 9 }[Mathf.FloorToInt(now * 6) % 4];
-            return new[] { 20, 21, 22, 21 }[Mathf.FloorToInt(now * 4) % 4];
-        }
-        if (e.state == Enemy.Leap) return Mathf.Min(5, Mathf.FloorToInt(Mathf.Clamp01((now - e.t0) / e.dur) * 6));
-        if (e.state == Enemy.Land)
-        {
-            float k = Mathf.Clamp01((now - e.t0) / e.dur);
-            if (k < .2f) return 7;
-            if (k < .35f) return 8;
-            if (k < .7f) return 9 + Mathf.FloorToInt((k - .35f) / .35f * 4);
-            return 16 + Mathf.Min(3, Mathf.FloorToInt((k - .7f) / .3f * 4));
-        }
-        return 20 + Mathf.FloorToInt(now * 9) % 4;
-    }
-
-    void Touch(Enemy e, float now)
+    void Touch(Enemy enemy, float now)
     {
         var health = PlayerHealth.Instance;
-        if (health == null || now < e.staggerUntil || now - e.spawnedAt < .7f) return;
-        bool zombie = e.kind == EnemyKind.Zombie;
-        var pos = e.go.transform.position;
-        float centerY = pos.y + e.art.height * (zombie && e.state == Enemy.Climb ? .6f : .45f);
+        if (health == null || now < enemy.staggerUntil || now - enemy.spawnedAt < .7f) return;
+        var pos = enemy.go.transform.position;
+        float centerY = pos.y + enemy.art.height * .45f;
         var p = tower.player.transform.position;
-        if (Mathf.Abs(p.x - pos.x) < (zombie ? .55f : .6f) && Mathf.Abs(p.y - centerY) < (zombie ? .85f : .7f) && health.Hit()) e.staggerUntil = now + 1.2f;
+        if (Mathf.Abs(p.x - pos.x) < .56f && Mathf.Abs(p.y - centerY) < .72f && health.Hit()) enemy.staggerUntil = now + 1.15f;
     }
 
-    // Ekranın altında kalan düşmanlar için altta kırmızı uyarı noktası.
+    // The warm warning dots point to creatures just below the camera.
     void UpdateMarkers()
     {
         var cam = Camera.main; int used = 0;
         foreach (var slot in slots)
         {
             if (slot.enemy == null || used >= markers.Length) continue;
-            var v = cam.WorldToViewportPoint(slot.enemy.go.transform.position);
-            if (v.y >= .01f) continue;
-            var m = markers[used++]; m.gameObject.SetActive(true);
-            m.rectTransform.anchorMin = m.rectTransform.anchorMax = new Vector2(Mathf.Clamp(v.x, .05f, .95f), 0);
-            m.rectTransform.anchoredPosition = new Vector2(0, 170);
-            m.color = new Color(1, .2f, .2f, .5f + .4f * Mathf.Sin(Time.time * 8));
+            var viewport = cam.WorldToViewportPoint(slot.enemy.go.transform.position);
+            if (viewport.y >= .01f) continue;
+            var marker = markers[used++]; marker.gameObject.SetActive(true);
+            marker.rectTransform.anchorMin = marker.rectTransform.anchorMax = new Vector2(Mathf.Clamp(viewport.x, .05f, .95f), 0);
+            marker.rectTransform.anchoredPosition = new Vector2(0, 170);
+            marker.color = new Color(1, .46f, .24f, .55f + .4f * Mathf.Sin(Time.time * 8));
         }
         for (int i = used; i < markers.Length; i++) markers[i].gameObject.SetActive(false);
     }

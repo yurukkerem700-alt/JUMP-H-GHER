@@ -9,7 +9,8 @@ public class TowerThemes : MonoBehaviour
     public int ThemeCycle { get; private set; }
     public string CurrentName => Names[CurrentTheme];
     InfiniteTower tower;
-    public const int FloorsPerTheme=35;
+    // Five regions now fit inside the 100-floor campaign.
+    public const int FloorsPerTheme=20;
     public static int ThemeAtFloor(int floor)=>Mathf.Max(0,floor)/FloorsPerTheme%Names.Length;
     public static Color TintAtFloor(int floor)=>Tints[ThemeAtFloor(floor)];
     void Awake(){Instance=this;}
