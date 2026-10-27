@@ -218,14 +218,16 @@ public class EnemyManager : MonoBehaviour
         if (now - e.t0 >= e.dur) { e.state = Enemy.Stand; e.waitSince = now; }
     }
 
+    static readonly int[] ClimbFrames = { 14, 15, 8, 9 }, WalkFrames = { 20, 21, 22, 21 };
+
     // Kare seçimi: sprite sayfasının kare numaraları EnemyBake çıktısına göredir.
     static int FrameFor(Enemy e, float now)
     {
         if (e.kind == EnemyKind.Zombie)
         {
             if (e.state == Enemy.Leap) return 10 + Mathf.Min(3, Mathf.FloorToInt(Mathf.Clamp01((now - e.t0) / e.dur) * 4));
-            if (e.state == Enemy.Climb) return new[] { 14, 15, 8, 9 }[Mathf.FloorToInt(now * 6) % 4];
-            return new[] { 20, 21, 22, 21 }[Mathf.FloorToInt(now * 4) % 4];
+            if (e.state == Enemy.Climb) return ClimbFrames[Mathf.FloorToInt(now * 6) % 4];
+            return WalkFrames[Mathf.FloorToInt(now * 4) % 4];
         }
         if (e.state == Enemy.Leap) return Mathf.Min(5, Mathf.FloorToInt(Mathf.Clamp01((now - e.t0) / e.dur) * 6));
         if (e.state == Enemy.Land)

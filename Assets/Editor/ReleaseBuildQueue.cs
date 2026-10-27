@@ -53,6 +53,22 @@ public static class ReleaseBuildQueue
         }
         catch(Exception e){File.WriteAllText("Library/ReleaseBuild.stage","FAILED: "+e);Debug.LogException(e);}
     }
+    // Toplu mod: WEB_OUT ortam değişkenindeki klasöre WebGL derlemesi + PWA dosyaları yazar.
+    public static void BuildWebBatch()
+    {
+        string folder=Environment.GetEnvironmentVariable("WEB_OUT");Directory.CreateDirectory(folder);
+        PlayerSettings.productName="Kök Yankısı";PlayerSettings.bundleVersion="0.5.0";PlayerSettings.runInBackground=true;
+        EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WebGL,BuildTarget.WebGL);
+        PlayerSettings.WebGL.compressionFormat=WebGLCompressionFormat.Disabled;PlayerSettings.WebGL.initialMemorySize=256;
+        Build(BuildTarget.WebGL,folder,"WebGL");
+        File.Copy(Application.dataPath+"/WebTemplates/web-index.html",folder+"/index.html",true);
+        string html=File.ReadAllText(folder+"/index.html");
+        foreach(string suffix in new[]{"loader.js","framework.js","data","wasm"})
+        {string path=Directory.GetFiles(folder+"/Build","*."+suffix).Single();html=html.Replace("__"+suffix.ToUpperInvariant().Replace('.','_')+"__","Build/"+Path.GetFileName(path));}
+        File.WriteAllText(folder+"/index.html",html);
+        WebPwaExport.Apply(folder);
+        File.WriteAllText("Library/WebBatch.txt","done");
+    }
     static void Build(BuildTarget target,string path,string label)
     {
         File.WriteAllText("Library/ReleaseBuild-status.txt","Building "+label+" at "+DateTime.Now);

@@ -20,7 +20,7 @@ Kullanıcı limit nedeniyle çalışmayı durdurdu. Sonraki oturumda bu dosyadan
 - RAR: 46.245.644 bayt; WinRAR bütünlük testi geçti. Yalnızca gerekli oyun dosyaları var. Kaynak ve planlar RAR'a dahil değil.
 - Hocaya gönderilen `KEREM YÜRÜK 254309044.rar` değiştirilmedi.
 
-## Önce tamamlanacak iş: WebGL
+## WebGL durumu
 
 - Kullanıcı Vercel'e kendisi bağlayıp yayınlayacak; agent yayınlamasın.
 - Vercel ayarı `vercel.json`: Framework Other, boş build/install komutları, çıktı klasörü `web`.
@@ -30,7 +30,8 @@ Kullanıcı limit nedeniyle çalışmayı durdurdu. Sonraki oturumda bu dosyadan
 - Aktif Unity projesi: `C:\Users\Acer\unityhub-1\2d araba oyunu unity\arabaoyunu`.
 - Kuyruk: `Assets/Editor/ReleaseBuildQueue.cs`. Son aşama WebGL; bu çalışmadan sonra yeni geliştirme kuyruğa alınmadı.
 - Yerel web çıktı hedefi: `C:\Users\Acer\Documents\Codex\2026-10-26\un\work\jump-higher-repo\web`.
-- Eksik web çıktısını depoya koymamak için `web/` şimdilik gitignore'da. Gerçek `.wasm`, `.data`, loader ve framework dosyaları oluşunca bu satırı kaldırın, HTTP sunucusu üzerinden tarayıcıda yükleme/menü/hareketi test edin ve çıktıyı depoya commit/push edin.
+- GÜNCEL: `web/` artık depoda ve Vercel onu yayınlar; WebGL çıktısı eskidiğinde yenilenmelidir. Toplu mod: `WEB_OUT=<klasör> Unity.exe -batchmode -nographics -quit -projectPath <depo> -buildTarget WebGL -executeMethod ReleaseBuildQueue.BuildWebBatch`. Çıktıdaki `web.data`, `web.wasm`, `web.framework.js` Brotli ile `.br` yapılır; `index.html` ve `sw.js` içindeki yollar `.br`'ye çevrilir (`vercel.json` bu dosyaları `Content-Encoding: br` ile sunar). Canlı sürüm `web/sw.js` içindeki `VERSION` değerinden anlaşılır.
+- Bölüm haritası (100 bölüm, yıldız, süre), can barı ve zombi/goblin düşmanları eklendi (README). Düşman davranışı otomatik doğrulanamadı; oynayarak `Assets/Scripts/Enemies.cs` değerlerini ayarlayın. Unity'yi doğrudan bu depo klasöründen açın (yukarıdaki `arabaoyunu` kopyası eskidir).
 - `Assets/WebTemplates/web-index.html` açılış şablonudur; `__...__` yer tutucularını ReleaseBuildQueue derleme sonrası değiştirir. Şablonu doğrudan yayınlamayın.
 - Yerel test sunucusu bu oturumda 127.0.0.1:8765 üzerinde başlatıldı; oturum devam etmiyorsa tekrar açılabilir.
 
