@@ -7,7 +7,7 @@ public class GameFlow : MonoBehaviour
     public Sprite icon;
     public static GameFlow Instance {get;private set;}
     public static bool IsMenu {get;private set;}
-    bool menuVisible,holding;LevelMap map;LevelRun run;
+    bool menuVisible,holding;LevelMap map;LevelRun run;PlayerHealth health;
     Canvas canvas;GameObject overlay;TextMeshProUGUI heading,subtitle,status;Button start;float splashUntil;bool splash=true;bool begun;
     InfiniteTower tower;
     void Awake(){Instance=this;}
@@ -29,6 +29,7 @@ public class GameFlow : MonoBehaviour
         var pt=new GameObject("II",typeof(TextMeshProUGUI));pt.transform.SetParent(pause.transform,false);var textPause=pt.GetComponent<TextMeshProUGUI>();textPause.text="II";textPause.fontSize=26;textPause.alignment=TextAlignmentOptions.Center;textPause.raycastTarget=false;var ptr=textPause.rectTransform;ptr.anchorMin=Vector2.zero;ptr.anchorMax=Vector2.one;ptr.offsetMin=ptr.offsetMax=Vector2.zero;
         pause.GetComponent<Button>().onClick.AddListener(()=>{if(holding)return;if(map.IsOpen)map.Close();else if(IsMenu&&begun)Begin(true);else Show(true);});pause.transform.SetAsFirstSibling();
         map=new LevelMap(canvas.transform,tower.floorLabel.font,StartLevel,StartEndless,()=>map.Close());
+        health=new GameObject("Can Yöneticisi").AddComponent<PlayerHealth>();health.Init(tower);health.Died+=()=>{if(!run.Active)tower.player.RestartRun();};
         run=new GameObject("Bölüm Yöneticisi").AddComponent<LevelRun>();run.Init(this,tower);
         splashUntil=Time.unscaledTime+1.1f;Show(true);
 #if UNITY_EDITOR
@@ -59,6 +60,6 @@ public class GameFlow : MonoBehaviour
     public void StartLevel(int n){map.Close();begun=true;Show(false);run.Begin(n);}
     void StartEndless(){map.Close();run.Stop();begun=true;Show(false);tower.player.RestartRun();}
     public void OpenMap(){Show(true);map.Open();}
-    void OnDestroy(){Time.timeScale=1;IsMenu=false;Instance=null;if(run)Destroy(run.gameObject);if(canvas)Destroy(canvas.gameObject);PlayerPrefs.Save();}
+    void OnDestroy(){Time.timeScale=1;IsMenu=false;Instance=null;if(run)Destroy(run.gameObject);if(health)Destroy(health.gameObject);if(canvas)Destroy(canvas.gameObject);PlayerPrefs.Save();}
 }
 

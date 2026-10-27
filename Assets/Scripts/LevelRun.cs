@@ -13,6 +13,7 @@ public class LevelRun : MonoBehaviour
     GameFlow flow; InfiniteTower tower; TMP_FontAsset font;
     Canvas canvas; TextMeshProUGUI hud; GameObject result;
     Transform door; SpriteRenderer doorGlow;
+    EnemyManager enemies;
     bool finished;
     static readonly Color Gold = new Color(1f, .77f, .3f), Dim = new Color(.25f, .2f, .26f);
 
@@ -22,10 +23,14 @@ public class LevelRun : MonoBehaviour
     {
         flow = owner; tower = t; font = t.floorLabel.font;
         canvas = UiArt.NewCanvas("Bölüm Arayüzü", 900);
-        hud = UiArt.Label(canvas.transform, font, "", .5f, .87f, 900, 90, 24, new Color(1, .86f, .66f));
+        hud = UiArt.Label(canvas.transform, font, "", .5f, .815f, 900, 90, 24, new Color(1, .86f, .66f));
         hud.richText = true; hud.gameObject.SetActive(false);
         BuildDoor();
+        enemies = gameObject.AddComponent<EnemyManager>(); enemies.Init(t);
+        if (PlayerHealth.Instance) PlayerHealth.Instance.Died += OnPlayerDied;
     }
+
+    void OnPlayerDied() { if (Active && !finished) Finish(false, "CAN BİTTİ"); }
 
     void BuildDoor()
     {
@@ -56,10 +61,10 @@ public class LevelRun : MonoBehaviour
         Elapsed = 0; finished = false;
     }
 
-    public void Stop() { Active = false; finished = false; CloseResult(); hud.gameObject.SetActive(false); door.gameObject.SetActive(false); }
+    public void Stop() { Active = false; finished = false; enemies.Clear(); CloseResult(); hud.gameObject.SetActive(false); door.gameObject.SetActive(false); }
 
     // R ile yeniden başlatma bölümün süresini ve durumunu da sıfırlar.
-    public void OnRunRestarted() { if (!Active) return; Elapsed = 0; finished = false; }
+    public void OnRunRestarted() { if (!Active) return; Elapsed = 0; finished = false; enemies.Begin(Def); }
 
     void Update()
     {
@@ -73,7 +78,7 @@ public class LevelRun : MonoBehaviour
             done = door.gameObject.activeSelf && Mathf.Abs(p.x - door.position.x) < .4f && Mathf.Abs(p.y - door.position.y) < .7f;
         }
         if (done) Finish(true);
-        else if (Def.HardLimit && Elapsed >= Def.limit) Finish(false);
+        else if (Def.HardLimit && Elapsed >= Def.limit) Finish(false, "SÜRE DOLDU");
     }
 
     void LateUpdate()
@@ -87,9 +92,10 @@ public class LevelRun : MonoBehaviour
             doorGlow.color = new Color(.45f, .95f, 1f, .6f + .25f * Mathf.Sin(Time.time * 3f));
         }
         if (!Active || finished) return;
+        string foes = Def.HasEnemies ? "  •  " + Def.EnemyText : "";
         string goal = Def.kind == GoalKind.Floor
-            ? "BÖLÜM " + Def.number + "  •  KAT " + Mathf.Max(0, tower.HighestReachedFloor + 1) + " / " + Def.target
-            : "BÖLÜM " + Def.number + "  •  COIN " + tower.player.Score + " / " + Def.target;
+            ? "BÖLÜM " + Def.number + "  •  KAT " + Mathf.Max(0, tower.HighestReachedFloor + 1) + " / " + Def.target + foes
+            : "BÖLÜM " + Def.number + "  •  COIN " + tower.player.Score + " / " + Def.target + foes;
         string time;
         if (Def.HardLimit) time = "KALAN SÜRE " + LevelDefs.Clock(Def.limit - Elapsed);
         else time = "SÜRE " + LevelDefs.Clock(Elapsed);
@@ -100,16 +106,16 @@ public class LevelRun : MonoBehaviour
 
     int StarsFor(float time) => 1 + (time <= Def.twoStarTime ? 1 : 0) + (time <= Def.threeStarTime ? 1 : 0);
 
-    void Finish(bool win)
+    void Finish(bool win, string reason = null)
     {
-        finished = true;
+        finished = true; enemies.Clear();
         int stars = win ? StarsFor(Elapsed) : 0;
         if (win) LevelDefs.SaveStars(Def.number, stars);
         flow.Hold(true);
-        ShowResult(win, stars);
+        ShowResult(win, stars, reason);
     }
 
-    void ShowResult(bool win, int stars)
+    void ShowResult(bool win, int stars, string reason)
     {
         CloseResult();
         result = new GameObject("Bölüm Sonucu", typeof(Image)); result.transform.SetParent(canvas.transform, false);
@@ -117,7 +123,7 @@ public class LevelRun : MonoBehaviour
         result.GetComponent<Image>().color = new Color(.035f, .025f, .045f, .9f);
         var t = result.transform;
         bool finale = win && Def.number == LevelDefs.Count;
-        UiArt.Label(t, font, finale ? "OYUN TAMAMLANDI!" : win ? "BÖLÜM " + Def.number + " TAMAM" : "SÜRE DOLDU", .5f, .84f, 900, 110, 52, win ? Gold : new Color(1, .42f, .38f));
+        UiArt.Label(t, font, finale ? "OYUN TAMAMLANDI!" : win ? "BÖLÜM " + Def.number + " TAMAM" : reason, .5f, .84f, 900, 110, 52, win ? Gold : new Color(1, .42f, .38f));
         if (finale) UiArt.Label(t, font, "Kök Yankısı'nın en tepesine ulaştın.", .5f, .75f, 900, 60, 24, new Color(.85f, .75f, .7f));
         else UiArt.Label(t, font, Def.Goal, .5f, .75f, 900, 60, 24, new Color(.85f, .75f, .7f));
         for (int i = 0; i < 3; i++) UiArt.Pic(t, UiArt.Star, i < stars ? Gold : Dim, .5f + (i - 1) * .17f, .63f, 130, 130);
@@ -128,7 +134,7 @@ public class LevelRun : MonoBehaviour
             Condition(t, .40f, LevelDefs.Clock(Def.twoStarTime) + " içinde bitir", Elapsed <= Def.twoStarTime);
             Condition(t, .35f, LevelDefs.Clock(Def.threeStarTime) + " içinde bitir", Elapsed <= Def.threeStarTime);
         }
-        else UiArt.Label(t, font, "Bu bölümü " + LevelDefs.Clock(Def.limit) + " içinde bitirmelisin.", .5f, .50f, 900, 60, 24, new Color(.85f, .75f, .7f));
+        else UiArt.Label(t, font, reason == "CAN BİTTİ" ? "Üç darbede düştün. Bir daha dene." : "Bu bölümü " + LevelDefs.Clock(Def.limit) + " içinde bitirmelisin.", .5f, .50f, 900, 60, 24, new Color(.85f, .75f, .7f));
         int n = Def.number;
         float y = .24f;
         if (win && n < LevelDefs.Count) { UiArt.Btn(t, font, "SONRAKİ BÖLÜM", .5f, y, 440, 70, () => { flow.Hold(false); flow.StartLevel(n + 1); }); y -= .09f; }
@@ -145,5 +151,5 @@ public class LevelRun : MonoBehaviour
 
     void CloseResult() { if (result) { Destroy(result); result = null; } }
 
-    void OnDestroy() { Instance = null; if (canvas) Destroy(canvas.gameObject); if (door) Destroy(door.gameObject); }
+    void OnDestroy() { Instance = null; if (PlayerHealth.Instance) PlayerHealth.Instance.Died -= OnPlayerDied; if (canvas) Destroy(canvas.gameObject); if (door) Destroy(door.gameObject); }
 }

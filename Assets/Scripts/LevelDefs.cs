@@ -11,7 +11,11 @@ public struct LevelDef
     public int number, target;
     public GoalKind kind;
     public float twoStarTime, threeStarTime, limit; // limit > 0: süre dolunca bölüm kaybedilir
+    public int zombies, goblins;
+    public float enemySpeed;
     public bool HardLimit => limit > 0;
+    public bool HasEnemies => zombies + goblins > 0;
+    public string EnemyText => zombies > 0 && goblins > 0 ? "ZOMBİ x" + zombies + " + GOBLİN x" + goblins : zombies > 0 ? "ZOMBİ x" + zombies : goblins > 0 ? "GOBLİN x" + goblins : "";
     public string Goal => kind == GoalKind.Floor ? target + ". kata çık, kapıdan geç" : target + " coin topla";
 }
 
@@ -30,7 +34,28 @@ public static class LevelDefs
         float two = Round5(15 + d.target * 5f), three = Round5(10 + d.target * 3.2f);
         if (n % 5 == 0 && n < Count) { d.limit = two; two = Round5(two * .8f); }
         d.twoStarTime = two; d.threeStarTime = Mathf.Min(three, two - 5);
+        AssignEnemies(ref d);
         return d;
+    }
+
+    // 1-30: düşman yok. 31-50: yalnız zombi (1, sonra 2). 51-70: yalnız goblin (1, sonra 2).
+    // 71-99: dört bölümlük döngü — zombi sürüsü(3), karışık, goblin sürüsü(3), karışık. 100: 2 zombi + 2 goblin.
+    static void AssignEnemies(ref LevelDef d)
+    {
+        int n = d.number;
+        if (n <= 30) return;
+        d.enemySpeed = Mathf.Min(1.5f, 1 + (n - 31) * .01f);
+        if (n <= 50) d.zombies = n < 41 ? 1 : 2;
+        else if (n <= 70) d.goblins = n < 61 ? 1 : 2;
+        else if (n == Count) { d.zombies = 2; d.goblins = 2; }
+        else
+            switch (n % 4)
+            {
+                case 0: d.zombies = 3; break;
+                case 2: d.goblins = 3; break;
+                case 1: d.zombies = n < 85 ? 1 : 2; d.goblins = 1; break;
+                default: d.zombies = 1; d.goblins = n < 85 ? 1 : 2; break;
+            }
     }
 
     static float Round5(float v) => Mathf.Max(5, Mathf.Round(v / 5) * 5);
@@ -47,8 +72,14 @@ public static class LevelDefs
 // Menü, harita ve sonuç ekranları için ortak, prosedürel arayüz parçaları.
 public static class UiArt
 {
-    static Sprite star, disc;
+    static Sprite star, disc, heart;
     public static Sprite Star => star ? star : star = Build(64, 64, 64, (u, v) => StarAlpha(u * 2, v * 2));
+    // Kalp: (x²+y²-1)³ - x²y³ <= 0 eğrisi
+    public static Sprite Heart => heart ? heart : heart = Build(64, 64, 64, (u, v) =>
+    {
+        float x = u * 2.4f, y = v * 2.4f + .1f, a = x * x + y * y - 1;
+        return .5f - (a * a * a - x * x * y * y * y) * 8;
+    });
     public static Sprite Disc => disc ? disc : disc = Build(64, 64, 64, (u, v) => Mathf.Clamp01((.97f - Mathf.Sqrt(u * u + v * v) * 2) * 32 + .5f));
 
     // alpha(u,v): sprite merkezine göre birim cinsinden koordinat

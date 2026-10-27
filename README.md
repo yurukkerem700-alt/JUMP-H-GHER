@@ -22,6 +22,13 @@ Unity projesi: **6000.0.84f1**. Ana sahne: `Assets/Scenes/SampleScene.unity`.
 - Yıldızlar: 1 = bölümü bitir, 2 = ikinci süre sınırı içinde bitir, 3 = daha sıkı süre içinde bitir. Her 5. bölüm (100 hariç) süreli: süre dolarsa bölüm kaybedilir.
 - Eski sonsuz mod haritanın üstündeki **SONSUZ MOD** düğmesiyle sürer. Bölüm kuralları `Assets/Scripts/LevelDefs.cs` içindedir.
 
+## Can ve düşmanlar
+
+- Üç canlık can barı (sol üstte kalpler). Düşman darbesi 1 can götürür, ardından 1,6 sn dokunulmazlık vardır. Zemine kadar düşmek de 1 can götürür ve başlangıca döndürür. Can bitince bölüm kaybedilir (sonsuz modda koşu yeniden başlar).
+- **Zombi**: aşağıdan gelir, üstteki basamağın kenarına zıplayıp asılır, tırmanır, sonra oyuncuya yürür. **Goblin**: oyuncu gibi basamaktan basamağa doğrudan zıplar, ayakta hızlı koşar. Ekranın altında kalan düşman altta kırmızı bir noktayla gösterilir. Düşmanlar bölüm başladıktan 6 sn sonra, oyuncu 4. kata çıkınca belirir.
+- Dağılım (`LevelDefs.AssignEnemies`): 1–30 düşmansız; 31–50 yalnız zombi (31–40: 1, 41–50: 2); 51–70 yalnız goblin (51–60: 1, 61–70: 2); 71–99 dört bölümlük döngü — 4'e bölünenler 3 zombi, 4k+2'ler 3 goblin, 4k+1'ler zombi + goblin, 4k+3'ler goblin + zombi (85'ten sonra tek tür 2'ye çıkar); 100. bölüm 2 zombi + 2 goblin. Düşman hızı 31. bölümden itibaren %1 artar (en çok %50).
+- Düşman sprite'ları Mixamo FBX modellerinden üretilir (`Assets/Editor/EnemyBake.cs`, menü: Cihazlar ▸ Düşman Sprite Üret). Kaynak FBX'ler depoda değildir (`ENEMY_FBX_DIR` ya da Downloads klasörü); üretilen küçük sprite sayfaları `Assets/Resources/Enemies/` içindedir.
+
 ## Kaynaklar ve derleme
 
 `Assets`, `.meta` dosyaları, `Packages` ve `ProjectSettings` Unity kaynak projesidir. Unity Hub üzerinden depo klasörünü açın. Kayıtlı sahne doğrudan kullanılabilir; eski sahne kurucularını çalıştırmak gerekli değildir.
