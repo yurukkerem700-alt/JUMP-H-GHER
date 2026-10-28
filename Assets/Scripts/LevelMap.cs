@@ -20,6 +20,7 @@ public class LevelMap
     readonly ScrollRect scroll;
     readonly RectTransform content;
     readonly TextMeshProUGUI total;
+    readonly Image progressFill;
     readonly Image[] node = new Image[LevelDefs.Count + 1];
     readonly Image[] halo = new Image[LevelDefs.Count + 1];
     readonly Button[] nodeButton = new Button[LevelDefs.Count + 1];
@@ -89,6 +90,12 @@ public class LevelMap
         var br = bar.GetComponent<RectTransform>(); br.anchorMin = new Vector2(0, 1); br.anchorMax = Vector2.one; br.pivot = new Vector2(.5f, 1); br.sizeDelta = new Vector2(0, 130);
         UiArt.Label(bar.transform, font, "YOL HARİTASI", .5f, .68f, 500, 58, 36, new Color(1, .82f, .56f));
         total = UiArt.Label(bar.transform, font, "", .5f, .27f, 600, 38, 19, new Color(.75f, .8f, .87f));
+        var track = new GameObject("Bölge İlerleme", typeof(Image)); track.transform.SetParent(bar.transform, false);
+        track.GetComponent<Image>().color = new Color(1, 1, 1, .12f); track.GetComponent<Image>().raycastTarget = false;
+        var tr = track.GetComponent<RectTransform>(); tr.anchorMin = new Vector2(0, 0); tr.anchorMax = new Vector2(1, 0); tr.pivot = new Vector2(.5f, 0); tr.sizeDelta = new Vector2(0, 6); tr.anchoredPosition = Vector2.zero;
+        var fill = new GameObject("Dolgu", typeof(Image)); fill.transform.SetParent(track.transform, false);
+        progressFill = fill.GetComponent<Image>(); progressFill.raycastTarget = false;
+        var fr = fill.GetComponent<RectTransform>(); fr.anchorMin = Vector2.zero; fr.anchorMax = new Vector2(0, 1); fr.offsetMin = fr.offsetMax = Vector2.zero;
         UiArt.Btn(bar.transform, font, "GERİ", .13f, .5f, 190, 66, () => back());
         UiArt.Btn(bar.transform, font, "SONSUZ MOD", .85f, .5f, 250, 66, () => endless());
         root.SetActive(false);
@@ -192,7 +199,14 @@ public class LevelMap
     void Refresh()
     {
         int current = LevelDefs.Current();
-        total.text = "BÖLÜM " + current + " / " + LevelDefs.Count + "     •     YILDIZ " + LevelDefs.TotalStars() + " / " + LevelDefs.Count * 3;
+        var here = regions.Find(r => current >= r.first && current <= r.last) ?? regions[regions.Count - 1];
+        total.text = TowerThemes.Names[here.theme].ToUpper(new System.Globalization.CultureInfo("tr-TR")) + "     •     BÖLÜM " + current + " / " + LevelDefs.Count + "     •     YILDIZ " + LevelDefs.TotalStars() + " / " + LevelDefs.Count * 3;
+        if (progressFill)
+        {
+            Color tint = TowerThemes.TintAtFloor(Mathf.RoundToInt(here.tintFloor));
+            progressFill.color = tint;
+            progressFill.rectTransform.anchorMax = new Vector2(Mathf.Clamp01((current - here.first + 1f) / (here.last - here.first + 1f)), 1);
+        }
         for (int n = 1; n <= LevelDefs.Count; n++)
         {
             int score = LevelDefs.Stars(n);

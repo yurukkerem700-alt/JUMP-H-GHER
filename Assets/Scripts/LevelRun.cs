@@ -26,6 +26,11 @@ public class LevelRun : MonoBehaviour
         canvas = UiArt.NewCanvas("Bölüm Arayüzü", 900);
         hud = UiArt.Label(canvas.transform, font, "", .5f, .815f, 900, 90, 24, new Color(1, .86f, .66f));
         hud.richText = true; hud.gameObject.SetActive(false);
+        // Okunabilirlik için HUD'un arkasına yarı saydam koyu şerit
+        var hudBack = new GameObject("HUD Zemin", typeof(Image)); hudBack.transform.SetParent(hud.transform, false);
+        hudBack.transform.SetAsFirstSibling();
+        var hudBackImage = hudBack.GetComponent<Image>(); hudBackImage.color = new Color(.03f, .04f, .07f, .5f); hudBackImage.raycastTarget = false;
+        var hudBackRect = hudBack.GetComponent<RectTransform>(); hudBackRect.anchorMin = hudBackRect.anchorMax = new Vector2(.5f, .5f); hudBackRect.sizeDelta = new Vector2(900, 84);
         BuildDoor();
         enemies = gameObject.AddComponent<EnemyManager>(); enemies.Init(t);
         if (PlayerHealth.Instance) PlayerHealth.Instance.Died += OnPlayerDied;
@@ -41,7 +46,7 @@ public class LevelRun : MonoBehaviour
         var inner = UiArt.Build(64, 96, 64, (u, v) => ArchAlpha(u, v, .09f));
         door = new GameObject("Bölüm Kapısı").transform;
         var f = new GameObject("Çerçeve", typeof(SpriteRenderer)).GetComponent<SpriteRenderer>();
-        f.transform.SetParent(door, false); f.sprite = frame; f.sharedMaterial = material; f.sortingOrder = 15; f.color = new Color(.45f, .27f, .13f);
+        f.transform.SetParent(door, false); f.sprite = frame; f.sharedMaterial = material; f.sortingOrder = 15; f.color = new Color(.78f, .55f, .24f);
         doorGlow = new GameObject("Işık", typeof(SpriteRenderer)).GetComponent<SpriteRenderer>();
         doorGlow.transform.SetParent(door, false); doorGlow.sprite = inner; doorGlow.sharedMaterial = material; doorGlow.sortingOrder = 16;
         door.localScale = Vector3.one * .75f; door.gameObject.SetActive(false);
@@ -130,7 +135,7 @@ public class LevelRun : MonoBehaviour
             : "BÖLÜM " + Def.number + "  •  COIN " + tower.player.Score + " / " + Def.target + foes;
         string time;
         if (Def.HardLimit && Time.time < hardLimitGraceUntil) time = "DEVAM SÜRESİ " + LevelDefs.Clock(hardLimitGraceUntil - Time.time);
-        else if (Def.HardLimit) time = "KALAN SÜRE " + LevelDefs.Clock(Def.limit - Elapsed);
+        else if (Def.HardLimit) time = (Def.limit - Elapsed <= 10 ? "<color=#ff6b5e>" : "") + "KALAN SÜRE " + LevelDefs.Clock(Def.limit - Elapsed) + (Def.limit - Elapsed <= 10 ? "</color>" : "");
         else time = "SÜRE " + LevelDefs.Clock(Elapsed);
         string next = Elapsed <= Def.threeStarTime ? "  •  3 YILDIZ: " + LevelDefs.Clock(Def.threeStarTime)
             : Elapsed <= Def.twoStarTime ? "  •  2 YILDIZ: " + LevelDefs.Clock(Def.twoStarTime) : "  •  1 YILDIZ";
