@@ -1,14 +1,11 @@
 // Otomatik üretildi (WebPwaExport). Her derlemede sürüm değişir.
-const VERSION='20261027220229';
+const VERSION='20261028072225';
 const CACHE='kok-yankisi-'+VERSION;
 const FILES=[
   "./",
   "Build/web.data.br",
-  "Build/web.data.br",
-  "Build/web.framework.js.br",
   "Build/web.framework.js.br",
   "Build/web.loader.js",
-  "Build/web.wasm.br",
   "Build/web.wasm.br",
   "TemplateData/MemoryProfiler.png",
   "TemplateData/favicon.ico",

@@ -82,6 +82,8 @@ public class LevelRun : MonoBehaviour
         {
             var p = tower.player.transform.position;
             done = door.gameObject.activeSelf && Mathf.Abs(p.x - door.position.x) < .4f && Mathf.Abs(p.y - door.position.y) < .7f;
+            // Kapıyı atlayıp hedef katın üstüne çıkmak bölümü bitirir; sonsuz tırmanış yalnızca Sonsuz Mod'da.
+            if (!done && tower.HighestReachedFloor >= Def.target) done = true;
         }
         if (done) Finish(true);
         else if (Def.HardLimit && Elapsed >= Def.limit && Time.time >= hardLimitGraceUntil) Finish(false, "SÜRE DOLDU");
@@ -90,6 +92,8 @@ public class LevelRun : MonoBehaviour
     void LateUpdate()
     {
         hud.gameObject.SetActive(Active && !finished);
+        // Bölümde kat bilgisi HUD'da var; eski kat etiketi üst üste binmesin. Menüde de gizli kalsın.
+        if (tower.floorLabel) tower.floorLabel.enabled = !(Active && !finished) && !GameFlow.IsMenu;
         var platform = Active && !finished && Def.kind == GoalKind.Floor ? tower.GetPlatform(Def.target - 1) : null;
         door.gameObject.SetActive(platform);
         if (platform)
