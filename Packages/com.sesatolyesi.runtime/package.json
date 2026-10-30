@@ -1,0 +1,9 @@
+{
+  "name": "com.sesatolyesi.runtime",
+  "version": "0.1.0",
+  "displayName": "Ses Atölyesi",
+  "description": "Kayıt dosyası gerektirmeyen, lisans derdi olmayan oyun sesi sistemi: zemine göre ayak sesi, iniş/çarpma, rüzgar, yağmur, gök gürültüsü, ateş, dere ve arayüz sesleri. 2B/3B, mobil ve WebGL.",
+  "unity": "2021.3",
+  "keywords": ["audio", "sound", "sfx", "footsteps", "procedural", "ambience"],
+  "author": { "name": "Ses Atölyesi" }
+}

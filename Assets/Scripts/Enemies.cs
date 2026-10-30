@@ -195,7 +195,7 @@ public class EnemyManager : MonoBehaviour
         if (hang) { e.state = Enemy.Climb; e.t0 = now; e.dur = 1.5f / def.enemySpeed; }
         else
         {
-            e.offset = e.toOffset; e.state = e.kind == EnemyKind.Goblin ? Enemy.Land : Enemy.Stand; e.t0 = now; e.dur = .55f;
+            SesWorld.EnemyLand(e.go.transform.position, tower.player.transform.position, e.toFloor); e.offset = e.toOffset; e.state = e.kind == EnemyKind.Goblin ? Enemy.Land : Enemy.Stand; e.t0 = now; e.dur = .55f;
             e.readyAt = now + (e.kind == EnemyKind.Goblin ? .95f : .6f) / def.enemySpeed;
         }
     }

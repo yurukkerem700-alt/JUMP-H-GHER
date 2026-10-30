@@ -27,7 +27,7 @@ public class GameFlow : MonoBehaviour
         Button(Application.platform==RuntimePlatform.WebGLPlayer?"TAM EKRAN":"ÇIKIŞ",.045f,()=>{if(Application.platform==RuntimePlatform.WebGLPlayer)Screen.fullScreen=!Screen.fullScreen;else Application.Quit();});
         var pause=new GameObject("Duraklat",typeof(Image),typeof(Button));pause.transform.SetParent(canvas.transform,false);pause.GetComponent<Image>().color=new Color(.16f,.1f,.15f,.8f);var pr=pause.GetComponent<RectTransform>();pr.anchorMin=pr.anchorMax=new Vector2(.5f,.96f);pr.sizeDelta=new Vector2(70,52);
         var pt=new GameObject("II",typeof(TextMeshProUGUI));pt.transform.SetParent(pause.transform,false);var textPause=pt.GetComponent<TextMeshProUGUI>();textPause.text="II";textPause.fontSize=26;textPause.alignment=TextAlignmentOptions.Center;textPause.raycastTarget=false;var ptr=textPause.rectTransform;ptr.anchorMin=Vector2.zero;ptr.anchorMax=Vector2.one;ptr.offsetMin=ptr.offsetMax=Vector2.zero;
-        pause.GetComponent<Button>().onClick.AddListener(()=>{if(holding)return;if(map.IsOpen)map.Close();else if(IsMenu&&begun)Begin(true);else Show(true);});pause.transform.SetAsFirstSibling();
+        pause.GetComponent<Button>().onClick.AddListener(()=>{if(holding)return;SesAtolyesi.Ses.UiClick();if(map.IsOpen)map.Close();else if(IsMenu&&begun)Begin(true);else Show(true);});pause.transform.SetAsFirstSibling();
         map=new LevelMap(canvas.transform,tower.floorLabel.font,StartLevel,StartEndless,()=>map.Close());
         health=new GameObject("Can Yöneticisi").AddComponent<PlayerHealth>();health.Init(tower);health.Died+=()=>{if(!run.Active)tower.player.RestartRun();};
         run=new GameObject("Bölüm Yöneticisi").AddComponent<LevelRun>();run.Init(this,tower);
@@ -42,7 +42,7 @@ public class GameFlow : MonoBehaviour
     }
     Button Button(string title,float y,UnityEngine.Events.UnityAction action)
     {
-        var go=new GameObject(title,typeof(Image),typeof(Button));go.transform.SetParent(overlay.transform,false);var r=go.GetComponent<RectTransform>();r.anchorMin=new Vector2(.28f,y);r.anchorMax=new Vector2(.72f,y);r.sizeDelta=new Vector2(0,70);go.GetComponent<Image>().color=new Color(.22f,.12f,.14f,.95f);var b=go.GetComponent<Button>();b.onClick.AddListener(action);
+        var go=new GameObject(title,typeof(Image),typeof(Button));go.transform.SetParent(overlay.transform,false);var r=go.GetComponent<RectTransform>();r.anchorMin=new Vector2(.28f,y);r.anchorMax=new Vector2(.72f,y);r.sizeDelta=new Vector2(0,70);go.GetComponent<Image>().color=new Color(.22f,.12f,.14f,.95f);var b=go.GetComponent<Button>();b.onClick.AddListener(() => { SesAtolyesi.Ses.UiClick(); action(); });
         var text=new GameObject("Başlık",typeof(TextMeshProUGUI));text.transform.SetParent(go.transform,false);var t=text.GetComponent<TextMeshProUGUI>();t.font=tower.floorLabel.font;t.text=title;t.fontSize=25;t.color=new Color(1,.81f,.59f);t.alignment=TextAlignmentOptions.Center;t.raycastTarget=false;var tr=t.rectTransform;tr.anchorMin=Vector2.zero;tr.anchorMax=Vector2.one;tr.offsetMin=tr.offsetMax=Vector2.zero;return b;
     }
     void Update()
