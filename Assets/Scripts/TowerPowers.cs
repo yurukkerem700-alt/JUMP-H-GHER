@@ -7,7 +7,7 @@ public class TowerPowers : MonoBehaviour
     public bool DoubleJumpActive=>Time.time<doubleUntil;
     public bool MagnetActive=>Time.time<magnetUntil;
     public string Status=>DoubleJumpActive?"ÇİFT ZIPLAMA "+Mathf.CeilToInt(doubleUntil-Time.time)+" sn":MagnetActive?"MIKNATIS "+Mathf.CeilToInt(magnetUntil-Time.time)+" sn":"";
-    float doubleUntil,magnetUntil;
+    float doubleUntil,magnetUntil;bool wasDouble,wasMagnet;
     int pickupFloor=4,pickupKind;
     const float DoubleSeconds=10,MagnetSeconds=7.5f,MagnetRadius=2.5f;
     static readonly Color DoubleColor=new Color(1f,.62f,.22f),MagnetColor=new Color(.72f,.45f,1f);
@@ -92,6 +92,8 @@ public class TowerPowers : MonoBehaviour
     {
         var playerPos=tower.player.transform.position;float t=Time.time;
         bool dbl=DoubleJumpActive,mag=MagnetActive;
+        if((wasDouble&&!dbl)||(wasMagnet&&!mag))SesAtolyesi.Ses.Swoosh(.7f); // buff süresi doldu
+        wasDouble=dbl;wasMagnet=mag;
         aura.gameObject.SetActive(dbl||mag);
         if(dbl||mag)
         {

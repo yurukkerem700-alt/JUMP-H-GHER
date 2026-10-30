@@ -152,6 +152,7 @@ public class PlayerController : MonoBehaviour
     // Zemine kadar düşmek 1 can götürür ve başlangıca döndürür.
     void FallToGround()
     {
+        SesAtolyesi.Ses.Impact(SesWorld.Surface(sesTower ? sesTower.HighestReachedFloor : 0), 2f, 9f);
         Respawn();
         if (PlayerHealth.Instance) PlayerHealth.Instance.Hit(true);
     }
