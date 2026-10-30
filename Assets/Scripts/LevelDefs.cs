@@ -137,7 +137,7 @@ public static class UiArt
         var go = new GameObject(title, typeof(Image), typeof(Button)); go.transform.SetParent(parent, false);
         var r = go.GetComponent<RectTransform>(); r.anchorMin = r.anchorMax = new Vector2(cx, cy); r.sizeDelta = new Vector2(w, h);
         go.GetComponent<Image>().color = new Color(.22f, .12f, .14f, .95f);
-        var b = go.GetComponent<Button>(); b.onClick.AddListener(action);
+        var b = go.GetComponent<Button>(); b.onClick.AddListener(() => { SesAtolyesi.Ses.UiClick(); action(); });
         var t = Label(go.transform, font, title, .5f, .5f, w, h, 25, new Color(1, .81f, .59f));
         t.rectTransform.anchorMin = Vector2.zero; t.rectTransform.anchorMax = Vector2.one; t.rectTransform.offsetMin = t.rectTransform.offsetMax = Vector2.zero;
         return b;

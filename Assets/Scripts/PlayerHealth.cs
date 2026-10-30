@@ -34,7 +34,7 @@ public class PlayerHealth : MonoBehaviour
     public bool Hit(bool ignoreInvulnerability = false)
     {
         if (Hearts <= 0 || (Invulnerable && !ignoreInvulnerability)) return false;
-        Hearts--; invulnerableUntil = Time.time + InvulnerableSeconds; Refresh();
+        Hearts--; invulnerableUntil = Time.time + InvulnerableSeconds; Refresh(); SesAtolyesi.Ses.Hit();
         if (Hearts <= 0) Died?.Invoke();
         return true;
     }

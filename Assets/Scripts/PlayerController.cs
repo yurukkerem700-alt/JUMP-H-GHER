@@ -24,8 +24,14 @@ public class PlayerController : MonoBehaviour
     private int skor;
     public int Score => skor;
 
+    SesAtolyesi.SesFootsteps footsteps; float stepAcc; InfiniteTower sesTower;
+
     void Start()
     {
+        SesWorld.Ensure();
+        footsteps = gameObject.AddComponent<SesAtolyesi.SesFootsteps>();
+        footsteps.autoStride = false; footsteps.useDefaultOnly = true; footsteps.weight = .9f;
+        sesTower = FindFirstObjectByType<InfiniteTower>();
         rb = GetComponent<Rigidbody2D>();
         oyuncuCollider = GetComponent<Collider2D>();
         zeminMask = LayerMask.GetMask("Zemin");
@@ -88,6 +94,7 @@ public class PlayerController : MonoBehaviour
         {
             if (!TowerPowers.Instance || !TowerPowers.Instance.DoubleJumpActive || airJumpUsed) return;
             airJumpUsed = true;
+            SesAtolyesi.Ses.Swoosh(.8f);
         }
         else airJumpUsed = false;
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
@@ -97,6 +104,13 @@ public class PlayerController : MonoBehaviour
     {
         var platform = GroundPlatform(out bool grounded);
         if (grounded) airJumpUsed=false;
+        footsteps.grounded = grounded;
+        footsteps.defaultSurface = SesWorld.Surface(sesTower ? sesTower.HighestReachedFloor : 0);
+        if (grounded && Mathf.Abs(movementX) > .1f)
+        {
+            stepAcc += Mathf.Abs(movementX) * moveSpeed * Time.fixedDeltaTime;
+            if (stepAcc >= .9f) { stepAcc -= .9f; footsteps.Step(); }
+        }
         if (TowerPowers.Instance && TowerPowers.Instance.IsInWind(rb.position))
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, Mathf.MoveTowards(rb.linearVelocity.y, 6f, 35f * Time.fixedDeltaTime));
         float carry = grounded && platform ? platform.CurrentVelocity.x : 0;
@@ -112,6 +126,7 @@ public class PlayerController : MonoBehaviour
     {
         if (!collision.CompareTag("altin")) return;
         if (coinSequence && !coinSequence.TryCollect(collision)) return;
+        SesAtolyesi.Ses.Coin();
         skor++;
         SkoruGuncelle();
     }

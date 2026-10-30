@@ -60,7 +60,7 @@ public class TowerPowers : MonoBehaviour
             if(Vector2.Distance(tower.player.transform.position,pickup.position)<.75f)
             {
                 if(pickupKind==0)doubleUntil=Time.time+DoubleSeconds;else magnetUntil=Time.time+MagnetSeconds;
-                burstStart=Time.time;burstColor=tint;burstPos=pickup.position;
+                burstStart=Time.time;burstColor=tint;burstPos=pickup.position;SesAtolyesi.Ses.Pickup();
                 pickupFloor+=10;pickupKind=1-pickupKind;
             }
         }

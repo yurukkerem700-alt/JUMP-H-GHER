@@ -45,7 +45,7 @@ public class LevelMap
             node[n] = UiArt.Pic(content, UiArt.Disc, Locked, X(n), 0, NodeSize, NodeSize);
             node[n].rectTransform.anchoredPosition = new Vector2(0, Y(n));
             node[n].raycastTarget = true;
-            node[n].gameObject.AddComponent<Button>().onClick.AddListener(() => { if (LevelDefs.Unlocked(level)) pick(level); });
+            node[n].gameObject.AddComponent<Button>().onClick.AddListener(() => { if (LevelDefs.Unlocked(level)) { SesAtolyesi.Ses.UiClick(); pick(level); } });
             number[n] = UiArt.Label(node[n].transform, font, n.ToString(), .5f, .5f, NodeSize, NodeSize, 40, new Color(.12f, .06f, .08f));
             number[n].fontStyle = FontStyles.Bold;
             stars[n] = new Image[3];

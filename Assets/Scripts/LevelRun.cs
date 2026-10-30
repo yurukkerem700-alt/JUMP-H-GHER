@@ -108,7 +108,7 @@ public class LevelRun : MonoBehaviour
 
     void Finish(bool win, string reason = null)
     {
-        finished = true; enemies.Clear();
+        finished = true; enemies.Clear(); if (win) SesAtolyesi.Ses.Pickup();
         int stars = win ? StarsFor(Elapsed) : 0;
         if (win) LevelDefs.SaveStars(Def.number, stars);
         flow.Hold(true);
