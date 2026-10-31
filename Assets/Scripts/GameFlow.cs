@@ -7,7 +7,7 @@ public class GameFlow : MonoBehaviour
     public Sprite icon;
     public static GameFlow Instance {get;private set;}
     public static bool IsMenu {get;private set;}
-    bool menuVisible,holding;LevelMap map;LevelRun run;PlayerHealth health;
+    bool menuVisible,holding;LevelMap map;SettingsScreen settings;LevelRun run;PlayerHealth health;
     Canvas canvas;GameObject overlay;TextMeshProUGUI heading,subtitle,status;Button start;float splashUntil;bool splash=true;bool begun;
     InfiniteTower tower;
     void Awake(){Instance=this;}
@@ -21,14 +21,16 @@ public class GameFlow : MonoBehaviour
         heading=Text("KÖK YANKISI",.55f,62,new Color(1,.77f,.5f));
         subtitle=Text("100 BÖLÜMDE ZİRVEYE YÜKSEL",.48f,23,new Color(.75f,.66f,.62f));
         status=Text("",.41f,18,new Color(.65f,.6f,.65f));
-        start=Button("OYNA",.33f,()=>{if(begun)Begin(true);else map.Open();});
-        Button("BÖLÜM HARİTASI",.235f,()=>map.Open());
-        Button("NASIL OYNANIR",.14f,()=>{subtitle.text="A / D veya oklar: yürü   •   W / Boşluk: zıpla\nBölümün hedefini tamamla, hızlı bitirerek 3 yıldız topla.\nTelefon: ekrandaki sol / sağ / zıpla düğmeleri";subtitle.fontSize=18;});
-        Button(Application.platform==RuntimePlatform.WebGLPlayer?"TAM EKRAN":"ÇIKIŞ",.045f,()=>{if(Application.platform==RuntimePlatform.WebGLPlayer)Screen.fullScreen=!Screen.fullScreen;else Application.Quit();});
+        start=Button("OYNA",.335f,()=>{if(begun)Begin(true);else map.Open();});
+        Button("BÖLÜM HARİTASI",.26f,()=>map.Open());
+        Button("NASIL OYNANIR",.185f,()=>{subtitle.text="A / D veya oklar: yürü   •   W / Boşluk: zıpla\nBölümün hedefini tamamla, hızlı bitirerek 3 yıldız topla.\nTelefon: ekranın altında parmağını sürükle, karakter o yöne gider (yukarı = zıpla)";subtitle.fontSize=18;});
+        Button("AYARLAR",.11f,()=>settings.Open());
+        Button(Application.platform==RuntimePlatform.WebGLPlayer?"TAM EKRAN":"ÇIKIŞ",.04f,()=>{if(Application.platform==RuntimePlatform.WebGLPlayer)Screen.fullScreen=!Screen.fullScreen;else Application.Quit();});
         var pause=new GameObject("Duraklat",typeof(Image),typeof(Button));pause.transform.SetParent(canvas.transform,false);pause.GetComponent<Image>().color=new Color(.16f,.1f,.15f,.8f);var pr=pause.GetComponent<RectTransform>();pr.anchorMin=pr.anchorMax=new Vector2(.5f,.96f);pr.sizeDelta=new Vector2(70,52);
         var pt=new GameObject("II",typeof(TextMeshProUGUI));pt.transform.SetParent(pause.transform,false);var textPause=pt.GetComponent<TextMeshProUGUI>();textPause.text="II";textPause.fontSize=26;textPause.alignment=TextAlignmentOptions.Center;textPause.raycastTarget=false;var ptr=textPause.rectTransform;ptr.anchorMin=Vector2.zero;ptr.anchorMax=Vector2.one;ptr.offsetMin=ptr.offsetMax=Vector2.zero;
-        pause.GetComponent<Button>().onClick.AddListener(()=>{if(holding)return;SesAtolyesi.Ses.UiClick();if(map.IsOpen)map.Close();else if(IsMenu&&begun)Begin(true);else Show(true);});pause.transform.SetAsFirstSibling();
+        pause.GetComponent<Button>().onClick.AddListener(()=>{if(holding)return;SesAtolyesi.Ses.UiClick();if(settings.IsOpen)settings.Close();else if(map.IsOpen)map.Close();else if(IsMenu&&begun)Begin(true);else Show(true);});pause.transform.SetAsFirstSibling();
         map=new LevelMap(canvas.transform,tower.floorLabel.font,StartLevel,StartEndless,()=>map.Close());
+        settings=new SettingsScreen(canvas.transform,tower.floorLabel.font,()=>settings.Close());
         health=new GameObject("Can Yöneticisi").AddComponent<PlayerHealth>();health.Init(tower);health.Died+=()=>{if(!run.Active)tower.player.RestartRun();};
         run=new GameObject("Bölüm Yöneticisi").AddComponent<LevelRun>();run.Init(this,tower);
         splashUntil=Time.unscaledTime+1.1f;Show(true);
@@ -48,7 +50,7 @@ public class GameFlow : MonoBehaviour
     void Update()
     {
         if(splash){bool ready=Time.unscaledTime>=splashUntil;start.gameObject.SetActive(ready);if(ready)splash=false;}
-        if(!holding&&(Input.GetKeyDown(KeyCode.Escape)||Input.GetKeyDown(KeyCode.P))){if(map.IsOpen)map.Close();else if(IsMenu&&begun)Begin(true);else Show(true);}
+        if(!holding&&(Input.GetKeyDown(KeyCode.Escape)||Input.GetKeyDown(KeyCode.P))){if(settings.IsOpen)settings.Close();else if(map.IsOpen)map.Close();else if(IsMenu&&begun)Begin(true);else Show(true);}
         if(IsMenu){int best=PlayerPrefs.GetInt("BestFloor",0);status.text="EN YÜKSEK KAT  "+best+"   •   YILDIZ  "+LevelDefs.TotalStars()+" / "+LevelDefs.Count*3;}
         else if(tower.HighestReachedFloor+1>PlayerPrefs.GetInt("BestFloor",0))PlayerPrefs.SetInt("BestFloor",tower.HighestReachedFloor+1);
     }
@@ -58,8 +60,8 @@ public class GameFlow : MonoBehaviour
     public void Hold(bool on){holding=on;Apply();}
     void Apply(){IsMenu=menuVisible||holding;Time.timeScale=IsMenu?0:1;GameInput.Clear();}
     public void StartLevel(int n){map.Close();begun=true;Show(false);run.Begin(n);}
-    void StartEndless(){map.Close();run.Stop();begun=true;Show(false);tower.player.RestartRun();}
-    public void OpenMap(){Show(true);map.Open();}
+    void StartEndless(){map.Close();run.Stop();run.BeginEndless();begun=true;Show(false);tower.player.RestartRun();}
+    public void OpenMap(){if(run.Finished)run.Stop();Show(true);map.Open();}
     void OnDestroy(){Time.timeScale=1;IsMenu=false;Instance=null;if(run)Destroy(run.gameObject);if(health)Destroy(health.gameObject);if(canvas)Destroy(canvas.gameObject);PlayerPrefs.Save();}
 }
 

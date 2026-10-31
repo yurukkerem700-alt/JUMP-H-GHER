@@ -48,7 +48,7 @@ public class EnemyManager : MonoBehaviour
     const float FirstDelay = 6f, RespawnDelay = 2.5f;
     InfiniteTower tower; Material material; Canvas canvas; Image[] markers;
     readonly List<EnemySlot> slots = new List<EnemySlot>();
-    LevelDef def; bool active; float startAt; int playerFloor;
+    LevelDef def; bool active, endless; float startAt; int playerFloor;
     public int AliveCount { get { int n = 0; foreach (var s in slots) if (s.enemy != null) n++; return n; } }
     public int SlotCount => slots.Count;
 
@@ -67,8 +67,28 @@ public class EnemyManager : MonoBehaviour
         for (int i = 0; i < level.goblins; i++) slots.Add(new EnemySlot { kind = EnemyKind.Goblin, readyAt = startAt + .75f + i * 1.5f });
     }
 
+    // Sonsuz mod: zombi 10. kattan, goblin 25. kattan sonra gelir; yükseldikçe sayı (en çok 5) ve hız artar.
+    public void BeginEndless()
+    {
+        Clear(); endless = true; active = true; startAt = Time.time + FirstDelay; playerFloor = 0; def = default;
+        def.enemySpeed = 1;
+    }
+
+    void GrowEndless(float now)
+    {
+        int floor = Mathf.Max(0, tower.HighestReachedFloor);
+        int wantZombies = floor < 10 ? 0 : Mathf.Min(3, 1 + (floor - 10) / 20);
+        int wantGoblins = floor < 25 ? 0 : Mathf.Min(2, 1 + (floor - 25) / 30);
+        def.enemySpeed = Mathf.Min(1.6f, 1 + floor * .005f);
+        int zombies = 0, goblins = 0;
+        foreach (var s in slots) { if (s.kind == EnemyKind.Zombie) zombies++; else goblins++; }
+        for (; zombies < wantZombies; zombies++) slots.Add(new EnemySlot { kind = EnemyKind.Zombie, readyAt = now + 3f + zombies * 1.5f });
+        for (; goblins < wantGoblins; goblins++) slots.Add(new EnemySlot { kind = EnemyKind.Goblin, readyAt = now + 3.75f + goblins * 1.5f });
+    }
+
     public void Clear()
     {
+        endless = false;
         foreach (var s in slots) if (s.enemy != null && s.enemy.go) Destroy(s.enemy.go);
         slots.Clear(); active = false;
         if (markers != null) foreach (var m in markers) if (m) m.gameObject.SetActive(false);
@@ -78,13 +98,15 @@ public class EnemyManager : MonoBehaviour
     {
         if (!active || GameFlow.IsMenu || !LevelRun.Instance || LevelRun.Instance.Finished) return;
         float now = Time.time, dt = Time.deltaTime;
+        if (endless) GrowEndless(now);
         var support = tower.player.GroundPlatform(out bool grounded);
         if (grounded && support) playerFloor = support.floorIndex;
-        foreach (var slot in slots)
+        for (int i = 0; i < slots.Count; i++)
         {
+            var slot = slots[i];
             if (slot.enemy == null)
             {
-                if (now >= slot.readyAt && playerFloor >= 3) Spawn(slot);
+                if (now >= slot.readyAt && (playerFloor >= 3 || def.kind == GoalKind.Survive)) Spawn(slot);
                 continue;
             }
             var e = slot.enemy;
@@ -92,6 +114,7 @@ public class EnemyManager : MonoBehaviour
             if (!e.dead && (e.floor < playerFloor - 9 || e.floor > playerFloor + 7)) e.dead = true;
             if (e.dead) { Destroy(e.go); slot.enemy = null; slot.readyAt = now + RespawnDelay; continue; }
             Touch(e, now);
+            if (slots.Count == 0) return; // darbe son canı aldıysa liste temizlenmiş olabilir
         }
         UpdateMarkers();
     }

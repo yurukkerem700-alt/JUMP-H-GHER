@@ -10,6 +10,7 @@ public class AltitudeWorld : MonoBehaviour
     public Texture2D themeAtlas;
     Sprite[] themeFrames;
     MaterialPropertyBlock skyProps;
+    const int SkyTiles = 8; // her bölge arka planı orantısı bozulmadan yukarı doğru yan yana dizilir
     SpriteRenderer[] skies;
     SpriteRenderer[] birds;
     float[] birth, baseY, startX, speed, direction;
@@ -19,7 +20,7 @@ public class AltitudeWorld : MonoBehaviour
 
     void Start()
     {
-        skies=new SpriteRenderer[3];birds=new SpriteRenderer[6];skyProps=new MaterialPropertyBlock();
+        skies=new SpriteRenderer[3*SkyTiles];birds=new SpriteRenderer[6];skyProps=new MaterialPropertyBlock();
         birth=new float[6];baseY=new float[6];startX=new float[6];speed=new float[6];direction=new float[6];
         view = Camera.main;
         themeFrames = new Sprite[4];
@@ -68,23 +69,30 @@ public class AltitudeWorld : MonoBehaviour
         const float bandHeight = TowerThemes.FloorsPerTheme * InfiniteTower.FloorGap;
         int band = Mathf.Max(0, Mathf.FloorToInt((view.transform.position.y - 8) / bandHeight));
         float width = Mathf.Max(21.7f, view.orthographicSize * view.aspect * 2 + 1);
-        for (int i = 0; i < skies.Length; i++)
+        for (int i = 0; i < 3; i++)
         {
             int worldBand = band + i - 1;
-            skies[i].gameObject.SetActive(worldBand >= 0);
-            if (worldBand < 0) continue;
-            int theme = worldBand % 5;
+            int theme = Mathf.Max(0, worldBand) % 5;
             var sprite = theme > 0 && themeFrames[theme-1] ? themeFrames[theme-1] : skySprite;
-            skies[i].sprite = sprite;
             // 0. bölge 4. birimden ilk bölge sınırının 3,25 birim üstüne kadar uzanır
             float top0 = InfiniteTower.FirstSurface + bandHeight + 3.25f;
             float center = worldBand == 0 ? (4 + top0) / 2 : InfiniteTower.FirstSurface + worldBand * bandHeight + bandHeight * .5f;
             float height = worldBand == 0 ? top0 - 4 : bandHeight + 5;
-            skies[i].transform.position = new Vector3(0, center, 0);
-            skies[i].transform.localScale = new Vector3(width / sprite.bounds.size.x, height / sprite.bounds.size.y, 1);
-            skies[i].color = Color.white;
+            float scale = width / sprite.bounds.size.x, tileHeight = sprite.bounds.size.y * scale;
+            int tiles = Mathf.Min(SkyTiles, Mathf.CeilToInt(height / tileHeight));
             Vector4 uv = theme > 0 ? new Vector4(((theme-1)%2)*.5f,(1-(theme-1)/2)*.5f,.5f,.5f) : new Vector4(0,0,1,1);
-            skyProps.SetVector("_UVRect",uv);skies[i].SetPropertyBlock(skyProps);
+            skyProps.SetVector("_UVRect",uv);
+            for (int t = 0; t < SkyTiles; t++)
+            {
+                var tile = skies[i * SkyTiles + t];
+                tile.gameObject.SetActive(worldBand >= 0 && t < tiles);
+                if (!tile.gameObject.activeSelf) continue;
+                tile.sprite = sprite; tile.color = Color.white;
+                tile.flipY = t % 2 == 1; // bitişik karolar aynalanır, dikiş görünmez
+                tile.transform.position = new Vector3(0, center - height / 2 + tileHeight * (t + .5f), 0);
+                tile.transform.localScale = new Vector3(scale, scale, 1);
+                tile.SetPropertyBlock(skyProps);
+            }
         }
         float blend = Mathf.SmoothStep(0,1,(view.transform.position.y - 2)/12);
         view.backgroundColor = Color.Lerp(new Color(.14f,.10f,.09f), new Color(.075f,.075f,.13f), blend);

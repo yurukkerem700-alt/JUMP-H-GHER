@@ -48,6 +48,7 @@ public class PlayerController : MonoBehaviour
         if (GameFlow.IsMenu) {movementX=0;GameInput.Clear();return;}
         movementX = GameInput.Horizontal;
         if (GameInput.ConsumeJump()) ZiplamayiDene();
+        else if (GameInput.JumpHeld) { GroundPlatform(out bool onGround); if (onGround) ZiplamayiDene(); }
         if (Input.GetKeyDown(KeyCode.R)) RestartRun();
         if (rb.position.y < -5.5f) FallToGround();
     }
@@ -114,7 +115,9 @@ public class PlayerController : MonoBehaviour
         if (TowerPowers.Instance && TowerPowers.Instance.IsInWind(rb.position))
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, Mathf.MoveTowards(rb.linearVelocity.y, 6f, 35f * Time.fixedDeltaTime));
         float carry = grounded && platform ? platform.CurrentVelocity.x : 0;
-        rb.linearVelocity = new Vector2(movementX * moveSpeed + carry, rb.linearVelocity.y);
+        float vy = rb.linearVelocity.y;
+        if (!grounded && GameInput.DownHeld && vy < 2f) vy = Mathf.Min(vy, -9f); // joystick aşağı: hızlı iniş
+        rb.linearVelocity = new Vector2(movementX * moveSpeed + carry, vy);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

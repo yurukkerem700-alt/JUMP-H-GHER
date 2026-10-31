@@ -32,8 +32,14 @@ public class GameDeviceLayout : MonoBehaviour
     {
         Application.targetFrameRate = 60;
         touchEnabled = Application.isMobilePlatform || Input.touchSupported;
+        joystick = TouchJoystick.Create(this);
+        var legacy = new System.Collections.Generic.List<GameObject>();
+        foreach (var b in touchControls.GetComponentsInChildren<TouchControlButton>(true)) legacy.Add(b.gameObject);
+        joystick.SetLegacyButtons(legacy.ToArray());
         Apply();
     }
+    TouchJoystick joystick;
+    public TouchJoystick Joystick => joystick;
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.T)) { touchEnabled = !touchEnabled; GameInput.Clear(); Apply(); }
@@ -71,6 +77,7 @@ public class GameDeviceLayout : MonoBehaviour
         float backgroundWidth = Mathf.Max(21.7f, 2 * gameCamera.orthographicSize * aspect);
         background.transform.localScale = new Vector3(backgroundWidth / background.sprite.bounds.size.x, 12.2f / background.sprite.bounds.size.y, 1);
         touchControls.SetActive(touchEnabled);
+        if (joystick) joystick.Apply();
         if (desktopHelp) desktopHelp.SetActive(!touchEnabled);
         if (desktopControlsText) desktopControlsText.SetActive(!touchEnabled);
         if (desktopHintText) desktopHintText.SetActive(!touchEnabled);

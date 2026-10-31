@@ -9,6 +9,8 @@ public class PlayerHealth : MonoBehaviour
     public const int Max = 3;
     public const float InvulnerableSeconds = 1.6f;
     public int Hearts { get; private set; } = Max;
+    public int Allowed { get; private set; } = Max; // bölümün izin verdiği can sayısı (1-3)
+    public int Lost { get; private set; }          // bu denemede kaybedilen can
     public bool Invulnerable => Time.time < invulnerableUntil;
     public event Action Died;
     float invulnerableUntil;
@@ -34,16 +36,17 @@ public class PlayerHealth : MonoBehaviour
     public bool Hit(bool ignoreInvulnerability = false)
     {
         if (Hearts <= 0 || (Invulnerable && !ignoreInvulnerability)) return false;
-        Hearts--; invulnerableUntil = Time.time + InvulnerableSeconds; Refresh(); SesAtolyesi.Ses.Hit();
+        Hearts--; Lost++; invulnerableUntil = Time.time + InvulnerableSeconds; Refresh(); SesAtolyesi.Ses.Hit();
         if (Hearts <= 0) Died?.Invoke();
         return true;
     }
 
-    public void Refill() { Hearts = Max; invulnerableUntil = 0; Refresh(); }
+    public void SetAllowed(int hearts) { Allowed = Mathf.Clamp(hearts, 1, Max); Refill(); }
+    public void Refill() { Hearts = Allowed; Lost = 0; invulnerableUntil = 0; Refresh(); }
 
     void Refresh()
     {
-        for (int i = 0; i < Max; i++) icons[i].color = i < Hearts ? Full : Empty;
+        for (int i = 0; i < Max; i++) { icons[i].gameObject.SetActive(i < Allowed); icons[i].color = i < Hearts ? Full : Empty; }
     }
 
     void LateUpdate()

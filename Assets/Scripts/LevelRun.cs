@@ -8,6 +8,7 @@ public class LevelRun : MonoBehaviour
     public static LevelRun Instance { get; private set; }
     public bool Active { get; private set; }
     public bool Finished => finished;
+    public bool Endless { get; private set; }
     public LevelDef Def { get; private set; }
     public float Elapsed { get; private set; }
     GameFlow flow; InfiniteTower tower; TMP_FontAsset font;
@@ -55,23 +56,28 @@ public class LevelRun : MonoBehaviour
 
     public void Begin(int number)
     {
-        Def = LevelDefs.Get(number); Active = true;
+        Def = LevelDefs.Get(number); Active = true; Endless = false;
         CloseResult();
+        if (PlayerHealth.Instance) PlayerHealth.Instance.SetAllowed(Def.hearts);
         tower.player.RestartRun();
         Elapsed = 0; finished = false;
     }
 
-    public void Stop() { Active = false; finished = false; enemies.Clear(); CloseResult(); hud.gameObject.SetActive(false); door.gameObject.SetActive(false); }
+    // Sonsuz mod: düşmanlar yüksekliğe göre kendiliğinden artar (EnemyManager.BeginEndless).
+    public void BeginEndless() { Endless = true; enemies.BeginEndless(); }
+
+    public void Stop() { Active = false; Endless = false; finished = false; if (PlayerHealth.Instance) PlayerHealth.Instance.SetAllowed(PlayerHealth.Max); enemies.Clear(); CloseResult(); hud.gameObject.SetActive(false); door.gameObject.SetActive(false); }
 
     // R ile yeniden başlatma bölümün süresini ve durumunu da sıfırlar.
-    public void OnRunRestarted() { if (!Active) return; Elapsed = 0; finished = false; enemies.Begin(Def); }
+    public void OnRunRestarted() { if (Endless) { enemies.BeginEndless(); return; } if (!Active) return; Elapsed = 0; finished = false; enemies.Begin(Def); }
 
     void Update()
     {
         if (!Active || finished || GameFlow.IsMenu) return;
         Elapsed += Time.deltaTime;
         bool done;
-        if (Def.kind == GoalKind.Coins) done = tower.player.Score >= Def.target;
+        if (Def.kind == GoalKind.Survive) done = Elapsed >= Def.survive;
+        else if (Def.kind == GoalKind.Coins) done = tower.player.Score >= Def.target;
         else
         {
             var p = tower.player.transform.position;
@@ -93,23 +99,23 @@ public class LevelRun : MonoBehaviour
         }
         if (!Active || finished) return;
         string foes = Def.HasEnemies ? "  •  " + Def.EnemyText : "";
-        string goal = Def.kind == GoalKind.Floor
-            ? "BÖLÜM " + Def.number + "  •  KAT " + Mathf.Max(0, tower.HighestReachedFloor + 1) + " / " + Def.target + foes
-            : "BÖLÜM " + Def.number + "  •  COIN " + tower.player.Score + " / " + Def.target + foes;
+        string head = "BÖLÜM " + Def.number + "  •  " + Def.TierName;
+        string goal = Def.kind == GoalKind.Floor ? head + "  •  KAT " + Mathf.Max(0, tower.HighestReachedFloor + 1) + " / " + Def.target + foes
+            : Def.kind == GoalKind.Coins ? head + "  •  COIN " + tower.player.Score + " / " + Def.target + foes
+            : head + "  •  HAYATTA KAL" + foes;
         string time;
-        if (Def.HardLimit) time = "KALAN SÜRE " + LevelDefs.Clock(Def.limit - Elapsed);
+        if (Def.kind == GoalKind.Survive) time = "KALAN SÜRE " + LevelDefs.Clock(Def.survive - Elapsed);
+        else if (Def.HardLimit) time = "KALAN SÜRE " + LevelDefs.Clock(Def.limit - Elapsed);
         else time = "SÜRE " + LevelDefs.Clock(Elapsed);
-        string next = Elapsed <= Def.threeStarTime ? "  •  3 YILDIZ: " + LevelDefs.Clock(Def.threeStarTime)
-            : Elapsed <= Def.twoStarTime ? "  •  2 YILDIZ: " + LevelDefs.Clock(Def.twoStarTime) : "  •  1 YILDIZ";
+        int lost = PlayerHealth.Instance ? PlayerHealth.Instance.Lost : 0;
+        string next = "  •  ŞU AN " + Def.StarsFor(Elapsed, lost) + " YILDIZ";
         hud.text = goal + "\n" + time + next;
     }
-
-    int StarsFor(float time) => 1 + (time <= Def.twoStarTime ? 1 : 0) + (time <= Def.threeStarTime ? 1 : 0);
 
     void Finish(bool win, string reason = null)
     {
         finished = true; enemies.Clear(); if (win) SesAtolyesi.Ses.Pickup();
-        int stars = win ? StarsFor(Elapsed) : 0;
+        int stars = win ? Def.StarsFor(Elapsed, PlayerHealth.Instance ? PlayerHealth.Instance.Lost : 0) : 0;
         if (win) LevelDefs.SaveStars(Def.number, stars);
         flow.Hold(true);
         ShowResult(win, stars, reason);
@@ -130,11 +136,12 @@ public class LevelRun : MonoBehaviour
         if (win)
         {
             UiArt.Label(t, font, "SÜRE  " + LevelDefs.Clock(Elapsed), .5f, .52f, 800, 50, 26, new Color(1, .86f, .66f));
-            Condition(t, .45f, "Bölümü tamamla", true);
-            Condition(t, .40f, LevelDefs.Clock(Def.twoStarTime) + " içinde bitir", Elapsed <= Def.twoStarTime);
-            Condition(t, .35f, LevelDefs.Clock(Def.threeStarTime) + " içinde bitir", Elapsed <= Def.threeStarTime);
+            var rules = Def.StarRules;
+            Condition(t, .45f, rules[0], true);
+            Condition(t, .40f, rules[1], stars >= 2);
+            Condition(t, .35f, rules[2], stars >= 3);
         }
-        else UiArt.Label(t, font, reason == "CAN BİTTİ" ? "Üç darbede düştün. Bir daha dene." : "Bu bölümü " + LevelDefs.Clock(Def.limit) + " içinde bitirmelisin.", .5f, .50f, 900, 60, 24, new Color(.85f, .75f, .7f));
+        else UiArt.Label(t, font, reason == "CAN BİTTİ" ? "Tüm canlarını (" + Def.hearts + ") kaybettin. Bir daha dene." : "Bu bölümü " + LevelDefs.Clock(Def.limit) + " içinde bitirmelisin.", .5f, .50f, 900, 60, 24, new Color(.85f, .75f, .7f));
         int n = Def.number;
         float y = .24f;
         if (win && n < LevelDefs.Count) { UiArt.Btn(t, font, "SONRAKİ BÖLÜM", .5f, y, 440, 70, () => { flow.Hold(false); flow.StartLevel(n + 1); }); y -= .09f; }

@@ -4,58 +4,87 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 using TMPro;
 
-public enum GoalKind { Floor, Coins }
+public enum GoalKind { Floor, Coins, Survive }
 
 public struct LevelDef
 {
-    public int number, target;
+    public int number, target, tier, hearts, zombies, goblins;
     public GoalKind kind;
-    public float twoStarTime, threeStarTime, limit; // limit > 0: süre dolunca bölüm kaybedilir
-    public int zombies, goblins;
+    public float twoStarTime, threeStarTime, limit, survive; // limit > 0: süre dolunca bölüm kaybedilir; survive: hayatta kalma süresi
     public float enemySpeed;
     public bool HardLimit => limit > 0;
     public bool HasEnemies => zombies + goblins > 0;
     public string EnemyText => zombies > 0 && goblins > 0 ? "ZOMBİ x" + zombies + " + GOBLİN x" + goblins : zombies > 0 ? "ZOMBİ x" + zombies : goblins > 0 ? "GOBLİN x" + goblins : "";
-    public string Goal => kind == GoalKind.Floor ? target + ". kata çık, kapıdan geç" : target + " coin topla";
+    public string Goal => kind == GoalKind.Floor ? target + ". kata çık, kapıdan geç" : kind == GoalKind.Coins ? target + " coin topla" : LevelDefs.Clock(survive) + " boyunca hayatta kal";
+    public string TierName => LevelDefs.TierNames[tier];
+    public Color TierColor => LevelDefs.TierColors[tier];
+    public bool Timed => kind != GoalKind.Survive && twoStarTime > 0;
+
+    // 1 yıldız: bölümü bitir. 2 yıldız: süre (hayatta kalmada en çok 1 can kaybı). 3 yıldız: süre + hiç can kaybetmemek.
+    public string[] StarRules => kind == GoalKind.Survive
+        ? new[] { "Süreyi tamamla", "En çok 1 can kaybet", "Hiç can kaybetme" }
+        : new[] { "Bölümü tamamla", LevelDefs.Clock(twoStarTime) + " içinde bitir", LevelDefs.Clock(threeStarTime) + " içinde, hiç can kaybetmeden bitir" };
+
+    public int StarsFor(float time, int livesLost)
+    {
+        if (kind == GoalKind.Survive) return 1 + (livesLost <= 1 ? 1 : 0) + (livesLost == 0 ? 1 : 0);
+        return 1 + (time <= twoStarTime ? 1 : 0) + (time <= threeStarTime && livesLost == 0 ? 1 : 0);
+    }
 }
 
 public static class LevelDefs
 {
-    public const int Count = 100;
+    public const int Count = 100, PerTier = 20;
+    public static readonly string[] TierNames = { "ÇIRAK", "GEZGİN", "USTA", "UZMAN", "EFSANE" };
+    public static readonly Color[] TierColors =
+    {
+        new Color(.5f, .88f, .5f), new Color(.42f, .76f, 1f), new Color(.78f, .58f, 1f), new Color(1f, .62f, .3f), new Color(1f, .36f, .36f)
+    };
 
-    // 1. bölüm 5 kat/coin, 100. bölüm 100 kat. Tek numaralı bölümler kat, çift numaralılar coin hedefidir; 100. bölüm kat hedefidir.
-    // Her 5. bölüm (100 hariç) süreli: 2 yıldız süresi aşılırsa bölüm kaybedilir.
+    // 100 bölüm, 5 zorluk kademesi (20'şer bölüm): Çırak, Gezgin, Usta, Uzman, Efsane.
+    // Kademe içinde 4 bölümlük döngü: kat hedefi, coin hedefi, hayatta kal (Çırak'ta kat), az canlı kat hedefi.
+    // Her 5. bölüm (100 ve hayatta kalma hariç) süreli: 2 yıldız süresi aşılırsa bölüm kaybedilir.
+    // Uzman ve Efsane kademelerinde yalnız 2 can vardır; "az canlı" bölümlerde can bir daha azalır.
     public static LevelDef Get(int n)
     {
         n = Mathf.Clamp(n, 1, Count);
         var d = new LevelDef { number = n };
-        d.kind = n == Count || n % 2 == 1 ? GoalKind.Floor : GoalKind.Coins;
+        d.tier = (n - 1) / PerTier;
+        int p = (n - 1) % PerTier + 1, phase = p % 4;
+        d.kind = n == Count ? GoalKind.Floor : phase == 2 ? GoalKind.Coins : phase == 3 && d.tier > 0 ? GoalKind.Survive : GoalKind.Floor;
         d.target = Mathf.RoundToInt(5 + (n - 1) * 95f / 99f);
-        float two = Round5(15 + d.target * 5f), three = Round5(10 + d.target * 3.2f);
+        int baseHearts = d.tier >= 3 ? 2 : 3;
+        d.hearts = n == Count ? 2 : phase == 0 ? Mathf.Max(d.tier == 0 ? 2 : 1, baseHearts - 1) : baseHearts;
+        if (d.kind == GoalKind.Survive) d.hearts = 3; // hayatta kalmada 2. yıldız "en çok 1 can" şartıdır
+        AssignEnemies(ref d, p);
+        if (d.kind == GoalKind.Survive)
+        {
+            d.survive = Round5(40 + d.tier * 15 + p);
+            return d;
+        }
+        float shrink = 1 - d.tier * .04f;
+        float two = Round5((15 + d.target * 5f) * shrink), three = Round5((10 + d.target * 3.2f) * shrink);
         if (n % 5 == 0 && n < Count) { d.limit = two; two = Round5(two * .8f); }
         d.twoStarTime = two; d.threeStarTime = Mathf.Min(three, two - 5);
-        AssignEnemies(ref d);
         return d;
     }
 
-    // 1-30: düşman yok. 31-50: yalnız zombi (1, sonra 2). 51-70: yalnız goblin (1, sonra 2).
-    // 71-99: dört bölümlük döngü — zombi sürüsü(3), karışık, goblin sürüsü(3), karışık. 100: 2 zombi + 2 goblin.
-    static void AssignEnemies(ref LevelDef d)
+    // Çırak: 1-15 düşmansız, 16-20 tek zombi. Gezgin: zombi (1, sonra 2), her 4. bölümde ek goblin.
+    // Usta: goblin (1, sonra 2), çift numaralı bölümlerde ek zombi. Uzman: 2 zombi + 2 goblin (her 4. bölümde 3 goblin).
+    // Efsane: 3 zombi + 2 goblin (her 4. bölümde 3 goblin). 100. bölüm: 3 zombi + 3 goblin.
+    static void AssignEnemies(ref LevelDef d, int p)
     {
         int n = d.number;
-        if (n <= 30) return;
-        d.enemySpeed = Mathf.Min(1.5f, 1 + (n - 31) * .01f);
-        if (n <= 50) d.zombies = n < 41 ? 1 : 2;
-        else if (n <= 70) d.goblins = n < 61 ? 1 : 2;
-        else if (n == Count) { d.zombies = 2; d.goblins = 2; }
-        else
-            switch (n % 4)
-            {
-                case 0: d.zombies = 3; break;
-                case 2: d.goblins = 3; break;
-                case 1: d.zombies = n < 85 ? 1 : 2; d.goblins = 1; break;
-                default: d.zombies = 1; d.goblins = n < 85 ? 1 : 2; break;
-            }
+        switch (d.tier)
+        {
+            case 0: if (n >= 16) d.zombies = 1; break;
+            case 1: d.zombies = n < 31 ? 1 : 2; d.goblins = p % 4 == 0 ? 1 : 0; break;
+            case 2: d.goblins = n < 51 ? 1 : 2; d.zombies = p % 2 == 0 ? 1 : 0; break;
+            case 3: d.zombies = 2; d.goblins = p % 4 == 0 ? 3 : 2; break;
+            default: d.zombies = 3; d.goblins = p % 4 == 0 ? 3 : 2; break;
+        }
+        if (n == Count) { d.zombies = 3; d.goblins = 3; }
+        if (d.HasEnemies) d.enemySpeed = Mathf.Min(1.6f, 1 + d.tier * .08f + (p - 1) * .006f);
     }
 
     static float Round5(float v) => Mathf.Max(5, Mathf.Round(v / 5) * 5);
