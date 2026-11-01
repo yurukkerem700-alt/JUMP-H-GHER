@@ -13,7 +13,7 @@ public class GameDeviceLayout : MonoBehaviour
     public RectTransform titlePanel;
     public RectTransform scorePanel;
     public static float HorizontalLimit { get; private set; } = 9.5f;
-    Camera gameCamera;
+    Camera gameCamera, floorCamera;
     MovingPlatform2D[] platforms;
     Transform leftWall, rightWall;
     int lastWidth, lastHeight;
@@ -60,6 +60,17 @@ public class GameDeviceLayout : MonoBehaviour
     {
         bool portrait = height > width;
         gameCamera.rect = touchEnabled && portrait ? new Rect(0, .16f, 1, .84f) : new Rect(0, 0, 1, 1);
+        // Oyun kamerası ekranın alt %16'sına çizmez; telefonda (iOS Safari) orası temizlenmediği için eski kare/menü
+        // kalıntıları kalıyordu. Tüm ekranı her karede koyu renge boyayan boş bir kamera bunu önler.
+        if (!floorCamera)
+        {
+            var go = new GameObject("Zemin Kamerası"); go.transform.SetParent(transform, false);
+            floorCamera = go.AddComponent<Camera>();
+            floorCamera.clearFlags = CameraClearFlags.SolidColor; floorCamera.backgroundColor = new Color(.035f, .025f, .045f);
+            floorCamera.cullingMask = 0; floorCamera.orthographic = true; floorCamera.rect = new Rect(0, 0, 1, 1);
+        }
+        floorCamera.depth = gameCamera.depth - 10;
+        floorCamera.enabled = gameCamera.rect.height < 1;
         float aspect = (float)width / (height * gameCamera.rect.height);
         gameCamera.aspect = aspect;
         HorizontalLimit = Mathf.Clamp(gameCamera.orthographicSize * aspect - .3f, 1.7f, 9.5f);

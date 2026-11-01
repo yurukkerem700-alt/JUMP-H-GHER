@@ -25,21 +25,52 @@ public class SettingsScreen
         UiArt.Btn(t, font, "GERİ", .14f, .95f, 190, 66, () => back());
         UiArt.Btn(t, font, "SIFIRLA", .86f, .95f, 220, 66, () => { GameSettings.ResetJoystick(); Refresh(); });
 
-        var legend = UiArt.Label(t, font, "JOYSTICK  (telefon ve tablet)", .5f, .875f, 800, 40, 22, new Color(.75f, .66f, .62f));
-        legend.rectTransform.anchorMin = new Vector2(.05f, .875f); legend.rectTransform.anchorMax = new Vector2(.95f, .875f); legend.rectTransform.sizeDelta = new Vector2(0, 40);
+        // Satırlar kaydırılan bir alanda: küçük ekranlarda ve yatay modda üst üste binmesin.
+        var view = new GameObject("Kaydırma Alanı", typeof(RectTransform), typeof(Image), typeof(RectMask2D), typeof(ScrollRect)); view.transform.SetParent(t, false);
+        var vr = view.GetComponent<RectTransform>(); vr.anchorMin = Vector2.zero; vr.anchorMax = new Vector2(1, .9f); vr.offsetMin = vr.offsetMax = Vector2.zero;
+        view.GetComponent<Image>().color = new Color(0, 0, 0, 0);
+        var contentGo = new GameObject("İçerik", typeof(RectTransform)); contentGo.transform.SetParent(view.transform, false);
+        content = contentGo.GetComponent<RectTransform>(); content.anchorMin = new Vector2(0, 1); content.anchorMax = new Vector2(1, 1); content.pivot = new Vector2(.5f, 1);
+        content.sizeDelta = new Vector2(0, ContentHeight); content.anchoredPosition = Vector2.zero;
+        scroll = view.GetComponent<ScrollRect>(); scroll.viewport = vr; scroll.content = content; scroll.horizontal = false; scroll.vertical = true;
+        scroll.movementType = ScrollRect.MovementType.Clamped; scroll.scrollSensitivity = 40;
+        var c = content;
 
-        enabledText = Toggle(t, .81f, "Joystick", () => GameSettings.JoyEnabled = !GameSettings.JoyEnabled);
-        visibleText = Toggle(t, .74f, "Görünüm", () => GameSettings.JoyVisible = !GameSettings.JoyVisible);
-        x = Row(t, .67f, "Konum yatay", .15f, .85f, v => GameSettings.JoyX = v, out xv);
-        y = Row(t, .60f, "Konum dikey", .12f, .32f, v => GameSettings.JoyY = v, out yv);
-        size = Row(t, .53f, "Boyut", .6f, 1.5f, v => GameSettings.JoySize = v, out sizev);
-        opacity = Row(t, .46f, "Şeffaflık", .1f, 1f, v => GameSettings.JoyOpacity = v, out opv);
-        sens = Row(t, .39f, "Hassasiyet", .5f, 1.5f, v => GameSettings.JoySensitivity = v, out sensv);
+        Legend(c, 0, "JOYSTICK  (telefon ve tablet)");
+        enabledText = Toggle(c, 1, "Joystick", () => GameSettings.JoyEnabled = !GameSettings.JoyEnabled);
+        visibleText = Toggle(c, 2, "Görünüm", () => GameSettings.JoyVisible = !GameSettings.JoyVisible);
+        x = Row(c, 3, "Konum yatay", .15f, .85f, v => GameSettings.JoyX = v, out xv);
+        y = Row(c, 4, "Konum dikey", .12f, .32f, v => GameSettings.JoyY = v, out yv);
+        size = Row(c, 5, "Boyut", .6f, 1.5f, v => GameSettings.JoySize = v, out sizev);
+        opacity = Row(c, 6, "Şeffaflık", .1f, 1f, v => GameSettings.JoyOpacity = v, out opv);
+        sens = Row(c, 7, "Hassasiyet", .5f, 1.5f, v => GameSettings.JoySensitivity = v, out sensv);
+
+        Legend(c, 8, "DÜĞMELER  (< > ZIPLA, joystick KAPALIYKEN)");
+        bsize = Row(c, 9, "Boyut", .5f, 1.8f, v => GameSettings.BtnSize = v, out bsizev);
+        bopacity = Row(c, 10, "Şeffaflık", .1f, 1f, v => GameSettings.BtnOpacity = v, out bopv);
+        mx = Row(c, 11, "< > sağa", 0f, .45f, v => GameSettings.MoveX = v, out mxv);
+        my = Row(c, 12, "< > yukarı", 0f, .6f, v => GameSettings.MoveY = v, out myv);
+        jx = Row(c, 13, "ZIPLA sola", 0f, .45f, v => GameSettings.JumpX = v, out jxv);
+        jy = Row(c, 14, "ZIPLA yukarı", 0f, .6f, v => GameSettings.JumpY = v, out jyv);
         root.SetActive(false);
     }
 
-    TextMeshProUGUI Toggle(Transform parent, float cy, string label, Action flip)
+    const float ContentHeight = 1080, RowGap = 68, FirstRow = 50;
+    RectTransform content; ScrollRect scroll;
+    Slider bsize, bopacity, mx, my, jx, jy;
+    TextMeshProUGUI bsizev, bopv, mxv, myv, jxv, jyv;
+    static float RowY(int i) => 1f - (FirstRow + i * RowGap) / ContentHeight;
+
+    void Legend(Transform parent, int i, string text)
     {
+        float cy = RowY(i);
+        var legend = UiArt.Label(parent, font, text, .5f, cy, 800, 40, 22, new Color(.75f, .66f, .62f));
+        legend.rectTransform.anchorMin = new Vector2(.05f, cy); legend.rectTransform.anchorMax = new Vector2(.95f, cy); legend.rectTransform.sizeDelta = new Vector2(0, 40);
+    }
+
+    TextMeshProUGUI Toggle(Transform parent, int index, string label, Action flip)
+    {
+        float cy = RowY(index);
         Caption(parent, cy, label);
         var button = UiArt.Btn(parent, font, "", .7f, cy, 330, 60, () => { flip(); Refresh(); });
         return button.GetComponentInChildren<TextMeshProUGUI>();
@@ -51,8 +82,9 @@ public class SettingsScreen
         l.alignment = TextAlignmentOptions.Left; l.rectTransform.pivot = new Vector2(0, .5f);
     }
 
-    Slider Row(Transform parent, float cy, string label, float min, float max, Action<float> set, out TextMeshProUGUI value)
+    Slider Row(Transform parent, int index, string label, float min, float max, Action<float> set, out TextMeshProUGUI value)
     {
+        float cy = RowY(index);
         Caption(parent, cy, label);
         value = UiArt.Label(parent, font, "", .92f, cy, 120, 50, 22, new Color(1, .81f, .59f));
         var s = MakeSlider(parent, cy, min, max);
@@ -92,6 +124,12 @@ public class SettingsScreen
         Set(size, sizev, GameSettings.JoySize, v => Mathf.RoundToInt(v * 100) + "%");
         Set(opacity, opv, GameSettings.JoyOpacity, v => Mathf.RoundToInt(v * 100) + "%");
         Set(sens, sensv, GameSettings.JoySensitivity, v => v.ToString("0.0") + "x");
+        Set(bsize, bsizev, GameSettings.BtnSize, v => Mathf.RoundToInt(v * 100) + "%");
+        Set(bopacity, bopv, GameSettings.BtnOpacity, v => Mathf.RoundToInt(v * 100) + "%");
+        Set(mx, mxv, GameSettings.MoveX, v => Mathf.RoundToInt(v * 100) + "%");
+        Set(my, myv, GameSettings.MoveY, v => Mathf.RoundToInt(v * 100) + "%");
+        Set(jx, jxv, GameSettings.JumpX, v => Mathf.RoundToInt(v * 100) + "%");
+        Set(jy, jyv, GameSettings.JumpY, v => Mathf.RoundToInt(v * 100) + "%");
     }
 
     static void Set(Slider s, TextMeshProUGUI label, float value, Func<float, string> format)
@@ -102,6 +140,6 @@ public class SettingsScreen
 
     TouchJoystick Joystick { get { var l = UnityEngine.Object.FindFirstObjectByType<GameDeviceLayout>(); return l ? l.Joystick : null; } }
 
-    public void Open() { Refresh(); root.SetActive(true); var j = Joystick; if (j) j.SetPreview(true); }
+    public void Open() { Refresh(); root.SetActive(true); scroll.verticalNormalizedPosition = 1; var j = Joystick; if (j) j.SetPreview(true); }
     public void Close() { root.SetActive(false); var j = Joystick; if (j) j.SetPreview(false); }
 }

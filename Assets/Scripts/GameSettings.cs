@@ -15,9 +15,17 @@ public static class GameSettings
     public static float JoyOpacity { get => Get("JoyOpacity", .6f); set => Put("JoyOpacity", value); }
     public static float JoySensitivity { get => Get("JoySens", 1f); set => Put("JoySens", value); }
 
+    // Joystick kapalıyken görünen < > ZIPLA düğmeleri. Konumlar varsayılandan kayma oranıdır (ekran genişliği / yüksekliği).
+    public static float BtnSize { get => Get("BtnSize", 1f); set => Put("BtnSize", value); }
+    public static float BtnOpacity { get => Get("BtnOpacity", 1f); set => Put("BtnOpacity", value); }
+    public static float MoveX { get => Get("MoveX", 0f); set => Put("MoveX", value); }   // < > grubu sağa
+    public static float MoveY { get => Get("MoveY", 0f); set => Put("MoveY", value); }   // < > grubu yukarı
+    public static float JumpX { get => Get("JumpX", 0f); set => Put("JumpX", value); }   // ZIPLA sola
+    public static float JumpY { get => Get("JumpY", 0f); set => Put("JumpY", value); }   // ZIPLA yukarı
+
     public static void ResetJoystick()
     {
-        foreach (var key in new[] { "JoyEnabled", "JoyVisible", "JoyX", "JoyY", "JoySize", "JoyOpacity", "JoySens" }) PlayerPrefs.DeleteKey(key);
+        foreach (var key in new[] { "JoyEnabled", "JoyVisible", "JoyX", "JoyY", "JoySize", "JoyOpacity", "JoySens", "BtnSize", "BtnOpacity", "MoveX", "MoveY", "JumpX", "JumpY" }) PlayerPrefs.DeleteKey(key);
         PlayerPrefs.Save(); Changed?.Invoke();
     }
 

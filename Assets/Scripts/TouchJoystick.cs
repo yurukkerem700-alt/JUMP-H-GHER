@@ -56,10 +56,71 @@ public class TouchJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler, I
     });
 
     // Ayarlar açıkken halkayı ayar paneli üstünde göstermek için.
-    public void SetPreview(bool on) { preview = on; canvas.sortingOrder = on ? 1001 : 850; Apply(); }
+    public void SetPreview(bool on)
+    {
+        preview = on; canvas.sortingOrder = on ? 1001 : 850;
+        // Düğmeler ayar panelinin üstünde canlı görünsün; ayar satırlarına dokunuşu engellemesinler.
+        var tc = layout ? layout.touchControls : null;
+        if (tc)
+        {
+            var c = tc.GetComponent<Canvas>();
+            if (!c) { c = tc.AddComponent<Canvas>(); tc.AddComponent<GraphicRaycaster>(); }
+            c.overrideSorting = on; c.sortingOrder = 1001;
+            tc.GetComponent<GraphicRaycaster>().enabled = !on;
+        }
+        Apply();
+    }
 
     // Eski sol / sağ / zıpla düğmeleri joystick kapalıyken geri gelir.
     public void SetLegacyButtons(GameObject[] buttons) { legacyButtons = buttons; Apply(); }
+
+    struct Base { public Vector2 pos, size; }
+    readonly System.Collections.Generic.Dictionary<RectTransform, Base> baseRects = new System.Collections.Generic.Dictionary<RectTransform, Base>();
+    Vector2 lastParentSize;
+
+    // < > ZIPLA düğmelerinin boyut, şeffaflık ve konum ayarı. Başlangıç değerleri ilk çağrıda sahneden okunur.
+    void ApplyButtons()
+    {
+        float size = Mathf.Clamp(GameSettings.BtnSize, .5f, 1.8f), alpha = Mathf.Clamp(GameSettings.BtnOpacity, .1f, 1f);
+        float originX = 0; bool haveOrigin = false;
+        foreach (var go in legacyButtons)
+        {
+            if (!go) continue;
+            var rt = (RectTransform)go.transform;
+            if (!baseRects.ContainsKey(rt)) baseRects[rt] = new Base { pos = rt.anchoredPosition, size = rt.sizeDelta };
+            var tcb = go.GetComponent<TouchControlButton>();
+            if (tcb && tcb.action != TouchControlButton.Action.Jump) { float x = baseRects[rt].pos.x; originX = haveOrigin ? Mathf.Min(originX, x) : x; haveOrigin = true; }
+        }
+        foreach (var go in legacyButtons)
+        {
+            if (!go) continue;
+            var rt = (RectTransform)go.transform; var parent = rt.parent as RectTransform; var b = baseRects[rt];
+            float w = parent ? parent.rect.width : 0, h = parent ? parent.rect.height : 0;
+            if (parent) lastParentSize = new Vector2(w, h);
+            if (!go.TryGetComponent<CanvasGroup>(out var g)) g = go.AddComponent<CanvasGroup>();
+            g.alpha = alpha;
+            var tcb = go.GetComponent<TouchControlButton>();
+            bool jump = tcb && tcb.action == TouchControlButton.Action.Jump;
+            var size2 = b.size * size;
+            Vector2 pos;
+            if (jump) pos = new Vector2(b.pos.x - GameSettings.JumpX * w, b.pos.y + GameSettings.JumpY * h);
+            else pos = new Vector2(originX + (b.pos.x - originX) * size + GameSettings.MoveX * w, b.pos.y + GameSettings.MoveY * h);
+            if (w > 0)
+            {
+                // Her zaman ekranın içinde kal (jump sağa, diğerleri sola sabitli).
+                if (jump) pos.x = Mathf.Clamp(pos.x, -(w - size2.x), 0);
+                else pos.x = Mathf.Clamp(pos.x, 0, Mathf.Max(0, w - size2.x));
+                pos.y = Mathf.Clamp(pos.y, 0, Mathf.Max(0, h - size2.y));
+            }
+            rt.sizeDelta = size2; rt.anchoredPosition = pos;
+        }
+    }
+
+    void LateUpdate()
+    {
+        var p = legacyButtons.Length > 0 && legacyButtons[0] ? legacyButtons[0].transform.parent as RectTransform : null;
+        if (p && (Vector2)p.rect.size != lastParentSize) ApplyButtons();
+    }
 
     bool Wanted => GameSettings.JoyEnabled && layout && layout.TouchEnabled;
 
@@ -80,6 +141,7 @@ public class TouchJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler, I
         visual.localScale = Vector3.one * size;
         group.alpha = GameSettings.JoyVisible || preview ? Mathf.Clamp01(GameSettings.JoyOpacity) : 0;
         foreach (var b in legacyButtons) if (b) b.SetActive(!GameSettings.JoyEnabled);
+        ApplyButtons();
         if (!Wanted) Release();
     }
 
