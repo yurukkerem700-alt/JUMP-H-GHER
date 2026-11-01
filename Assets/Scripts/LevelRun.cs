@@ -12,7 +12,7 @@ public class LevelRun : MonoBehaviour
     public LevelDef Def { get; private set; }
     public float Elapsed { get; private set; }
     GameFlow flow; InfiniteTower tower; TMP_FontAsset font;
-    Canvas canvas; TextMeshProUGUI hud; GameObject result;
+    Canvas canvas; TextMeshProUGUI hud; GameObject result, hudBack;
     Transform door; SpriteRenderer doorGlow;
     EnemyManager enemies;
     bool finished;
@@ -24,8 +24,12 @@ public class LevelRun : MonoBehaviour
     {
         flow = owner; tower = t; font = t.floorLabel.font;
         canvas = UiArt.NewCanvas("Bölüm Arayüzü", 900);
+        // Yazının arkasından geçen platformlar okunurluğu bozmasın diye koyu yarı saydam zemin.
+        hudBack = new GameObject("HUD Zemin", typeof(Image)); hudBack.transform.SetParent(canvas.transform, false);
+        var hb = hudBack.GetComponent<Image>(); hb.color = new Color(.05f, .03f, .05f, .55f); hb.raycastTarget = false;
+        var hr = hb.rectTransform; hr.anchorMin = hr.anchorMax = new Vector2(.5f, .815f); hr.sizeDelta = new Vector2(780, 80);
         hud = UiArt.Label(canvas.transform, font, "", .5f, .815f, 900, 90, 24, new Color(1, .86f, .66f));
-        hud.richText = true; hud.gameObject.SetActive(false);
+        hud.richText = true; hud.gameObject.SetActive(false); hudBack.SetActive(false);
         BuildDoor();
         enemies = gameObject.AddComponent<EnemyManager>(); enemies.Init(t);
         if (PlayerHealth.Instance) PlayerHealth.Instance.Died += OnPlayerDied;
@@ -66,7 +70,7 @@ public class LevelRun : MonoBehaviour
     // Sonsuz mod: düşmanlar yüksekliğe göre kendiliğinden artar (EnemyManager.BeginEndless).
     public void BeginEndless() { Endless = true; enemies.BeginEndless(); }
 
-    public void Stop() { Active = false; Endless = false; finished = false; if (PlayerHealth.Instance) PlayerHealth.Instance.SetAllowed(PlayerHealth.Max); enemies.Clear(); CloseResult(); hud.gameObject.SetActive(false); door.gameObject.SetActive(false); }
+    public void Stop() { Active = false; Endless = false; finished = false; if (PlayerHealth.Instance) PlayerHealth.Instance.SetAllowed(PlayerHealth.Max); enemies.Clear(); CloseResult(); hud.gameObject.SetActive(false); hudBack.SetActive(false); door.gameObject.SetActive(false); }
 
     // R ile yeniden başlatma bölümün süresini ve durumunu da sıfırlar.
     public void OnRunRestarted() { if (Endless) { enemies.BeginEndless(); return; } if (!Active) return; Elapsed = 0; finished = false; enemies.Begin(Def); }
@@ -89,7 +93,9 @@ public class LevelRun : MonoBehaviour
 
     void LateUpdate()
     {
-        hud.gameObject.SetActive(Active && !finished);
+        hud.gameObject.SetActive(Active && !finished); hudBack.SetActive(Active && !finished);
+        // Bölüm HUD'u aynı yerde durduğu için kule modunun "KAT • tema" yazısını bölümde gizle (üst üste biniyordu).
+        if (tower.floorLabel) tower.floorLabel.enabled = !(Active && !finished);
         var platform = Active && !finished && Def.kind == GoalKind.Floor ? tower.GetPlatform(Def.target - 1) : null;
         door.gameObject.SetActive(platform);
         if (platform)
