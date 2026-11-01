@@ -18,7 +18,7 @@ class EnemyArt
         if (cache.TryGetValue(kind, out var art) && art.frames[0]) return art;
         string name = kind == EnemyKind.Zombie ? "Zombie" : "Goblin";
         float referencePixels = kind == EnemyKind.Zombie ? 305 : 229; // 21. / 22. karenin sıkı yüksekliği
-        float target = kind == EnemyKind.Zombie ? 1.7f : 1.25f;
+        float target = kind == EnemyKind.Zombie ? 2.2f : 1.65f;
         var texture = Resources.Load<Texture2D>("Enemies/" + name);
         var meta = JsonUtility.FromJson<Meta>(Resources.Load<TextAsset>("Enemies/" + name).text);
         int rows = Mathf.CeilToInt(meta.frames / (float)meta.cols);
@@ -33,6 +33,7 @@ class EnemyArt
 
 class Enemy
 {
+    public float attackSoundAt;
     public const int Stand = 0, Leap = 1, Climb = 2, Land = 3;
     public EnemyKind kind; public GameObject go; public SpriteRenderer sr; public EnemyArt art;
     public int floor, state, toFloor; public float offset, toOffset, side = 1, t0, dur, readyAt, staggerUntil, spawnedAt, waitSince;
@@ -130,6 +131,7 @@ public class EnemyManager : MonoBehaviour
         float half = Half(plat);
         var e = new Enemy { kind = slot.kind, go = go, sr = sr, art = art, floor = floor, offset = Random.Range(-half + .3f, half - .3f), spawnedAt = Time.time, readyAt = Time.time + .4f, waitSince = Time.time };
         slot.enemy = e; Place(e, StandPos(plat, e.offset));
+        EnemySfx.Play(slot.kind == EnemyKind.Zombie ? EnemySound.ZombieSpawn : EnemySound.GoblinSpawn, 1f);
     }
 
     static float Half(MovingPlatform2D plat)
@@ -277,7 +279,12 @@ public class EnemyManager : MonoBehaviour
         var pos = e.go.transform.position;
         float centerY = pos.y + e.art.height * (zombie && e.state == Enemy.Climb ? .6f : .45f);
         var p = tower.player.transform.position;
-        if (Mathf.Abs(p.x - pos.x) < (zombie ? .55f : .6f) && Mathf.Abs(p.y - centerY) < (zombie ? .85f : .7f) && health.Hit()) e.staggerUntil = now + 1.2f;
+        float scale = e.art.height / (zombie ? 1.35f : 1f);
+        var attackSound = zombie ? EnemySound.ZombieAttack : EnemySound.GoblinAttack;
+        float dx = Mathf.Abs(p.x - pos.x), dy = Mathf.Abs(p.y - centerY);
+        // Yaklaşırken saldırı narası (yakın ve aynı hizada), arada bekleme ile.
+        if (dx < 2.2f && dy < 1.4f * scale && now >= e.attackSoundAt) { e.attackSoundAt = now + 1.6f; EnemySfx.Play(attackSound, .8f); }
+        if (dx < (zombie ? .55f : .6f) * scale && dy < (zombie ? .85f : .7f) * scale && health.Hit()) { e.staggerUntil = now + 1.2f; e.attackSoundAt = now + 1.6f; EnemySfx.Play(attackSound, 1f); }
     }
 
     // Ekranın altında kalan düşmanlar için altta kırmızı uyarı noktası.
@@ -297,5 +304,5 @@ public class EnemyManager : MonoBehaviour
         for (int i = used; i < markers.Length; i++) markers[i].gameObject.SetActive(false);
     }
 
-    void OnDestroy() { Clear(); EnemyArt.Release(); if (canvas) Destroy(canvas.gameObject); }
+    void OnDestroy() { Clear(); EnemyArt.Release(); EnemySfx.Release(); if (canvas) Destroy(canvas.gameObject); }
 }

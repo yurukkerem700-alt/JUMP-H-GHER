@@ -31,7 +31,9 @@ public class GameDeviceLayout : MonoBehaviour
     void Start()
     {
         Application.targetFrameRate = 60;
-        touchEnabled = Application.isMobilePlatform || Input.touchSupported;
+        // PC'de (WebGL dahil) joystick/butonlar görünmez; dokunmatik ekranlı bilgisayarlar da PC sayılır.
+        // T tuşu elle değiştirir.
+        touchEnabled = Application.isMobilePlatform;
         joystick = TouchJoystick.Create(this);
         var legacy = new System.Collections.Generic.List<GameObject>();
         foreach (var b in touchControls.GetComponentsInChildren<TouchControlButton>(true)) legacy.Add(b.gameObject);
