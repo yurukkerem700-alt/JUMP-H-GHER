@@ -27,7 +27,13 @@ public static class MapShot
         {
             var map = new LevelMap(canvas.transform, font, n => { }, () => { }, () => { });
             map.Open(); Canvas.ForceUpdateCanvases();
+            // Toplu modda LateUpdate çalışmaz: yerleşimi elle tetikle (güncel bölüm, sonra biyom geçişi görünümü).
+            var relayout = typeof(LevelMap).GetMethod("Relayout", BindingFlags.NonPublic | BindingFlags.Instance);
+            var scrollTo = typeof(LevelMap).GetMethod("ScrollTo", BindingFlags.NonPublic | BindingFlags.Instance);
+            relayout.Invoke(map, new object[] { new Vector2(1600, 900) }); Canvas.ForceUpdateCanvases();
             Shot(cam, rt, Path.Combine(outDir, "harita.png"));
+            scrollTo.Invoke(map, new object[] { 7 }); Canvas.ForceUpdateCanvases();
+            Shot(cam, rt, Path.Combine(outDir, "harita-gecis.png"));
             typeof(LevelMap).GetMethod("ShowCard", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(map, new object[] { 5 });
             Canvas.ForceUpdateCanvases();
             Shot(cam, rt, Path.Combine(outDir, "kart.png"));
