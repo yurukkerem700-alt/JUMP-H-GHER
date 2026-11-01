@@ -1,5 +1,8 @@
 """Kostüm kaynak resimlerinden oyunun beklediği 4x2 (8 kare) şeffaf sprite sayfalarını üretir.
 
+Not: Güncel kostüm sayfaları tools/costume_anim_a.py ve costume_anim_b.py ile üretilir (gerçek yürüme/zıplama kareleri).
+Bu betik yalnızca ilk, tek pozlu taslak sayfaları üretir ve onların üzerine yazar; yeniden çalıştırmayın.
+
 Gerekenler: pip install pillow numpy scipy
 Kullanım:  python tools/make_costume_sheets.py
 Girdi:     tools/costume_source/<id>.jpg   (beyaz arka planlı, tek poz, yüz sağa ya da sola)

@@ -13,6 +13,7 @@ public class CostumeScreen
     class Card { public string Id; public Image Frame, Pic; public TextMeshProUGUI State; }
 
     readonly GameObject root;
+    readonly Sprite plate;
     readonly List<Card> cards = new List<Card>();
     readonly List<Sprite> previews = new List<Sprite>();
     readonly ScrollRect scroll;
@@ -22,10 +23,23 @@ public class CostumeScreen
     {
         root = new GameObject("Kostümler", typeof(Image)); root.transform.SetParent(parent, false);
         var r = root.GetComponent<RectTransform>(); r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one; r.offsetMin = r.offsetMax = Vector2.zero;
-        root.GetComponent<Image>().color = new Color(.05f, .03f, .07f, .94f);
+        root.GetComponent<Image>().color = new Color(.035f, .025f, .045f, 1);
         var t = root.transform;
-        UiArt.Label(t, font, "KOSTÜMLER", .5f, .95f, 500, 70, 40, new Color(1, .77f, .5f));
-        UiArt.Btn(t, font, "GERİ", .14f, .95f, 190, 66, () => back());
+        plate = GameFlow.Sliced("MapPlateSide", new Vector4(36, 24, 36, 24));
+        var tex = Resources.Load<Texture2D>("UI/MapBackground");
+        if (tex)
+        {
+            // Ana menüyle aynı boyalı arka plan (haritadaki düğüm halkaları dışarıda kalacak şekilde üst bölüm), karartılmış.
+            var bg = new GameObject("Arka Plan", typeof(Image), typeof(AspectRatioFitter)); bg.transform.SetParent(t, false);
+            float cw = tex.width * .68f, ch = tex.height * .43f;
+            var bi = bg.GetComponent<Image>(); bi.sprite = Sprite.Create(tex, new Rect(tex.width - cw, tex.height - ch, cw, ch), Vector2.one * .5f, 100); bi.raycastTarget = false; bi.color = new Color(.55f, .5f, .55f);
+            var fit = bg.GetComponent<AspectRatioFitter>(); fit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent; fit.aspectRatio = cw / ch;
+            var dim = UiArt.Pic(t, null, new Color(.03f, .01f, .04f, .55f), .5f, .5f, 0, 0); dim.rectTransform.anchorMin = Vector2.zero; dim.rectTransform.anchorMax = Vector2.one; dim.rectTransform.offsetMin = dim.rectTransform.offsetMax = Vector2.zero;
+        }
+        if (plate) { var bar = UiArt.Pic(t, plate, Color.white, .5f, .95f, 520, 84); bar.type = Image.Type.Sliced; }
+        var title = UiArt.Label(t, font, "KOSTÜMLER", .5f, .95f, 500, 70, 40, new Color(1, .82f, .56f)); title.outlineColor = new Color32(30, 5, 5, 255); title.outlineWidth = .2f;
+        var backBtn = UiArt.Btn(t, font, "GERİ", .14f, .95f, 190, 66, () => back());
+        var backImg = backBtn.GetComponent<Image>(); if (plate) { backImg.sprite = plate; backImg.type = Image.Type.Sliced; backImg.color = new Color(.9f, .85f, .9f); }
 
         var view = new GameObject("Kaydırma Alanı", typeof(RectTransform), typeof(Image), typeof(RectMask2D), typeof(ScrollRect)); view.transform.SetParent(t, false);
         var vr = view.GetComponent<RectTransform>(); vr.anchorMin = Vector2.zero; vr.anchorMax = new Vector2(1, .9f); vr.offsetMin = vr.offsetMax = Vector2.zero;
@@ -51,18 +65,19 @@ public class CostumeScreen
         rect.anchoredPosition = new Vector2(0, -(Top + row * RowGap)); rect.sizeDelta = new Vector2(0, CardHeight);
         // Anchor aralığı genişlik verdiği için pivotu ortada tutmak üzere x ofseti sıfır kalır.
         var frame = go.GetComponent<Image>();
+        if (plate) { frame.sprite = plate; frame.type = Image.Type.Sliced; }
         var button = go.GetComponent<Button>(); string id = entry.Id;
         button.onClick.AddListener(() => { SesAtolyesi.Ses.UiClick(); Costumes.SelectedId = id; Refresh(); });
 
         // Önizleme sprite'ı Open() sırasında kurulur: varsayılan kostümün sayfası sahne başlarken hazır olmayabilir.
         var pic = UiArt.Pic(go.transform, null, Color.white, .5f, .6f, 0, 0);
         pic.preserveAspect = true; pic.enabled = false;
-        pic.rectTransform.anchorMin = new Vector2(.05f, .27f); pic.rectTransform.anchorMax = new Vector2(.95f, .97f);
+        pic.rectTransform.anchorMin = new Vector2(.14f, .3f); pic.rectTransform.anchorMax = new Vector2(.86f, .94f);
         pic.rectTransform.offsetMin = pic.rectTransform.offsetMax = Vector2.zero;
 
         var name = UiArt.Label(go.transform, font, entry.Name, .5f, .2f, 0, 60, 24, new Color(1, .86f, .66f));
         name.rectTransform.anchorMin = new Vector2(.02f, .2f); name.rectTransform.anchorMax = new Vector2(.98f, .2f); name.rectTransform.sizeDelta = new Vector2(0, 60);
-        name.enableAutoSizing = true; name.fontSizeMin = 14; name.fontSizeMax = 24;
+        name.enableAutoSizing = true; name.fontSizeMin = 14; name.fontSizeMax = 24; name.outlineColor = new Color32(20, 4, 4, 255); name.outlineWidth = .18f;
         var state = UiArt.Label(go.transform, font, "", .5f, .07f, 0, 50, 22, new Color(.75f, .66f, .62f));
         state.rectTransform.anchorMin = new Vector2(.02f, .07f); state.rectTransform.anchorMax = new Vector2(.98f, .07f); state.rectTransform.sizeDelta = new Vector2(0, 50);
         return new Card { Id = entry.Id, Frame = frame, Pic = pic, State = state };
@@ -75,7 +90,7 @@ public class CostumeScreen
         {
             bool on = c.Id == selected;
             if (!c.Pic.sprite) { var sprite = Costumes.Preview(c.Id); if (sprite) { previews.Add(sprite); c.Pic.sprite = sprite; c.Pic.enabled = true; } }
-            c.Frame.color = on ? new Color(.45f, .24f, .14f, .98f) : new Color(.16f, .1f, .13f, .95f);
+            c.Frame.color = plate ? (on ? new Color(1.45f, .85f, .55f, 1) : new Color(.8f, .78f, .85f, 1)) : (on ? new Color(.45f, .24f, .14f, .98f) : new Color(.16f, .1f, .13f, .95f));
             c.State.text = on ? "SEÇİLİ" : "SEÇ";
             c.State.color = on ? new Color(1, .77f, .5f) : new Color(.75f, .66f, .62f);
         }
