@@ -1,5 +1,5 @@
 // Otomatik üretildi (WebPwaExport). Her derlemede sürüm değişir.
-const VERSION='20261101125426';
+const VERSION='20261101134313';
 const CACHE='kok-yankisi-'+VERSION;
 const FILES=[
   "./",
