@@ -18,7 +18,7 @@ class EnemyArt
         if (cache.TryGetValue(kind, out var art) && art.frames[0]) return art;
         string name = kind == EnemyKind.Zombie ? "Zombie" : "Goblin";
         float referencePixels = kind == EnemyKind.Zombie ? 305 : 229; // 21. / 22. karenin sıkı yüksekliği
-        float target = kind == EnemyKind.Zombie ? 1.35f : 1.0f;
+        float target = kind == EnemyKind.Zombie ? 1.7f : 1.25f;
         var texture = Resources.Load<Texture2D>("Enemies/" + name);
         var meta = JsonUtility.FromJson<Meta>(Resources.Load<TextAsset>("Enemies/" + name).text);
         int rows = Mathf.CeilToInt(meta.frames / (float)meta.cols);
@@ -45,7 +45,7 @@ class EnemySlot { public EnemyKind kind; public Enemy enemy; public float readyA
 // Zombi: basamağın kenarına zıplayıp asılır, tırmanır. Goblin: basamaktan basamağa doğrudan zıplar.
 public class EnemyManager : MonoBehaviour
 {
-    const float FirstDelay = 6f, RespawnDelay = 2.5f;
+    const float FirstDelay = 4f, RespawnDelay = 1.5f;
     InfiniteTower tower; Material material; Canvas canvas; Image[] markers;
     readonly List<EnemySlot> slots = new List<EnemySlot>();
     LevelDef def; bool active, endless; float startAt; int playerFloor;
@@ -121,7 +121,7 @@ public class EnemyManager : MonoBehaviour
 
     void Spawn(EnemySlot slot)
     {
-        int floor = Mathf.Max(0, playerFloor - Random.Range(3, 5));
+        int floor = Mathf.Max(0, playerFloor - Random.Range(2, 4));
         var plat = tower.GetPlatform(floor);
         if (!plat) { slot.readyAt = Time.time + 1; return; }
         var art = EnemyArt.Get(slot.kind);
@@ -147,7 +147,8 @@ public class EnemyManager : MonoBehaviour
         var player = tower.player.transform.position;
         bool zombie = e.kind == EnemyKind.Zombie;
         float alpha = Mathf.Clamp01((now - e.spawnedAt) / .6f);
-        e.sr.color = new Color(1, 1, 1, alpha);
+        float pulse = .5f + .5f * Mathf.Sin(now * 6f);
+        e.sr.color = new Color(1f, 1f - .35f * pulse, 1f - .35f * pulse, alpha);
         if (e.state == Enemy.Stand)
         {
             var plat = tower.GetPlatform(e.floor); if (!plat) { e.dead = true; return; }
@@ -159,7 +160,7 @@ public class EnemyManager : MonoBehaviour
                 float want = Mathf.Clamp(player.x - plat.transform.position.x, -limit, limit);
                 float dir = Mathf.Abs(want - e.offset) < .06f ? 0 : Mathf.Sign(want - e.offset);
                 if (staggered) dir = -dir; // darbeden sonra geri çekilir
-                float run = (zombie ? 1.35f : 2.7f) * speed * (staggered ? 1.3f : 1);
+                float run = (zombie ? 2.0f : 3.4f) * speed * (staggered ? 1.3f : 1);
                 e.offset = Mathf.Clamp(e.offset + dir * run * dt, -limit, limit);
                 if (dir != 0) e.faceRight = staggered ? dir < 0 : dir > 0; else e.faceRight = player.x > posX;
             }
@@ -175,15 +176,15 @@ public class EnemyManager : MonoBehaviour
                     float hangX = HangPos(next, side, e.art.height).x;
                     float want = Mathf.Clamp(hangX - plat.transform.position.x, -limit, limit);
                     float dir = Mathf.Abs(want - e.offset) < .06f ? 0 : Mathf.Sign(want - e.offset);
-                    e.offset = Mathf.Clamp(e.offset + dir * 1.35f * speed * dt, -limit, limit);
+                    e.offset = Mathf.Clamp(e.offset + dir * 2.0f * speed * dt, -limit, limit);
                     if (dir != 0) e.faceRight = dir > 0;
-                    if (Mathf.Abs(hangX - (plat.transform.position.x + e.offset)) < 3.2f || now - e.waitSince > 3f) StartLeap(e, to, side, 0, now, .75f / speed);
+                    if (Mathf.Abs(hangX - (plat.transform.position.x + e.offset)) < 3.2f || now - e.waitSince > 1.5f) StartLeap(e, to, side, 0, now, .55f / speed);
                 }
                 else
                 {
                     float toLimit = Half(next) - .25f;
                     float toOffset = Mathf.Clamp(player.x - next.transform.position.x, -toLimit, toLimit);
-                    StartLeap(e, to, 0, toOffset, now, (zombie ? .6f : .8f) / speed);
+                    StartLeap(e, to, 0, toOffset, now, (zombie ? .5f : .6f) / speed);
                 }
             }
             if (e.state == Enemy.Stand) { var p = tower.GetPlatform(e.floor); if (p) Place(e, StandPos(p, e.offset) + Vector3.up * Bob(e, now)); }
@@ -192,6 +193,10 @@ public class EnemyManager : MonoBehaviour
         else if (e.state == Enemy.Climb) TickClimb(e, now);
         else TickLand(e, now);
         e.sr.flipX = !e.faceRight;
+        float lean = e.state == Enemy.Stand && (e.floor == playerFloor) ? (e.faceRight ? -8f : 8f) : 0;
+        float stretch = e.state == Enemy.Leap ? 1.12f : 1f + .05f * Mathf.Sin(now * 12f);
+        e.go.transform.rotation = Quaternion.Euler(0, 0, lean);
+        e.go.transform.localScale = new Vector3(1f / stretch, stretch, 1);
         e.sr.sprite = e.art.frames[FrameFor(e, now)];
     }
 
@@ -215,11 +220,11 @@ public class EnemyManager : MonoBehaviour
         e.faceRight = hang ? e.side < 0 : target.x >= e.from.x;
         if (s < 1) return;
         e.floor = e.toFloor;
-        if (hang) { e.state = Enemy.Climb; e.t0 = now; e.dur = 1.5f / def.enemySpeed; }
+        if (hang) { e.state = Enemy.Climb; e.t0 = now; e.dur = 1.0f / def.enemySpeed; }
         else
         {
-            SesWorld.EnemyLand(e.go.transform.position, tower.player.transform.position, e.toFloor); e.offset = e.toOffset; e.state = e.kind == EnemyKind.Goblin ? Enemy.Land : Enemy.Stand; e.t0 = now; e.dur = .55f;
-            e.readyAt = now + (e.kind == EnemyKind.Goblin ? .95f : .6f) / def.enemySpeed;
+            SesWorld.EnemyLand(e.go.transform.position, tower.player.transform.position, e.toFloor); e.offset = e.toOffset; e.state = e.kind == EnemyKind.Goblin ? Enemy.Land : Enemy.Stand; e.t0 = now; e.dur = .4f;
+            e.readyAt = now + (e.kind == EnemyKind.Goblin ? .5f : .35f) / def.enemySpeed;
         }
     }
 
@@ -231,7 +236,7 @@ public class EnemyManager : MonoBehaviour
         float y = Mathf.Lerp(plat.Top - e.art.height * .95f, plat.Top, s);
         Place(e, new Vector3(x, y, 0)); e.faceRight = e.side < 0;
         if (s < 1) return;
-        e.offset = e.side * (half - .45f); e.state = Enemy.Stand; e.readyAt = now + .6f / def.enemySpeed; e.waitSince = now;
+        e.offset = e.side * (half - .45f); e.state = Enemy.Stand; e.readyAt = now + .3f / def.enemySpeed; e.waitSince = now;
     }
 
     void TickLand(Enemy e, float now)
