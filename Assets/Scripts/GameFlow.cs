@@ -23,7 +23,7 @@ public class GameFlow : MonoBehaviour
         status=Text("",.41f,18,new Color(.65f,.6f,.65f));
         start=Button("OYNA",.335f,()=>{if(begun)Begin(true);else map.Open();});
         Button("BÖLÜM HARİTASI",.26f,()=>map.Open());
-        Button("NASIL OYNANIR",.185f,()=>{subtitle.text="A / D veya oklar: yürü   •   W / Boşluk: zıpla\nBölümün hedefini tamamla, hızlı bitirerek 3 yıldız topla.\nTelefon: ekranın altında parmağını sürükle, karakter o yöne gider (yukarı = zıpla)";subtitle.fontSize=18;});
+        Button("NASIL OYNANIR",.185f,()=>{subtitle.text="A / D veya oklar: yürü   •   W / Boşluk: zıpla   •   F / K: tekme (düşmanı bir kat aşağı düşürür)\nBölümün hedefini tamamla, hızlı bitirerek 3 yıldız topla.\nTelefon: ekranın altında parmağını sürükle, karakter o yöne gider (yukarı = zıpla)";subtitle.fontSize=18;});
         Button("AYARLAR",.11f,()=>settings.Open());
         Button(Application.platform==RuntimePlatform.WebGLPlayer?"TAM EKRAN":"ÇIKIŞ",.04f,()=>{if(Application.platform==RuntimePlatform.WebGLPlayer)Screen.fullScreen=!Screen.fullScreen;else Application.Quit();});
         var pause=new GameObject("Duraklat",typeof(Image),typeof(Button));pause.transform.SetParent(canvas.transform,false);pause.GetComponent<Image>().color=new Color(.16f,.1f,.15f,.8f);var pr=pause.GetComponent<RectTransform>();pr.anchorMin=pr.anchorMax=new Vector2(.5f,.96f);pr.sizeDelta=new Vector2(70,52);

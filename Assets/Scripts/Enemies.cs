@@ -34,7 +34,7 @@ class EnemyArt
 class Enemy
 {
     public float attackSoundAt;
-    public const int Stand = 0, Leap = 1, Climb = 2, Land = 3;
+    public const int Stand = 0, Leap = 1, Climb = 2, Land = 3, Fall = 4;
     public EnemyKind kind; public GameObject go; public SpriteRenderer sr; public EnemyArt art;
     public int floor, state, toFloor; public float offset, toOffset, side = 1, t0, dur, readyAt, staggerUntil, spawnedAt, waitSince;
     public Vector3 from; public bool faceRight = true, dead;
@@ -46,8 +46,10 @@ class EnemySlot { public EnemyKind kind; public Enemy enemy; public float readyA
 // Zombi: basamağın kenarına zıplayıp asılır, tırmanır. Goblin: basamaktan basamağa doğrudan zıplar.
 public class EnemyManager : MonoBehaviour
 {
-    const float FirstDelay = 4f, RespawnDelay = 1.5f;
-    InfiniteTower tower; Material material; Canvas canvas; Image[] markers;
+    const float FirstDelay = 8f, RespawnDelay = 7f, SlotGap = 4f, SpeedScale = .6f, KickCooldown = .5f, KickReach = 1.7f;
+    InfiniteTower tower; Material material; Canvas canvas, kickCanvas; Image[] markers;
+    GameObject kickButton; GameDeviceLayout layout; float kickReadyAt;
+    float Speed => def.enemySpeed * SpeedScale; // tüm düşman hızları bu çarpanla yavaşlatılır
     readonly List<EnemySlot> slots = new List<EnemySlot>();
     LevelDef def; bool active, endless; float startAt; int playerFloor;
     public int AliveCount { get { int n = 0; foreach (var s in slots) if (s.enemy != null) n++; return n; } }
@@ -59,13 +61,60 @@ public class EnemyManager : MonoBehaviour
         canvas = UiArt.NewCanvas("Düşman Göstergeleri", 870);
         markers = new Image[6];
         for (int i = 0; i < markers.Length; i++) { markers[i] = UiArt.Pic(canvas.transform, UiArt.Disc, new Color(1, .2f, .2f, .9f), 0, 0, 34, 34); markers[i].gameObject.SetActive(false); }
+        // Dokunmatik ekran için tekme düğmesi (bilgisayarda F / K / Sol Shift).
+        kickCanvas = UiArt.NewCanvas("Tekme Düğmesi", 855);
+        kickButton = UiArt.Btn(kickCanvas.transform, t.floorLabel.font, "TEKME", .88f, .34f, 190, 110, GameInput.Kick).gameObject;
+        kickButton.SetActive(false);
+    }
+
+    // Yakındaki düşmanları tekmeler: bir alt basamağa düşerler, bir süre sersemleyip geri çekilirler.
+    void TryKick(float now)
+    {
+        if (now < kickReadyAt) return;
+        kickReadyAt = now + KickCooldown;
+        SesAtolyesi.Ses.Swoosh(1f);
+        var p = tower.player.transform.position;
+        foreach (var slot in slots)
+        {
+            var e = slot.enemy;
+            if (e == null || e.dead || e.state == Enemy.Leap || e.state == Enemy.Fall) continue;
+            var pos = e.go.transform.position;
+            float dx = pos.x - p.x, centerY = pos.y + e.art.height * .45f;
+            if (Mathf.Abs(dx) > KickReach || Mathf.Abs(p.y - centerY) > 1.4f) continue;
+            Knock(e, dx >= 0 ? 1 : -1, now);
+        }
+    }
+
+    void Knock(Enemy e, float dir, float now)
+    {
+        e.staggerUntil = now + 1.8f;
+        EnemySfx.Play(e.kind == EnemyKind.Zombie ? EnemySound.ZombieHurt : EnemySound.GoblinHurt, 1f);
+        var below = e.floor > 0 ? tower.GetPlatform(e.floor - 1) : null;
+        if (!below) { e.dead = true; return; } // en alt basamaktaysa kulenin dışına düşer
+        float limit = Half(below) - .25f;
+        e.state = Enemy.Fall; e.t0 = now; e.dur = .5f; e.toFloor = e.floor - 1; e.from = e.go.transform.position;
+        e.toOffset = Mathf.Clamp(e.from.x + dir * 1.2f - below.transform.position.x, -limit, limit);
+        e.faceRight = dir < 0;
+    }
+
+    void TickFall(Enemy e, float now)
+    {
+        var dest = tower.GetPlatform(e.toFloor); if (!dest) { e.dead = true; return; }
+        float s = Mathf.Clamp01((now - e.t0) / e.dur);
+        var target = StandPos(dest, e.toOffset);
+        var pos = new Vector3(Mathf.Lerp(e.from.x, target.x, s), Mathf.Lerp(e.from.y, target.y, s * s) + Mathf.Sin(Mathf.PI * s) * .4f * (1 - s), 0);
+        Place(e, pos);
+        if (s < 1) return;
+        e.floor = e.toFloor; e.offset = e.toOffset; e.state = Enemy.Stand; e.waitSince = now;
+        e.readyAt = now + 1f / Speed;
+        SesWorld.EnemyLand(e.go.transform.position, tower.player.transform.position, e.floor);
     }
 
     public void Begin(LevelDef level)
     {
         Clear(); def = level; active = level.HasEnemies; startAt = Time.time + FirstDelay; playerFloor = 0;
-        for (int i = 0; i < level.zombies; i++) slots.Add(new EnemySlot { kind = EnemyKind.Zombie, readyAt = startAt + i * 1.5f });
-        for (int i = 0; i < level.goblins; i++) slots.Add(new EnemySlot { kind = EnemyKind.Goblin, readyAt = startAt + .75f + i * 1.5f });
+        for (int i = 0; i < level.zombies; i++) slots.Add(new EnemySlot { kind = EnemyKind.Zombie, readyAt = startAt + i * SlotGap });
+        for (int i = 0; i < level.goblins; i++) slots.Add(new EnemySlot { kind = EnemyKind.Goblin, readyAt = startAt + SlotGap / 2 + i * SlotGap });
     }
 
     // Sonsuz mod: zombi 10. kattan, goblin 25. kattan sonra gelir; yükseldikçe sayı (en çok 5) ve hız artar.
@@ -83,8 +132,8 @@ public class EnemyManager : MonoBehaviour
         def.enemySpeed = Mathf.Min(1.6f, 1 + floor * .005f);
         int zombies = 0, goblins = 0;
         foreach (var s in slots) { if (s.kind == EnemyKind.Zombie) zombies++; else goblins++; }
-        for (; zombies < wantZombies; zombies++) slots.Add(new EnemySlot { kind = EnemyKind.Zombie, readyAt = now + 3f + zombies * 1.5f });
-        for (; goblins < wantGoblins; goblins++) slots.Add(new EnemySlot { kind = EnemyKind.Goblin, readyAt = now + 3.75f + goblins * 1.5f });
+        for (; zombies < wantZombies; zombies++) slots.Add(new EnemySlot { kind = EnemyKind.Zombie, readyAt = now + 6f + zombies * SlotGap });
+        for (; goblins < wantGoblins; goblins++) slots.Add(new EnemySlot { kind = EnemyKind.Goblin, readyAt = now + 8f + goblins * SlotGap });
     }
 
     public void Clear()
@@ -97,8 +146,12 @@ public class EnemyManager : MonoBehaviour
 
     void Update()
     {
-        if (!active || GameFlow.IsMenu || !LevelRun.Instance || LevelRun.Instance.Finished) return;
+        bool playing = active && !GameFlow.IsMenu && LevelRun.Instance && !LevelRun.Instance.Finished;
+        if (!layout) layout = FindFirstObjectByType<GameDeviceLayout>();
+        if (kickButton) kickButton.SetActive(playing && layout && layout.TouchEnabled);
+        if (!playing) { GameInput.ConsumeKick(); return; }
         float now = Time.time, dt = Time.deltaTime;
+        if (GameInput.ConsumeKick()) TryKick(now);
         if (endless) GrowEndless(now);
         var support = tower.player.GroundPlatform(out bool grounded);
         if (grounded && support) playerFloor = support.floorIndex;
@@ -122,7 +175,7 @@ public class EnemyManager : MonoBehaviour
 
     void Spawn(EnemySlot slot)
     {
-        int floor = Mathf.Max(0, playerFloor - Random.Range(2, 4));
+        int floor = Mathf.Max(0, playerFloor - Random.Range(3, 5));
         var plat = tower.GetPlatform(floor);
         if (!plat) { slot.readyAt = Time.time + 1; return; }
         var art = EnemyArt.Get(slot.kind);
@@ -145,7 +198,7 @@ public class EnemyManager : MonoBehaviour
 
     void Tick(Enemy e, float dt, float now)
     {
-        float speed = def.enemySpeed;
+        float speed = Speed;
         var player = tower.player.transform.position;
         bool zombie = e.kind == EnemyKind.Zombie;
         float alpha = Mathf.Clamp01((now - e.spawnedAt) / .6f);
@@ -193,9 +246,10 @@ public class EnemyManager : MonoBehaviour
         }
         else if (e.state == Enemy.Leap) TickLeap(e, now);
         else if (e.state == Enemy.Climb) TickClimb(e, now);
+        else if (e.state == Enemy.Fall) TickFall(e, now);
         else TickLand(e, now);
         e.sr.flipX = !e.faceRight;
-        float lean = e.state == Enemy.Stand && (e.floor == playerFloor) ? (e.faceRight ? -8f : 8f) : 0;
+        float lean = e.state == Enemy.Fall ? (e.faceRight ? -60f : 60f) : e.state == Enemy.Stand && (e.floor == playerFloor) ? (e.faceRight ? -8f : 8f) : 0;
         float stretch = e.state == Enemy.Leap ? 1.12f : 1f + .05f * Mathf.Sin(now * 12f);
         e.go.transform.rotation = Quaternion.Euler(0, 0, lean);
         e.go.transform.localScale = new Vector3(1f / stretch, stretch, 1);
@@ -222,11 +276,11 @@ public class EnemyManager : MonoBehaviour
         e.faceRight = hang ? e.side < 0 : target.x >= e.from.x;
         if (s < 1) return;
         e.floor = e.toFloor;
-        if (hang) { e.state = Enemy.Climb; e.t0 = now; e.dur = 1.0f / def.enemySpeed; }
+        if (hang) { e.state = Enemy.Climb; e.t0 = now; e.dur = 1.0f / Speed; }
         else
         {
             SesWorld.EnemyLand(e.go.transform.position, tower.player.transform.position, e.toFloor); e.offset = e.toOffset; e.state = e.kind == EnemyKind.Goblin ? Enemy.Land : Enemy.Stand; e.t0 = now; e.dur = .4f;
-            e.readyAt = now + (e.kind == EnemyKind.Goblin ? .5f : .35f) / def.enemySpeed;
+            e.readyAt = now + (e.kind == EnemyKind.Goblin ? .5f : .35f) / Speed;
         }
     }
 
@@ -238,7 +292,7 @@ public class EnemyManager : MonoBehaviour
         float y = Mathf.Lerp(plat.Top - e.art.height * .95f, plat.Top, s);
         Place(e, new Vector3(x, y, 0)); e.faceRight = e.side < 0;
         if (s < 1) return;
-        e.offset = e.side * (half - .45f); e.state = Enemy.Stand; e.readyAt = now + .3f / def.enemySpeed; e.waitSince = now;
+        e.offset = e.side * (half - .45f); e.state = Enemy.Stand; e.readyAt = now + .3f / Speed; e.waitSince = now;
     }
 
     void TickLand(Enemy e, float now)
@@ -253,6 +307,7 @@ public class EnemyManager : MonoBehaviour
     // Kare seçimi: sprite sayfasının kare numaraları EnemyBake çıktısına göredir.
     static int FrameFor(Enemy e, float now)
     {
+        if (e.state == Enemy.Fall) return e.kind == EnemyKind.Zombie ? 13 : 5; // havada savrulma karesi
         if (e.kind == EnemyKind.Zombie)
         {
             if (e.state == Enemy.Leap) return 10 + Mathf.Min(3, Mathf.FloorToInt(Mathf.Clamp01((now - e.t0) / e.dur) * 4));
@@ -304,5 +359,5 @@ public class EnemyManager : MonoBehaviour
         for (int i = used; i < markers.Length; i++) markers[i].gameObject.SetActive(false);
     }
 
-    void OnDestroy() { Clear(); EnemyArt.Release(); EnemySfx.Release(); if (canvas) Destroy(canvas.gameObject); }
+    void OnDestroy() { Clear(); EnemyArt.Release(); EnemySfx.Release(); if (canvas) Destroy(canvas.gameObject); if (kickCanvas) Destroy(kickCanvas.gameObject); }
 }

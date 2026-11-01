@@ -39,9 +39,18 @@ public static class GameInput
     }
     public static void Jump() { touchJump = true; }
 
+    static bool touchKick;
+    public static void Kick() { touchKick = true; }
+    public static bool ConsumeKick()
+    {
+        bool result = touchKick || Input.GetKeyDown(KeyCode.F) || Input.GetKeyDown(KeyCode.K) || Input.GetKeyDown(KeyCode.LeftShift);
+        touchKick = false;
+        return result;
+    }
+
     public static void SetJoystick(float horizontal, bool up, bool down)
     {
         joyHorizontal = horizontal; joyUp = up; joyDown = down;
     }
-    public static void Clear() { left.Clear(); right.Clear(); touchJump = false; joyHorizontal = 0; joyUp = joyDown = false; Cleared?.Invoke(); }
+    public static void Clear() { left.Clear(); right.Clear(); touchJump = false; touchKick = false; joyHorizontal = 0; joyUp = joyDown = false; Cleared?.Invoke(); }
 }
