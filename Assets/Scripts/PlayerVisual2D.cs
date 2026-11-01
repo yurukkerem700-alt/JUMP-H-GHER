@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class PlayerVisual2D : MonoBehaviour
 {
+    const float VisualScale=1.25f; // karakterin görünür boyutu (1 = eski boyut)
     public Texture2D animationSheet;
     public Material spriteMaterial;
     Sprite[] frames;
@@ -19,6 +20,8 @@ public class PlayerVisual2D : MonoBehaviour
         var visual=new GameObject("Kok Gezgin Gorseli",typeof(SpriteRenderer));
         visual.transform.SetParent(transform,false); visual.transform.localPosition=new Vector3(0,-.3f,0);
         display=visual.GetComponent<SpriteRenderer>(); display.sharedMaterial=spriteMaterial; display.sortingOrder=20;
+        // Sprite tabanı ayakta olduğu için ayaklardan yukarı büyür; çarpışma kutusu ve fizik değişmez.
+        visual.transform.localScale=Vector3.one*VisualScale;
         int w=animationSheet.width/4,h=animationSheet.height/2;
         var bottoms=new int[8]; int tallest=1;
         for(int i=0;i<8;i++)
