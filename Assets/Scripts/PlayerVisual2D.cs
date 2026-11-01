@@ -22,11 +22,20 @@ public class PlayerVisual2D : MonoBehaviour
         display=visual.GetComponent<SpriteRenderer>(); display.sharedMaterial=spriteMaterial; display.sortingOrder=20;
         // Sprite tabanı ayakta olduğu için ayaklardan yukarı büyür; çarpışma kutusu ve fizik değişmez.
         visual.transform.localScale=Vector3.one*VisualScale;
-        int w=animationSheet.width/4,h=animationSheet.height/2;
+        Costumes.DefaultSheet=animationSheet;
+        Costumes.Changed+=ApplyCostume; ApplyCostume();
+    }
+
+    // Seçili kostümün sayfasından 8 kareyi kurar; sayfa yoksa ya da okunamıyorsa varsayılan gezgin kullanılır.
+    void ApplyCostume()
+    {
+        var sheet=Costumes.Sheet(Costumes.SelectedId); if(!sheet) sheet=animationSheet;
+        if(frames!=null) foreach(var old in frames) if(old) Destroy(old);
+        int w=sheet.width/4,h=sheet.height/2;
         var bottoms=new int[8]; int tallest=1;
         for(int i=0;i<8;i++)
         {
-            var pixels=animationSheet.GetPixels((i%4)*w,(1-i/4)*h,w,h);
+            var pixels=sheet.GetPixels((i%4)*w,(1-i/4)*h,w,h);
             int low=h-1,high=0;
             for(int y=0;y<h;y++)
             {
@@ -36,8 +45,8 @@ public class PlayerVisual2D : MonoBehaviour
             bottoms[i]=low; tallest=Mathf.Max(tallest,high-low+1);
         }
         frames=new Sprite[8]; float ppu=tallest/1.08f;
-        for(int i=0;i<8;i++) frames[i]=Sprite.Create(animationSheet,new Rect((i%4)*w,(1-i/4)*h,w,h),new Vector2(.5f,(bottoms[i]+.5f)/h),ppu);
-        display.sprite=frames[0];
+        for(int i=0;i<8;i++) frames[i]=Sprite.Create(sheet,new Rect((i%4)*w,(1-i/4)*h,w,h),new Vector2(.5f,(bottoms[i]+.5f)/h),ppu);
+        display.sprite=frames[CurrentFrame];
     }
 
     void Update()
@@ -53,5 +62,5 @@ public class PlayerVisual2D : MonoBehaviour
         if(GameInput.Horizontal<-.1f) display.flipX=true;
         display.sprite=frames[CurrentFrame]; wasGrounded=grounded;
     }
-    void OnDestroy() {if(frames!=null) foreach(var frame in frames) if(frame) Destroy(frame);}
+    void OnDestroy() {Costumes.Changed-=ApplyCostume; if(frames!=null) foreach(var frame in frames) if(frame) Destroy(frame);}
 }

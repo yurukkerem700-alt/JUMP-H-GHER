@@ -7,7 +7,7 @@ public class GameFlow : MonoBehaviour
     public Sprite icon;
     public static GameFlow Instance {get;private set;}
     public static bool IsMenu {get;private set;}
-    bool menuVisible,holding;LevelMap map;SettingsScreen settings;LevelRun run;PlayerHealth health;
+    bool menuVisible,holding;LevelMap map;SettingsScreen settings;CostumeScreen costumes;LevelRun run;PlayerHealth health;
     Canvas canvas;GameObject overlay;TextMeshProUGUI heading,subtitle,status;Button start;float splashUntil;bool splash=true;bool begun;
     InfiniteTower tower;
     void Awake(){Instance=this;}
@@ -24,13 +24,15 @@ public class GameFlow : MonoBehaviour
         start=Button("OYNA",.335f,()=>{if(begun)Begin(true);else map.Open();});
         Button("BÖLÜM HARİTASI",.26f,()=>map.Open());
         Button("NASIL OYNANIR",.185f,()=>{subtitle.text="A / D veya oklar: yürü   •   W / Boşluk: zıpla   •   F / K: tekme (düşmanı bir kat aşağı düşürür)\nBölümün hedefini tamamla, hızlı bitirerek 3 yıldız topla.\nTelefon: ekranın altında parmağını sürükle, karakter o yöne gider (yukarı = zıpla)";subtitle.fontSize=18;});
-        Button("AYARLAR",.11f,()=>settings.Open());
+        Button("KOSTÜMLER",.11f,()=>costumes.Open(),.14f,.49f);
+        Button("AYARLAR",.11f,()=>settings.Open(),.51f,.86f);
         Button(Application.platform==RuntimePlatform.WebGLPlayer?"TAM EKRAN":"ÇIKIŞ",.04f,()=>{if(Application.platform==RuntimePlatform.WebGLPlayer)Screen.fullScreen=!Screen.fullScreen;else Application.Quit();});
         var pause=new GameObject("Duraklat",typeof(Image),typeof(Button));pause.transform.SetParent(canvas.transform,false);pause.GetComponent<Image>().color=new Color(.16f,.1f,.15f,.8f);var pr=pause.GetComponent<RectTransform>();pr.anchorMin=pr.anchorMax=new Vector2(.5f,.96f);pr.sizeDelta=new Vector2(70,52);
         var pt=new GameObject("II",typeof(TextMeshProUGUI));pt.transform.SetParent(pause.transform,false);var textPause=pt.GetComponent<TextMeshProUGUI>();textPause.text="II";textPause.fontSize=26;textPause.alignment=TextAlignmentOptions.Center;textPause.raycastTarget=false;var ptr=textPause.rectTransform;ptr.anchorMin=Vector2.zero;ptr.anchorMax=Vector2.one;ptr.offsetMin=ptr.offsetMax=Vector2.zero;
-        pause.GetComponent<Button>().onClick.AddListener(()=>{if(holding)return;SesAtolyesi.Ses.UiClick();if(settings.IsOpen)settings.Close();else if(map.IsOpen)map.Close();else if(IsMenu&&begun)Begin(true);else Show(true);});pause.transform.SetAsFirstSibling();
+        pause.GetComponent<Button>().onClick.AddListener(()=>{if(holding)return;SesAtolyesi.Ses.UiClick();if(settings.IsOpen)settings.Close();else if(costumes.IsOpen)costumes.Close();else if(map.IsOpen)map.Close();else if(IsMenu&&begun)Begin(true);else Show(true);});pause.transform.SetAsFirstSibling();
         map=new LevelMap(canvas.transform,tower.floorLabel.font,StartLevel,StartEndless,()=>map.Close());
         settings=new SettingsScreen(canvas.transform,tower.floorLabel.font,()=>settings.Close());
+        costumes=new CostumeScreen(canvas.transform,tower.floorLabel.font,()=>costumes.Close());
         health=new GameObject("Can Yöneticisi").AddComponent<PlayerHealth>();health.Init(tower);health.Died+=()=>{if(!run.Active)tower.player.RestartRun();};
         run=new GameObject("Bölüm Yöneticisi").AddComponent<LevelRun>();run.Init(this,tower);
         new GameObject("Mezar Süsü").AddComponent<GraveDecor>().Init(tower);
@@ -43,15 +45,15 @@ public class GameFlow : MonoBehaviour
     {
         var go=new GameObject(value,typeof(TextMeshProUGUI));go.transform.SetParent(overlay.transform,false);var t=go.GetComponent<TextMeshProUGUI>();t.font=tower.floorLabel.font;t.text=value;t.fontSize=size;t.color=color;t.alignment=TextAlignmentOptions.Center;t.raycastTarget=false;var r=t.rectTransform;r.anchorMin=new Vector2(.07f,y);r.anchorMax=new Vector2(.93f,y);r.sizeDelta=new Vector2(0,105);return t;
     }
-    Button Button(string title,float y,UnityEngine.Events.UnityAction action)
+    Button Button(string title,float y,UnityEngine.Events.UnityAction action,float x0=.28f,float x1=.72f)
     {
-        var go=new GameObject(title,typeof(Image),typeof(Button));go.transform.SetParent(overlay.transform,false);var r=go.GetComponent<RectTransform>();r.anchorMin=new Vector2(.28f,y);r.anchorMax=new Vector2(.72f,y);r.sizeDelta=new Vector2(0,70);go.GetComponent<Image>().color=new Color(.22f,.12f,.14f,.95f);var b=go.GetComponent<Button>();b.onClick.AddListener(() => { SesAtolyesi.Ses.UiClick(); action(); });
+        var go=new GameObject(title,typeof(Image),typeof(Button));go.transform.SetParent(overlay.transform,false);var r=go.GetComponent<RectTransform>();r.anchorMin=new Vector2(x0,y);r.anchorMax=new Vector2(x1,y);r.sizeDelta=new Vector2(0,70);go.GetComponent<Image>().color=new Color(.22f,.12f,.14f,.95f);var b=go.GetComponent<Button>();b.onClick.AddListener(() => { SesAtolyesi.Ses.UiClick(); action(); });
         var text=new GameObject("Başlık",typeof(TextMeshProUGUI));text.transform.SetParent(go.transform,false);var t=text.GetComponent<TextMeshProUGUI>();t.font=tower.floorLabel.font;t.text=title;t.fontSize=25;t.color=new Color(1,.81f,.59f);t.alignment=TextAlignmentOptions.Center;t.raycastTarget=false;var tr=t.rectTransform;tr.anchorMin=Vector2.zero;tr.anchorMax=Vector2.one;tr.offsetMin=tr.offsetMax=Vector2.zero;return b;
     }
     void Update()
     {
         if(splash){bool ready=Time.unscaledTime>=splashUntil;start.gameObject.SetActive(ready);if(ready)splash=false;}
-        if(!holding&&(Input.GetKeyDown(KeyCode.Escape)||Input.GetKeyDown(KeyCode.P))){if(settings.IsOpen)settings.Close();else if(map.IsOpen)map.Close();else if(IsMenu&&begun)Begin(true);else Show(true);}
+        if(!holding&&(Input.GetKeyDown(KeyCode.Escape)||Input.GetKeyDown(KeyCode.P))){if(settings.IsOpen)settings.Close();else if(costumes.IsOpen)costumes.Close();else if(map.IsOpen)map.Close();else if(IsMenu&&begun)Begin(true);else Show(true);}
         if(IsMenu){int best=PlayerPrefs.GetInt("BestFloor",0);status.text="EN YÜKSEK KAT  "+best+"   •   YILDIZ  "+LevelDefs.TotalStars()+" / "+LevelDefs.Count*3;}
         else if(tower.HighestReachedFloor+1>PlayerPrefs.GetInt("BestFloor",0))PlayerPrefs.SetInt("BestFloor",tower.HighestReachedFloor+1);
     }
