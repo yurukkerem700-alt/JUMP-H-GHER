@@ -178,11 +178,20 @@ namespace SesAtolyesi.Dsp
         {
             var r = new Rng(seed * 23 + 1);
             int fs = OneShotRate;
-            var b = Buf.New(0.7f, fs);
-            float d = r.Range(0.98f, 1.03f);
-            Bell(b, 0, fs, 987.8f * d, 0.8f, 0.7f);
-            Bell(b, (int)(0.075f * fs), fs, 1318.5f * d, 1f, 1f);
-            Buf.Burst(b, 0, fs, 0.15f, new Biquad(fs).HighPass(5000f), 0f, 0.004f, r);
+            var b = Buf.New(0.5f, fs);
+            // Eski metal para: çan gibi uyumlu tonlar yerine levha gibi uyumsuz (tam sayı olmayan) tonlar, kısa ve kuru.
+            // İki "çın": para önce çarpar, sonra diğer paraların üstüne yatar. Her seferinde biraz farklı çıkar.
+            float f0 = 2350f * r.Range(0.9f, 1.12f);
+            var ratio = new[] { 1f, 2.32f, 4.17f, 6.58f };
+            var f1 = new float[4]; var f2 = new float[4];
+            for (int i = 0; i < 4; i++) { f1[i] = f0 * ratio[i]; f2[i] = f0 * 1.19f * ratio[i]; }
+            var t60 = new[] { .12f, .075f, .05f, .03f };
+            var gain = new[] { 1f, .6f, .35f, .2f };
+            Buf.Modal(b, 0, fs, f1, t60, gain, 0.7f);
+            Buf.Modal(b, (int)(r.Range(0.05f, 0.075f) * fs), fs, f2, t60, gain, 0.45f);
+            // Elin/taşın "tık"ı ve paranın ağır gövdesi
+            Buf.Burst(b, 0, fs, 0.35f, new Biquad(fs).BandPass(4200f, 1.2f), 0f, 0.003f, r);
+            Buf.Modal(b, 0, fs, new[] { 420f, 830f }, new[] { .05f, .03f }, new[] { 1f, .5f }, 0.3f);
             return Buf.FinishOneShot(b, fs, 0.6f);
         }
 
