@@ -41,9 +41,13 @@ self.addEventListener('install',event=>{
 
 self.addEventListener('activate',event=>{
   event.waitUntil((async()=>{
-    for(const key of await caches.keys())if(key.startsWith('kok-yankisi-')&&key!==CACHE)await caches.delete(key);
+    let updated=false;
+    for(const key of await caches.keys())if(key.startsWith('kok-yankisi-')&&key!==CACHE){await caches.delete(key);updated=true;}
     await self.clients.claim();
-    for(const client of await self.clients.matchAll())client.postMessage({type:'offline-ready'});
+    for(const client of await self.clients.matchAll()){
+      client.postMessage({type:'offline-ready'});
+      if(updated)client.navigate(client.url).catch(()=>{}); // eski sürüm açıkken yeni sürüm gelirse sayfa kendini yeniler
+    }
   })());
 });
 
