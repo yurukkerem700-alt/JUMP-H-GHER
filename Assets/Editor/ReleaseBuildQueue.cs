@@ -69,6 +69,14 @@ public static class ReleaseBuildQueue
         WebPwaExport.Apply(folder);
         File.WriteAllText("Library/WebBatch.txt","done");
     }
+    // Toplu mod: Builds/KokYankisi-Windows/KokYankisi.exe yazar (WIN_OUT ile klasör değiştirilebilir).
+    public static void BuildWindowsBatch()
+    {
+        string folder=Environment.GetEnvironmentVariable("WIN_OUT");if(string.IsNullOrEmpty(folder))folder=OutputRoot+"/KokYankisi-Windows";Directory.CreateDirectory(folder);
+        PlayerSettings.productName="Kök Yankısı";PlayerSettings.bundleVersion="0.5.0";PlayerSettings.runInBackground=true;
+        EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone,BuildTarget.StandaloneWindows64);
+        Build(BuildTarget.StandaloneWindows64,folder+"/KokYankisi.exe","Windows");
+    }
     static void Build(BuildTarget target,string path,string label)
     {
         File.WriteAllText("Library/ReleaseBuild-status.txt","Building "+label+" at "+DateTime.Now);
