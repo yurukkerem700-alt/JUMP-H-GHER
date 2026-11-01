@@ -28,6 +28,7 @@ public class GameFlow : MonoBehaviour
         health=new GameObject("Can Yöneticisi").AddComponent<PlayerHealth>();health.Init(tower);health.Died+=()=>{if(!run.Active)tower.player.RestartRun();};
         run=new GameObject("Bölüm Yöneticisi").AddComponent<LevelRun>();run.Init(this,tower);
         new GameObject("Mezar Süsü").AddComponent<GraveDecor>().Init(tower);
+        new GameObject("Ses Manzarası").AddComponent<Soundscape>();
         splashUntil=Time.unscaledTime+1.1f;Show(true);
 #if UNITY_EDITOR
         if(UnityEditor.SessionState.GetBool("NextVerify",false)||UnityEditor.SessionState.GetBool("PresentationVerify",false)||UnityEditor.SessionState.GetBool("TowerVerify",false)){splash=false;Begin(false);}

@@ -2,7 +2,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum EnemyKind { Zombie, Goblin }
+public enum EnemyKind { Zombie, Goblin, Karakoncolos, KaraKurt }
+
+// Tür yardımcıları: Karakoncolos zombinin, Kara Kurt goblinin yerini alır (eski ikisi kodda durur, EnemyManager.UseLegacyEnemies ile açılır).
+static class EnemyKinds
+{
+    public static bool Climber(EnemyKind k) => k == EnemyKind.Zombie || k == EnemyKind.Karakoncolos;
+    public static EnemySound Spawn(EnemyKind k) => k == EnemyKind.Karakoncolos ? EnemySound.KarakoncolosSpawn : k == EnemyKind.KaraKurt ? EnemySound.KaraKurtSpawn : Climber(k) ? EnemySound.ZombieSpawn : EnemySound.GoblinSpawn;
+    public static EnemySound Attack(EnemyKind k) => k == EnemyKind.Karakoncolos ? EnemySound.KarakoncolosAttack : k == EnemyKind.KaraKurt ? EnemySound.KaraKurtAttack : Climber(k) ? EnemySound.ZombieAttack : EnemySound.GoblinAttack;
+    public static EnemySound Hurt(EnemyKind k) => k == EnemyKind.Karakoncolos ? EnemySound.KarakoncolosHurt : k == EnemyKind.KaraKurt ? EnemySound.KaraKurtHurt : Climber(k) ? EnemySound.ZombieHurt : EnemySound.GoblinHurt;
+}
 
 // Resources/Enemies altındaki sprite sayfasını (EnemyBake ile üretilir) kare kare Sprite'a böler.
 class EnemyArt
@@ -16,9 +25,14 @@ class EnemyArt
     public static EnemyArt Get(EnemyKind kind)
     {
         if (cache.TryGetValue(kind, out var art) && art.frames[0]) return art;
-        string name = kind == EnemyKind.Zombie ? "Zombie" : "Goblin";
-        float referencePixels = kind == EnemyKind.Zombie ? 305 : 229; // 21. / 22. karenin sıkı yüksekliği
-        float target = kind == EnemyKind.Zombie ? 2.2f : 1.65f;
+        string name; float referencePixels, target; // referencePixels: yürüme karesinin sıkı piksel yüksekliği
+        switch (kind)
+        {
+            case EnemyKind.Karakoncolos: name = "Karakoncolos"; referencePixels = 235; target = 2.2f; break;
+            case EnemyKind.KaraKurt: name = "KaraKurt"; referencePixels = 164; target = 1.2f; break;
+            case EnemyKind.Zombie: name = "Zombie"; referencePixels = 305; target = 2.2f; break;
+            default: name = "Goblin"; referencePixels = 229; target = 1.65f; break;
+        }
         var texture = Resources.Load<Texture2D>("Enemies/" + name);
         var meta = JsonUtility.FromJson<Meta>(Resources.Load<TextAsset>("Enemies/" + name).text);
         int rows = Mathf.CeilToInt(meta.frames / (float)meta.cols);
@@ -46,6 +60,10 @@ class EnemySlot { public EnemyKind kind; public Enemy enemy; public float readyA
 // Zombi: basamağın kenarına zıplayıp asılır, tırmanır. Goblin: basamaktan basamağa doğrudan zıplar.
 public class EnemyManager : MonoBehaviour
 {
+    // Eski zombi ve goblini geri getirmek için true yap (kod ve dosyalar silinmedi, sadece devre dışı).
+    public static bool UseLegacyEnemies = false;
+    static EnemyKind Climbers => UseLegacyEnemies ? EnemyKind.Zombie : EnemyKind.Karakoncolos;
+    static EnemyKind Leapers => UseLegacyEnemies ? EnemyKind.Goblin : EnemyKind.KaraKurt;
     const float FirstDelay = 8f, RespawnDelay = 7f, SlotGap = 4f, SpeedScale = .6f, KickCooldown = .5f, KickReach = 1.7f;
     InfiniteTower tower; Material material; Canvas canvas, kickCanvas; Image[] markers;
     GameObject kickButton; GameDeviceLayout layout; float kickReadyAt;
@@ -88,7 +106,7 @@ public class EnemyManager : MonoBehaviour
     void Knock(Enemy e, float dir, float now)
     {
         e.staggerUntil = now + 1.8f;
-        EnemySfx.Play(e.kind == EnemyKind.Zombie ? EnemySound.ZombieHurt : EnemySound.GoblinHurt, 1f);
+        EnemySfx.Play(EnemyKinds.Hurt(e.kind), 1f);
         var below = e.floor > 0 ? tower.GetPlatform(e.floor - 1) : null;
         if (!below) { e.dead = true; return; } // en alt basamaktaysa kulenin dışına düşer
         float limit = Half(below) - .25f;
@@ -113,8 +131,8 @@ public class EnemyManager : MonoBehaviour
     public void Begin(LevelDef level)
     {
         Clear(); def = level; active = level.HasEnemies; startAt = Time.time + FirstDelay; playerFloor = 0;
-        for (int i = 0; i < level.zombies; i++) slots.Add(new EnemySlot { kind = EnemyKind.Zombie, readyAt = startAt + i * SlotGap });
-        for (int i = 0; i < level.goblins; i++) slots.Add(new EnemySlot { kind = EnemyKind.Goblin, readyAt = startAt + SlotGap / 2 + i * SlotGap });
+        for (int i = 0; i < level.zombies; i++) slots.Add(new EnemySlot { kind = Climbers, readyAt = startAt + i * SlotGap });
+        for (int i = 0; i < level.goblins; i++) slots.Add(new EnemySlot { kind = Leapers, readyAt = startAt + SlotGap / 2 + i * SlotGap });
     }
 
     // Sonsuz mod: zombi 10. kattan, goblin 25. kattan sonra gelir; yükseldikçe sayı (en çok 5) ve hız artar.
@@ -131,9 +149,9 @@ public class EnemyManager : MonoBehaviour
         int wantGoblins = floor < 25 ? 0 : Mathf.Min(2, 1 + (floor - 25) / 30);
         def.enemySpeed = Mathf.Min(1.6f, 1 + floor * .005f);
         int zombies = 0, goblins = 0;
-        foreach (var s in slots) { if (s.kind == EnemyKind.Zombie) zombies++; else goblins++; }
-        for (; zombies < wantZombies; zombies++) slots.Add(new EnemySlot { kind = EnemyKind.Zombie, readyAt = now + 6f + zombies * SlotGap });
-        for (; goblins < wantGoblins; goblins++) slots.Add(new EnemySlot { kind = EnemyKind.Goblin, readyAt = now + 8f + goblins * SlotGap });
+        foreach (var s in slots) { if (EnemyKinds.Climber(s.kind)) zombies++; else goblins++; }
+        for (; zombies < wantZombies; zombies++) slots.Add(new EnemySlot { kind = Climbers, readyAt = now + 6f + zombies * SlotGap });
+        for (; goblins < wantGoblins; goblins++) slots.Add(new EnemySlot { kind = Leapers, readyAt = now + 8f + goblins * SlotGap });
     }
 
     public void Clear()
@@ -179,12 +197,12 @@ public class EnemyManager : MonoBehaviour
         var plat = tower.GetPlatform(floor);
         if (!plat) { slot.readyAt = Time.time + 1; return; }
         var art = EnemyArt.Get(slot.kind);
-        var go = new GameObject(slot.kind == EnemyKind.Zombie ? "Zombi" : "Goblin", typeof(SpriteRenderer));
-        var sr = go.GetComponent<SpriteRenderer>(); sr.sharedMaterial = material; sr.sortingOrder = 18; sr.sprite = art.frames[slot.kind == EnemyKind.Zombie ? 21 : 22];
+        var go = new GameObject(slot.kind.ToString(), typeof(SpriteRenderer));
+        var sr = go.GetComponent<SpriteRenderer>(); sr.sharedMaterial = material; sr.sortingOrder = 18; sr.sprite = art.frames[IdleFrame(slot.kind)];
         float half = Half(plat);
         var e = new Enemy { kind = slot.kind, go = go, sr = sr, art = art, floor = floor, offset = Random.Range(-half + .3f, half - .3f), spawnedAt = Time.time, readyAt = Time.time + .4f, waitSince = Time.time };
         slot.enemy = e; Place(e, StandPos(plat, e.offset));
-        EnemySfx.Play(slot.kind == EnemyKind.Zombie ? EnemySound.ZombieSpawn : EnemySound.GoblinSpawn, 1f);
+        EnemySfx.Play(EnemyKinds.Spawn(slot.kind), 1f);
     }
 
     static float Half(MovingPlatform2D plat)
@@ -200,7 +218,7 @@ public class EnemyManager : MonoBehaviour
     {
         float speed = Speed;
         var player = tower.player.transform.position;
-        bool zombie = e.kind == EnemyKind.Zombie;
+        bool zombie = EnemyKinds.Climber(e.kind);
         float alpha = Mathf.Clamp01((now - e.spawnedAt) / .6f);
         float pulse = .5f + .5f * Mathf.Sin(now * 6f);
         e.sr.color = new Color(1f, 1f - .35f * pulse, 1f - .35f * pulse, alpha);
@@ -256,7 +274,7 @@ public class EnemyManager : MonoBehaviour
         e.sr.sprite = e.art.frames[FrameFor(e, now)];
     }
 
-    static float Bob(Enemy e, float now) => e.kind == EnemyKind.Goblin ? Mathf.Abs(Mathf.Sin(now * 11f)) * .06f : Mathf.Sin(now * 4f) * .025f;
+    static float Bob(Enemy e, float now) => !EnemyKinds.Climber(e.kind) ? Mathf.Abs(Mathf.Sin(now * 11f)) * .06f : Mathf.Sin(now * 4f) * .025f;
 
     void StartLeap(Enemy e, int to, float side, float toOffset, float now, float duration)
     {
@@ -267,7 +285,7 @@ public class EnemyManager : MonoBehaviour
     void TickLeap(Enemy e, float now)
     {
         var dest = tower.GetPlatform(e.toFloor); if (!dest) { e.dead = true; return; }
-        bool hang = e.kind == EnemyKind.Zombie && e.toFloor > e.floor;
+        bool hang = EnemyKinds.Climber(e.kind) && e.toFloor > e.floor;
         Vector3 target = hang ? HangPos(dest, e.side, e.art.height) : StandPos(dest, e.toOffset);
         float s = Mathf.Clamp01((now - e.t0) / e.dur);
         float arc = hang ? .55f : (e.toFloor > e.floor ? 1.15f : .6f);
@@ -279,8 +297,8 @@ public class EnemyManager : MonoBehaviour
         if (hang) { e.state = Enemy.Climb; e.t0 = now; e.dur = 1.0f / Speed; }
         else
         {
-            SesWorld.EnemyLand(e.go.transform.position, tower.player.transform.position, e.toFloor); e.offset = e.toOffset; e.state = e.kind == EnemyKind.Goblin ? Enemy.Land : Enemy.Stand; e.t0 = now; e.dur = .4f;
-            e.readyAt = now + (e.kind == EnemyKind.Goblin ? .5f : .35f) / Speed;
+            SesWorld.EnemyLand(e.go.transform.position, tower.player.transform.position, e.toFloor); e.offset = e.toOffset; e.state = !EnemyKinds.Climber(e.kind) ? Enemy.Land : Enemy.Stand; e.t0 = now; e.dur = .4f;
+            e.readyAt = now + (!EnemyKinds.Climber(e.kind) ? .5f : .35f) / Speed;
         }
     }
 
@@ -305,8 +323,22 @@ public class EnemyManager : MonoBehaviour
     static readonly int[] ClimbFrames = { 14, 15, 8, 9 }, WalkFrames = { 20, 21, 22, 21 };
 
     // Kare seçimi: sprite sayfasının kare numaraları EnemyBake çıktısına göredir.
+    static int IdleFrame(EnemyKind k) => k == EnemyKind.Zombie ? 21 : k == EnemyKind.Goblin ? 22 : 0;
+
+    // Yeni türlerin 8 karelik şeridi: 0-3 yürüyüş/koşu, 4 çömelme, 5 zıplama, 6-7 tırmanış (Karakoncolos) / havada (Kara Kurt).
+    static int FrameForNew(Enemy e, float now)
+    {
+        bool climber = e.kind == EnemyKind.Karakoncolos;
+        if (e.state == Enemy.Fall) return climber ? 5 : 7;
+        if (e.state == Enemy.Leap) return climber ? 5 : (Mathf.Clamp01((now - e.t0) / e.dur) < .5f ? 6 : 7);
+        if (e.state == Enemy.Climb) return 6 + Mathf.FloorToInt(now * 5) % 2;
+        if (e.state == Enemy.Land) return Mathf.Clamp01((now - e.t0) / e.dur) < .35f ? 4 : 0;
+        return Mathf.FloorToInt(now * (climber ? 4 : 9)) % 4;
+    }
+
     static int FrameFor(Enemy e, float now)
     {
+        if (e.kind == EnemyKind.Karakoncolos || e.kind == EnemyKind.KaraKurt) return FrameForNew(e, now);
         if (e.state == Enemy.Fall) return e.kind == EnemyKind.Zombie ? 13 : 5; // havada savrulma karesi
         if (e.kind == EnemyKind.Zombie)
         {
@@ -330,12 +362,12 @@ public class EnemyManager : MonoBehaviour
     {
         var health = PlayerHealth.Instance;
         if (health == null || now < e.staggerUntil || now - e.spawnedAt < .7f) return;
-        bool zombie = e.kind == EnemyKind.Zombie;
+        bool zombie = EnemyKinds.Climber(e.kind);
         var pos = e.go.transform.position;
         float centerY = pos.y + e.art.height * (zombie && e.state == Enemy.Climb ? .6f : .45f);
         var p = tower.player.transform.position;
         float scale = e.art.height / (zombie ? 1.35f : 1f);
-        var attackSound = zombie ? EnemySound.ZombieAttack : EnemySound.GoblinAttack;
+        var attackSound = EnemyKinds.Attack(e.kind);
         float dx = Mathf.Abs(p.x - pos.x), dy = Mathf.Abs(p.y - centerY);
         // Yaklaşırken saldırı narası (yakın ve aynı hizada), arada bekleme ile.
         if (dx < 2.2f && dy < 1.4f * scale && now >= e.attackSoundAt) { e.attackSoundAt = now + 1.6f; EnemySfx.Play(attackSound, .8f); }

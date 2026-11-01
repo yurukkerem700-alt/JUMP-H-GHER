@@ -1,28 +1,68 @@
 using UnityEngine;
 
-public enum EnemySound { ZombieSpawn, GoblinSpawn, ZombieAttack, GoblinAttack, ZombieHurt, GoblinHurt }
+public enum EnemySound { ZombieSpawn, GoblinSpawn, ZombieAttack, GoblinAttack, ZombieHurt, GoblinHurt, KarakoncolosSpawn, KarakoncolosAttack, KarakoncolosHurt, KaraKurtSpawn, KaraKurtAttack, KaraKurtHurt }
 
 // Zombi ve goblin için kod ile üretilen korkutucu sesler: doğuş, saldırı ve tekme yiyince acı sesi.
 // Ses seviyesi SesAtolyesi'nin Master/Sfx ayarlarına bağlıdır.
 public static class EnemySfx
 {
     const int Rate = 22050;
-    static readonly AudioClip[] clips = new AudioClip[6];
+    static readonly AudioClip[] clips = new AudioClip[12];
+
+    // Yeni türlerin sesleri Resources/Sfx altındaki dosyalardır (ad, perde, ses). Dosya yoksa eski kodla üretilen ses çalar.
+    static bool File(EnemySound s, out string name, out float pitch, out float gain)
+    {
+        pitch = 1; gain = 1;
+        switch (s)
+        {
+            case EnemySound.KarakoncolosSpawn: name = "karakoncolos_hirilti"; return true;
+            case EnemySound.KarakoncolosAttack: name = "karakoncolos_hirilti"; pitch = 1.12f; return true;
+            case EnemySound.KarakoncolosHurt: name = "karakoncolos_pence"; pitch = .85f; return true;
+            case EnemySound.KaraKurtSpawn: name = "karakurt_uluma"; return true;
+            case EnemySound.KaraKurtAttack: name = "karakurt_uluma"; pitch = 1.25f; gain = .9f; return true;
+            case EnemySound.KaraKurtHurt: name = "karakurt_uluma"; pitch = 1.6f; gain = .8f; return true;
+        }
+        name = null; return false;
+    }
+
+    static EnemySound Legacy(EnemySound s)
+    {
+        switch (s)
+        {
+            case EnemySound.KarakoncolosSpawn: return EnemySound.ZombieSpawn;
+            case EnemySound.KarakoncolosAttack: return EnemySound.ZombieAttack;
+            case EnemySound.KarakoncolosHurt: return EnemySound.ZombieHurt;
+            case EnemySound.KaraKurtSpawn: return EnemySound.GoblinSpawn;
+            case EnemySound.KaraKurtAttack: return EnemySound.GoblinAttack;
+            case EnemySound.KaraKurtHurt: return EnemySound.GoblinHurt;
+        }
+        return s;
+    }
     static AudioSource source;
 
     public static void Play(EnemySound sound, float volume = 1f)
     {
-        var clip = clips[(int)sound]; if (!clip) clips[(int)sound] = clip = Build(sound);
+        float basePitch = 1, gain = 1;
+        var clip = clips[(int)sound];
+        if (!clip)
+        {
+            if (File(sound, out var file, out _, out _)) clip = Resources.Load<AudioClip>("Sfx/" + file);
+            if (!clip) clip = Build(Legacy(sound));
+            clips[(int)sound] = clip;
+        }
+        if (File(sound, out _, out var p0, out var g0) && clip && clip.name == FileName(sound)) { basePitch = p0; gain = g0; }
         if (!source)
         {
             var go = new GameObject("DusmanSesleri"); Object.DontDestroyOnLoad(go);
             source = go.AddComponent<AudioSource>(); source.playOnAwake = false; source.spatialBlend = 0;
         }
-        source.pitch = Random.Range(.94f, 1.06f);
-        source.PlayOneShot(clip, Mathf.Clamp01(volume * SesAtolyesi.Ses.Master * SesAtolyesi.Ses.Sfx));
+        source.pitch = basePitch * Random.Range(.94f, 1.06f);
+        source.PlayOneShot(clip, Mathf.Clamp01(volume * gain * SesAtolyesi.Ses.Master * SesAtolyesi.Ses.Sfx));
     }
 
-    public static void Release() { for (int i = 0; i < clips.Length; i++) { if (clips[i]) Object.Destroy(clips[i]); clips[i] = null; } if (source) Object.Destroy(source.gameObject); }
+    static string FileName(EnemySound s) => File(s, out var n, out _, out _) ? n : null;
+
+    public static void Release() { for (int i = 0; i < clips.Length; i++) { if (clips[i] && clips[i].name.StartsWith("dusman_")) Object.Destroy(clips[i]); clips[i] = null; } if (source) Object.Destroy(source.gameObject); }
 
     public static float[] Samples(EnemySound sound)
     {
