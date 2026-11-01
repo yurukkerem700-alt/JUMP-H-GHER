@@ -109,7 +109,8 @@ public partial class LevelMap
         const float Fade = 520;
         for (int half = 0; half < 2; half++)
         {
-            var c = half == 0 ? lower : upper; c.a = .46f;
+            // Sınırda iki yarı aynı rengi taşır; sert renk çizgisi yerine sis iki biyomu birbirine karıştırır.
+            var c = Color.Lerp(lower, upper, .5f); c.a = .82f;
             var img = UiArt.Pic(content, FadeSprite, c, .5f, fy, 0, Fade); img.raycastTarget = false; img.name = "Sis " + (k + 1) + (half == 0 ? "a" : "b");
             var r = img.rectTransform; r.anchorMin = new Vector2(0, fy); r.anchorMax = new Vector2(1, fy); r.pivot = new Vector2(.5f, 1);
             r.sizeDelta = new Vector2(0, Fade); r.anchoredPosition = Vector2.zero;
