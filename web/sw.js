@@ -1,11 +1,14 @@
 // Otomatik üretildi (WebPwaExport). Her derlemede sürüm değişir.
-const VERSION='20261101192510';
+const VERSION='20261102130542';
 const CACHE='kok-yankisi-'+VERSION;
 const FILES=[
   "./",
+  "Build/web.data",
   "Build/web.data.br",
+  "Build/web.framework.js",
   "Build/web.framework.js.br",
   "Build/web.loader.js",
+  "Build/web.wasm",
   "Build/web.wasm.br",
   "TemplateData/MemoryProfiler.png",
   "TemplateData/favicon.ico",
@@ -25,13 +28,14 @@ const FILES=[
   "icon.png",
   "index.html",
   "manifest.webmanifest",
+  "privacy.html",
 ];
 
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{
     const cache=await caches.open(CACHE);
     await Promise.all(FILES.map(async url=>{
-      const response=await fetch(url,{cache:'no-cache'});
+      const response=await fetch(url,{cache:'reload'});
       if(!response.ok)throw new Error(url+' '+response.status);
       await cache.put(url,response);
     }));
