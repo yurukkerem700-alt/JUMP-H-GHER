@@ -259,7 +259,7 @@ public partial class LevelMap
         cardLines[0].text = "BÖLÜM " + n; cardLines[0].color = Cream;
         cardLines[1].text = "ZORLUK: " + d.TierName; cardLines[1].color = d.TierColor;
         cardLines[2].text = "HEDEF: " + d.Goal;
-        cardLines[3].text = d.kind == GoalKind.Survive ? "SÜRE: " + LevelDefs.Clock(d.survive) + " dolunca bölüm biter"
+        cardLines[3].text = d.kind == GoalKind.Survive ? "SÜRE: " + LevelDefs.Clock(d.survive) + " dolunca kapı açılır"
             : d.HardLimit ? "SÜRE SINIRI: " + LevelDefs.Clock(d.limit) + " (aşarsan kaybedersin)" : "SÜRE SINIRI: yok";
         cardLines[4].text = d.HasEnemies ? "DÜŞMAN: " + d.EnemyText + (d.enemySpeed > 1.01f ? "  (hız x" + d.enemySpeed.ToString("0.0") + ")" : "") : "DÜŞMAN: yok";
         cardLines[5].text = "CAN: " + d.hearts;

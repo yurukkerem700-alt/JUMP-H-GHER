@@ -15,14 +15,14 @@ public struct LevelDef
     public bool HardLimit => limit > 0;
     public bool HasEnemies => zombies + goblins > 0;
     public string EnemyText => zombies > 0 && goblins > 0 ? "ZOMBİ x" + zombies + " + GOBLİN x" + goblins : zombies > 0 ? "ZOMBİ x" + zombies : goblins > 0 ? "GOBLİN x" + goblins : "";
-    public string Goal => kind == GoalKind.Floor ? target + ". kata çık, kapıdan geç" : kind == GoalKind.Coins ? target + " coin topla" : LevelDefs.Clock(survive) + " boyunca hayatta kal";
+    public string Goal => kind == GoalKind.Floor ? target + ". kata çık, kapıdan geç" : kind == GoalKind.Coins ? target + " coin topla, kapıdan geç" : LevelDefs.Clock(survive) + " hayatta kal, kapıdan geç";
     public string TierName => LevelDefs.TierNames[tier];
     public Color TierColor => LevelDefs.TierColors[tier];
     public bool Timed => kind != GoalKind.Survive && twoStarTime > 0;
 
     // 1 yıldız: bölümü bitir. 2 yıldız: süre (hayatta kalmada en çok 1 can kaybı). 3 yıldız: süre + hiç can kaybetmemek.
     public string[] StarRules => kind == GoalKind.Survive
-        ? new[] { "Süreyi tamamla", "En çok 1 can kaybet", "Hiç can kaybetme" }
+        ? new[] { "Süreyi tamamla, kapıdan geç", "En çok 1 can kaybet", "Hiç can kaybetme" }
         : new[] { "Bölümü tamamla", LevelDefs.Clock(twoStarTime) + " içinde bitir", LevelDefs.Clock(threeStarTime) + " içinde, hiç can kaybetmeden bitir" };
 
     public int StarsFor(float time, int livesLost)
