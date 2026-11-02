@@ -70,9 +70,10 @@ public static class ReleaseBuildQueue
         File.Copy(Application.dataPath+"/WebTemplates/web-index.html",folder+"/index.html",true);
         string html=File.ReadAllText(folder+"/index.html");
         foreach(string suffix in new[]{"loader.js","framework.js","data","wasm"})
-        {string path=Directory.GetFiles(folder+"/Build","*."+suffix).Single();html=html.Replace("__"+suffix.ToUpperInvariant().Replace('.','_')+"__","Build/"+Path.GetFileName(path));}
+        {string raw=Path.Combine(folder,"Build","web."+suffix);string path=File.Exists(raw)?raw:Directory.GetFiles(folder+"/Build","*."+suffix).OrderByDescending(File.GetLastWriteTimeUtc).First();html=html.Replace("__"+suffix.ToUpperInvariant().Replace('.','_')+"__","Build/"+Path.GetFileName(path));}
         File.WriteAllText(folder+"/index.html",html);
         File.WriteAllText(folder+"/build-info.json", JsonUtility.ToJson(new WebBuildInfo { version=Application.version, sourceRevision=Environment.GetEnvironmentVariable("BUILD_SOURCE_REVISION"), costumeIds=Costumes.All.Select(c=>c.Id).ToArray() },true));
+        VersionWebBuild.Apply(folder);
         WebPwaExport.Apply(folder);
         File.WriteAllText("Library/WebBatch.txt","done");
     }
