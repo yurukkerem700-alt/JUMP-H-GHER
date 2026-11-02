@@ -25,6 +25,7 @@ public class PlayerVisual2D : MonoBehaviour
         display=visual.GetComponent<SpriteRenderer>(); display.sharedMaterial=spriteMaterial; display.sortingOrder=20;
         // Sprite tabanı ayakta olduğu için ayaklardan yukarı büyür; çarpışma kutusu ve fizik değişmez.
         visual.transform.localScale=Vector3.one*VisualScale;
+        Juice.Ensure(spriteMaterial);
         controller.Jumped+=OnJumped;
         Costumes.DefaultSheet=animationSheet;
         Costumes.Changed+=ApplyCostume; ApplyCostume();
@@ -61,6 +62,7 @@ public class PlayerVisual2D : MonoBehaviour
         {
             landedAt=Time.time;
             float impact=Mathf.Clamp01(-previousVy/14f); // sert inişte daha çok ezilir
+            if(impact>.2f) Juice.Dust(display.transform.position,impact);
             squash=new Vector2(1f+.28f*impact+.06f,1f-.30f*impact-.06f); squashVelocity=Vector2.zero;
         }
         previousVy=body.linearVelocity.y;
@@ -81,6 +83,7 @@ public class PlayerVisual2D : MonoBehaviour
 
     void OnJumped()
     {
+        Juice.Dust(display.transform.position,0f);
         squash=new Vector2(.82f,1.22f); squashVelocity=Vector2.zero;
     }
     void OnDestroy() {if(controller) controller.Jumped-=OnJumped; Costumes.Changed-=ApplyCostume; if(frames!=null) foreach(var frame in frames) if(frame) Destroy(frame);}

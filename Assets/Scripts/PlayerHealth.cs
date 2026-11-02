@@ -37,6 +37,8 @@ public class PlayerHealth : MonoBehaviour
     {
         if (Hearts <= 0 || (Invulnerable && !ignoreInvulnerability)) return false;
         Hearts--; Lost++; invulnerableUntil = Time.time + InvulnerableSeconds; Refresh(); SesAtolyesi.Ses.Hit();
+        Juice.Shake(.18f, .3f);
+        if (tower && tower.player) Juice.Burst(tower.player.transform.position, 12, new Color(.95f, .22f, .28f, 1f), 3.5f, .4f, .45f, .16f);
         if (Hearts <= 0) Died?.Invoke();
         return true;
     }

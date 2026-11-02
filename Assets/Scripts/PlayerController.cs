@@ -177,6 +177,7 @@ public class PlayerController : MonoBehaviour
         if (!collision.CompareTag("altin")) return;
         if (coinSequence && !coinSequence.TryCollect(collision)) return;
         SesAtolyesi.Ses.Coin();
+        Juice.Burst(collision.transform.position, 10, new Color(1f, .82f, .25f, 1f), 3.2f, .5f, .5f, .14f);
         skor++;
         SkoruGuncelle();
     }

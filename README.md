@@ -29,6 +29,7 @@ Unity projesi: **6000.0.84f1**. Ana sahne: `Assets/Scenes/SampleScene.unity`.
 - **Zıplama tamponu (0,12 sn)**: yere inmeden az önce basılan zıplama, inince otomatik uygulanır; art arda basamak çıkmak akıcıdır.
 - **Değişken zıplama**: tuşu erken bırakınca yükseliş kesilir, ama kat aralığı (1,15) her zaman aşılır; hızlı dokunuş da bir kat çıkar. Ekran düğmesi ve joystick için de çalışır.
 - **Tok düşüş**: düşerken yerçekimi x1,4, tepe noktasında x0,75 (kısa süzülme), düşüş hızı sınırı 20.
+- **Efektler** (`Juice.cs`): iniş/zıplama tozu, coin toplama kıvılcımı, hasar alınca kırmızı patlama ve kısa ekran sarsıntısı. Havuzlu 48 parçacık; ek asset yok.
 - **Squash & stretch**: zıplarken uzama, inerken (iniş hızına göre) ezilme (`PlayerVisual2D`).
 
 Bu değişiklikler Unity'de derlenip test edilmedi; `web/` çıktısı eski sürümdür. Değerler `PlayerController` içindeki sabitlerden kolayca ayarlanır; WebGL yeniden derlenmeli.
