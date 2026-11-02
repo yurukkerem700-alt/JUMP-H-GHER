@@ -74,6 +74,7 @@ public static class ReleaseBuildQueue
         File.WriteAllText(folder+"/index.html",html);
         File.WriteAllText(folder+"/build-info.json", JsonUtility.ToJson(new WebBuildInfo { version=Application.version, sourceRevision=Environment.GetEnvironmentVariable("BUILD_SOURCE_REVISION"), costumeIds=Costumes.All.Select(c=>c.Id).ToArray() },true));
         WebPwaExport.Apply(folder);
+        VersionWebBuild.Apply(folder);
         File.WriteAllText("Library/WebBatch.txt","done");
     }
     // Toplu mod: Builds/KokYankisi-Windows/KokYankisi.exe yazar (WIN_OUT ile klasör değiştirilebilir).
