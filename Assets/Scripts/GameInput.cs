@@ -25,6 +25,7 @@ public static class GameInput
     // Joystick yukarıda tutuluyorsa yere inince tekrar zıplanır.
     public static bool JumpHeld => joyUp;
     public static bool DownHeld => joyDown;
+    public static bool HasGameplayInput => Mathf.Abs(Horizontal)>.01f || touchJump || touchKick || joyUp || Input.GetButtonDown("Jump") || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.F) || Input.GetKeyDown(KeyCode.K) || Input.GetKeyDown(KeyCode.LeftShift);
 
     public static bool ConsumeJump()
     {
