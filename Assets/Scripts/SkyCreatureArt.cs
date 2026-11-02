@@ -17,11 +17,6 @@ public static class SkyCreatureArt
     static void Load()
     {
         var texture=Resources.Load<Texture2D>("Decor/SkyWildlife");
-#if UNITY_EDITOR
-        // A freshly imported Resources entry can precede the editor's runtime
-        // resource index. Load the same imported asset directly for batch checks.
-        if(!texture) texture=UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Resources/Decor/SkyWildlife.png");
-#endif
         if(!texture) return;
         int w=texture.width,h=texture.height,cell=w/4;
         var pixels=texture.GetPixels32();
