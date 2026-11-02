@@ -1,5 +1,5 @@
 // Otomatik üretildi (WebPwaExport). Her derlemede sürüm değişir.
-const VERSION='20261102160025';
+const VERSION='20261102173408';
 const CACHE='kok-yankisi-'+VERSION;
 const FILES=[
   "./",
@@ -19,6 +19,7 @@ const FILES=[
   "TemplateData/unity-logo-light.png",
   "TemplateData/unity-logo-title-footer.png",
   "TemplateData/webmemd-icon.png",
+  "build-info.json",
   "icon-192.png",
   "icon-512.png",
   "icon-maskable-512.png",
@@ -31,7 +32,7 @@ self.addEventListener('install',event=>{
   event.waitUntil((async()=>{
     const cache=await caches.open(CACHE);
     await Promise.all(FILES.map(async url=>{
-      const response=await fetch(url,{cache:'no-cache'});
+      const response=await fetch(url,{cache:'reload'});
       if(!response.ok)throw new Error(url+' '+response.status);
       await cache.put(url,response);
     }));
