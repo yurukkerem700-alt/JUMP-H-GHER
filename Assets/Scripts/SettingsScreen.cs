@@ -46,6 +46,7 @@ public class SettingsScreen
         Legend(c, 6, "EYLEM DÜĞMELERİ (otomatik yerleşim)");
         bsize = Row(c, 7, "Boyut", .95f, 1.1f, v => GameSettings.BtnSize = v, out bsizev);
         bopacity = Row(c, 8, "Şeffaflık", .65f, 1f, v => GameSettings.BtnOpacity = v, out bopv);
+        UiArt.Btn(c, font, "KONTROLLERİ YERLEŞTİR", .5f, RowY(9), 520, 60, () => { var j = Joystick; if (j) j.BeginEdit(.85f); });
         root.SetActive(false);
     }
 
