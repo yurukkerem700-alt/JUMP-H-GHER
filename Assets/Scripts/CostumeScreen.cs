@@ -7,7 +7,7 @@ using TMPro;
 // Kostümler ekranı: kartlara dokununca karakter anında değişir, seçim kaydedilir.
 public class CostumeScreen
 {
-    const int Columns = 3;
+    readonly int columns;
     const float CardHeight = 420, RowGap = 450, Top = 40;
 
     class Card { public string Id; public Image Frame, Pic; public TextMeshProUGUI State; }
@@ -21,6 +21,7 @@ public class CostumeScreen
 
     public CostumeScreen(Transform parent, TMP_FontAsset font, Action back)
     {
+        columns = Screen.height > Screen.width ? 2 : 3;
         root = new GameObject("Kostümler", typeof(Image)); root.transform.SetParent(parent, false);
         var r = root.GetComponent<RectTransform>(); r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one; r.offsetMin = r.offsetMax = Vector2.zero;
         root.GetComponent<Image>().color = new Color(.035f, .025f, .045f, 1);
@@ -46,7 +47,7 @@ public class CostumeScreen
         view.GetComponent<Image>().color = new Color(0, 0, 0, 0);
         var contentGo = new GameObject("İçerik", typeof(RectTransform)); contentGo.transform.SetParent(view.transform, false);
         var content = contentGo.GetComponent<RectTransform>(); content.anchorMin = new Vector2(0, 1); content.anchorMax = new Vector2(1, 1); content.pivot = new Vector2(.5f, 1);
-        int rows = (Costumes.All.Length + Columns - 1) / Columns;
+        int rows = (Costumes.All.Length + columns - 1) / columns;
         content.sizeDelta = new Vector2(0, Top + rows * RowGap + 20); content.anchoredPosition = Vector2.zero;
         scroll = view.GetComponent<ScrollRect>(); scroll.viewport = vr; scroll.content = content; scroll.horizontal = false; scroll.vertical = true;
         scroll.movementType = ScrollRect.MovementType.Clamped; scroll.scrollSensitivity = 40;
@@ -57,11 +58,12 @@ public class CostumeScreen
 
     Card MakeCard(RectTransform content, TMP_FontAsset font, Costumes.Entry entry, int index)
     {
-        int col = index % Columns, row = index / Columns;
-        float x0 = .03f + col * .32f;
+        int col = index % columns, row = index / columns;
+        float cell = .96f / columns;
+        float x0 = .02f + col * cell;
         var go = new GameObject(entry.Name, typeof(Image), typeof(Button)); go.transform.SetParent(content, false);
         var rect = go.GetComponent<RectTransform>();
-        rect.anchorMin = new Vector2(x0, 1); rect.anchorMax = new Vector2(x0 + .30f, 1); rect.pivot = new Vector2(.5f, 1);
+        rect.anchorMin = new Vector2(x0, 1); rect.anchorMax = new Vector2(x0 + cell - .02f, 1); rect.pivot = new Vector2(.5f, 1);
         rect.anchoredPosition = new Vector2(0, -(Top + row * RowGap)); rect.sizeDelta = new Vector2(0, CardHeight);
         // Anchor aralığı genişlik verdiği için pivotu ortada tutmak üzere x ofseti sıfır kalır.
         var frame = go.GetComponent<Image>();

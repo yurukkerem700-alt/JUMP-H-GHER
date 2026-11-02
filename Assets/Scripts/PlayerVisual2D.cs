@@ -7,6 +7,7 @@ public class PlayerVisual2D : MonoBehaviour
     public Material spriteMaterial;
     Sprite[] frames;
     SpriteRenderer display;
+    CostumeRig2D rig;
     Rigidbody2D body;
     PlayerController controller;
     bool wasGrounded = true;
@@ -30,6 +31,16 @@ public class PlayerVisual2D : MonoBehaviour
     // Seçili kostümün sayfasından 8 kareyi kurar; sayfa yoksa ya da okunamıyorsa varsayılan gezgin kullanılır.
     void ApplyCostume()
     {
+        if(rig) { rig.gameObject.SetActive(false); Destroy(rig.gameObject); rig=null; }
+        int rigIndex=CostumeRig2D.Index(Costumes.SelectedId);
+        display.enabled=rigIndex<0;
+        if(rigIndex>=0)
+        {
+            var go=new GameObject("Kostum Iskeleti",typeof(CostumeRig2D));
+            go.transform.SetParent(transform,false); go.transform.localPosition=new Vector3(0,-.3f,0);
+            rig=go.GetComponent<CostumeRig2D>(); rig.Init(controller,spriteMaterial,rigIndex);
+            return;
+        }
         var sheet=Costumes.Sheet(Costumes.SelectedId); if(!sheet) sheet=animationSheet;
         if(frames!=null) foreach(var old in frames) if(old) Destroy(old);
         int w=sheet.width/4,h=sheet.height/2;
@@ -52,6 +63,7 @@ public class PlayerVisual2D : MonoBehaviour
 
     void Update()
     {
+        if(rig) return;
         var support=controller.GroundPlatform(out bool grounded);
         float relative=body.linearVelocity.x-(support?support.CurrentVelocity.x:0);
         if(grounded&&!wasGrounded) landedAt=Time.time;

@@ -9,6 +9,7 @@ public class CostumeEffects : MonoBehaviour
     readonly float[] ages = new float[Count];
     Sprite sprite;
     Texture2D texture;
+    Sprite[] themed;
     Rigidbody2D body;
     Color tint;
     float clock;
@@ -25,6 +26,12 @@ public class CostumeEffects : MonoBehaviour
         }
         texture.Apply();
         sprite = Sprite.Create(texture,new Rect(0,0,16,16),Vector2.one*.5f,16);
+        themed=new[] {
+            UiArt.Build(32,32,32,(u,v)=>Mathf.Clamp01((.25f-Mathf.Abs(u)-Mathf.Abs(v)*.5f)*50)),
+            UiArt.Build(32,32,32,(u,v)=>Mathf.Clamp01((.045f-Mathf.Abs(Mathf.Sqrt(u*u+v*v)-.34f))*50)),
+            UiArt.Build(32,32,32,(u,v)=>Mathf.Clamp01((.1f-Mathf.Min(Mathf.Abs(u),Mathf.Abs(v)))*50)),
+            UiArt.Build(32,32,32,(u,v)=>Mathf.Clamp01((.035f-Mathf.Min(Mathf.Min(Mathf.Abs(u),Mathf.Abs(v)),Mathf.Abs(Mathf.Abs(u)-Mathf.Abs(v))*.7f))*50))
+        };
         for(int i=0;i<Count;i++)
         {
             var go = new GameObject("Kostum Pariltisi",typeof(SpriteRenderer));
@@ -39,8 +46,14 @@ public class CostumeEffects : MonoBehaviour
         style=0;
         for(int i=0;i<Costumes.All.Length;i++) if(Costumes.All[i].Id==Costumes.SelectedId) style=i;
         Color[] colors={new Color(.6f,.85f,.4f),new Color(1,.45f,.12f),new Color(.65f,.9f,1),new Color(.45f,.65f,1),new Color(1,.18f,.3f),new Color(.8f,.65f,1)};
-        tint=colors[style]; clock=0;
-        for(int i=0;i<Count;i++){ages[i]=1; motes[i].enabled=false;}
+        int rig=CostumeRig2D.Index(Costumes.SelectedId);
+        tint=rig>=0?CostumeRig2D.Tints[rig]:colors[Mathf.Clamp(style,0,colors.Length-1)]; clock=0;
+        for(int i=0;i<Count;i++)
+        {
+            ages[i]=1; motes[i].enabled=false;
+            motes[i].sprite=rig>=0?themed[rig]:sprite;
+            motes[i].transform.localRotation=Quaternion.identity;
+        }
     }
     void LateUpdate()
     {
@@ -56,17 +69,25 @@ public class CostumeEffects : MonoBehaviour
         {
             ages[i]+=dt; float a=ages[i]; var m=motes[i]; m.enabled=a<.8f;
             if(!m.enabled) continue;
-            float drift=style==2?.7f:style==4?.15f:.4f;
+            float drift=style==7?.65f:style==8?-.3f:style==9?.12f:style==2?.7f:style==4?.15f:.4f;
             positions[i]+=new Vector3(Mathf.Sin(i*3+a*8)*.15f,drift,0)*dt;
             m.transform.position=positions[i];
-            float size=style==2?.22f:style==3?.065f:.11f;
+            float size=style==7?.15f:style==8?.055f:style==9?.09f:style==2?.22f:style==3?.065f:.11f;
             m.transform.localScale=Vector3.one*size*(1+a);
+            if(style==6) m.transform.localScale=new Vector3(size*.5f,size*2,1);
+            if(style>=6) m.transform.rotation=Quaternion.Euler(0,0,(i*47+a*120));
             m.color=new Color(tint.r,tint.g,tint.b,(1-a/.8f)*.65f);
         }
     }
     void OnDestroy()
     {
         Costumes.Changed-=Refresh;
-        if(sprite) Destroy(sprite); if(texture) Destroy(texture);
+        Release(sprite); Release(texture);
+        if(themed!=null) foreach(var s in themed) if(s) { Release(s.texture); Release(s); }
+    }
+    static void Release(Object asset)
+    {
+        if(!asset) return;
+        if(Application.isPlaying) Destroy(asset); else DestroyImmediate(asset);
     }
 }
