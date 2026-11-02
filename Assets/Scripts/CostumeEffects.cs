@@ -30,7 +30,8 @@ public class CostumeEffects : MonoBehaviour
             UiArt.Build(32,32,32,(u,v)=>Mathf.Clamp01((.25f-Mathf.Abs(u)-Mathf.Abs(v)*.5f)*50)),
             UiArt.Build(32,32,32,(u,v)=>Mathf.Clamp01((.045f-Mathf.Abs(Mathf.Sqrt(u*u+v*v)-.34f))*50)),
             UiArt.Build(32,32,32,(u,v)=>Mathf.Clamp01((.1f-Mathf.Min(Mathf.Abs(u),Mathf.Abs(v)))*50)),
-            UiArt.Build(32,32,32,(u,v)=>Mathf.Clamp01((.035f-Mathf.Min(Mathf.Min(Mathf.Abs(u),Mathf.Abs(v)),Mathf.Abs(Mathf.Abs(u)-Mathf.Abs(v))*.7f))*50))
+            UiArt.Build(32,32,32,(u,v)=>Mathf.Clamp01((.035f-Mathf.Min(Mathf.Min(Mathf.Abs(u),Mathf.Abs(v)),Mathf.Abs(Mathf.Abs(u)-Mathf.Abs(v))*.7f))*50)),
+            UiArt.Build(32,32,32,(u,v)=>Mathf.Clamp01((.22f-Mathf.Abs(u+v*.4f)-Mathf.Abs(v)*.45f)*50))
         };
         for(int i=0;i<Count;i++)
         {
@@ -77,6 +78,7 @@ public class CostumeEffects : MonoBehaviour
             if(style==6) m.transform.localScale=new Vector3(size*.5f,size*2,1);
             if(style>=6) m.transform.rotation=Quaternion.Euler(0,0,(i*47+a*120));
             m.color=new Color(tint.r,tint.g,tint.b,(1-a/.8f)*.65f);
+            if(style==10) m.color=i%4==0?new Color(1,.9f,.85f,(1-a/.8f)*.7f):new Color(1,.08f,.19f,(1-a/.8f)*.7f);
         }
     }
     void OnDestroy()

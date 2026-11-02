@@ -25,6 +25,7 @@ public static class Costumes
         new Entry("mercan_cadisi", "MERCAN CADISI", "Mercan tacıyla derinliklerden yükselir"),
         new Entry("kum_saati_bekcisi", "KUM SAATİ BEKÇİSİ", "Zamanın altın tozlarını korur"),
         new Entry("buz_pervanesi", "BUZ PERVANESİ", "Kristal kanatlarıyla soğuğu dokur"),
+        new Entry("bordo_kovboy", "BORDO KOVBOY", "Kırmızı gözlü, sarı saçlı yetişkin gece yolcusu"),
     };
 
     public static event Action Changed;

@@ -14,11 +14,11 @@ public static class CostumeRigVerification
         var scene=EditorSceneManager.NewPreviewScene();
         var shader=Shader.Find("Sprites/Default");
         var mat=new Material(shader);
-        var created=new GameObject[4];
+        var created=new GameObject[CostumeRig2D.Ids.Length];
         try
         {
-            Assert.AreEqual(10,Costumes.All.Length);
-            for(int i=0;i<4;i++)
+            Assert.AreEqual(11,Costumes.All.Length);
+            for(int i=0;i<CostumeRig2D.Ids.Length;i++)
             {
                 Assert.AreEqual(i,CostumeRig2D.Index(CostumeRig2D.Ids[i]));
                 var go=new GameObject(CostumeRig2D.Ids[i]); created[i]=go;
@@ -56,7 +56,7 @@ public static class CostumeRigVerification
                     Costumes.SelectedId=entry.Id;
                     Assert.AreEqual(18,effectObject.GetComponentsInChildren<SpriteRenderer>().Length);
                 }
-                Debug.Log("COSTUME EFFECT SWITCH PASSED: 10/10; fixed 18-particle pool");
+                Debug.Log("COSTUME EFFECT SWITCH PASSED: 11/11; fixed 18-particle pool");
             }
             finally
             {
@@ -64,7 +64,7 @@ public static class CostumeRigVerification
                 if(!hadSelection) { PlayerPrefs.DeleteKey("Costume"); PlayerPrefs.Save(); }
                 UnityEngine.Object.DestroyImmediate(effectObject);
             }
-            Debug.Log("COSTUME VERIFICATION PASSED: 4/4");
+            Debug.Log("COSTUME VERIFICATION PASSED: 5/5");
         }
         finally
         {
