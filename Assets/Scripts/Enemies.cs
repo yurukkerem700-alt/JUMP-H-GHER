@@ -66,7 +66,7 @@ public class EnemyManager : MonoBehaviour
     static EnemyKind Climbers => UseLegacyEnemies ? EnemyKind.Zombie : EnemyKind.Karakoncolos;
     static EnemyKind Leapers => UseLegacyEnemies ? EnemyKind.Goblin : EnemyKind.KaraKurt;
     const float FirstDelay = 8f, RespawnDelay = 7f, SlotGap = 4f, SpeedScale = .6f, KickCooldown = .5f, KickReach = 1.7f;
-    InfiniteTower tower; Material material; Canvas canvas, kickCanvas; Image[] markers;
+    InfiniteTower tower; Material material; Canvas kickCanvas;
     GameObject kickButton; GameDeviceLayout layout; float kickReadyAt;
     float Speed => def.enemySpeed * SpeedScale; // tüm düşman hızları bu çarpanla yavaşlatılır
     readonly List<EnemySlot> slots = new List<EnemySlot>();
@@ -77,9 +77,6 @@ public class EnemyManager : MonoBehaviour
     public void Init(InfiniteTower t)
     {
         tower = t; material = t.coins.coin.GetComponentInChildren<SpriteRenderer>().sharedMaterial;
-        canvas = UiArt.NewCanvas("Düşman Göstergeleri", 870);
-        markers = new Image[6];
-        for (int i = 0; i < markers.Length; i++) { markers[i] = UiArt.Pic(canvas.transform, UiArt.Disc, new Color(1, .2f, .2f, .9f), 0, 0, 34, 34); markers[i].gameObject.SetActive(false); }
         // TouchJoystick owns the mobile kick button.
     }
 
@@ -157,7 +154,6 @@ public class EnemyManager : MonoBehaviour
         endless = false;
         foreach (var s in slots) if (s.enemy != null && s.enemy.go) Destroy(s.enemy.go);
         slots.Clear(); active = false;
-        if (markers != null) foreach (var m in markers) if (m) m.gameObject.SetActive(false);
     }
 
     void Update()
@@ -187,7 +183,6 @@ public class EnemyManager : MonoBehaviour
             Touch(e, now);
             if (slots.Count == 0) return; // darbe son canı aldıysa liste temizlenmiş olabilir
         }
-        UpdateMarkers();
     }
 
     void Spawn(EnemySlot slot)
@@ -401,22 +396,5 @@ public class EnemyManager : MonoBehaviour
         if(phase>=1){e.state=Enemy.Stand;e.attackReadyAt=now+.65f;e.waitSince=now;}
     }
 
-    // Ekranın altında kalan düşmanlar için altta kırmızı uyarı noktası.
-    void UpdateMarkers()
-    {
-        var cam = Camera.main; int used = 0;
-        foreach (var slot in slots)
-        {
-            if (slot.enemy == null || used >= markers.Length) continue;
-            var v = cam.WorldToViewportPoint(slot.enemy.go.transform.position);
-            if (v.y >= .01f) continue;
-            var m = markers[used++]; m.gameObject.SetActive(true);
-            m.rectTransform.anchorMin = m.rectTransform.anchorMax = new Vector2(Mathf.Clamp(v.x, .05f, .95f), 0);
-            m.rectTransform.anchoredPosition = new Vector2(0, 170);
-            m.color = new Color(1, .2f, .2f, .5f + .4f * Mathf.Sin(Time.time * 8));
-        }
-        for (int i = used; i < markers.Length; i++) markers[i].gameObject.SetActive(false);
-    }
-
-    void OnDestroy() { Clear(); EnemyArt.Release(); EnemySfx.Release(); if (canvas) Destroy(canvas.gameObject); if (kickCanvas) Destroy(kickCanvas.gameObject); }
+    void OnDestroy() { Clear(); EnemyArt.Release(); EnemySfx.Release(); if (kickCanvas) Destroy(kickCanvas.gameObject); }
 }

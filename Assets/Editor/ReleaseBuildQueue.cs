@@ -57,6 +57,7 @@ public static class ReleaseBuildQueue
     public static void BuildWebBatch()
     {
         LevelExitVerification.Run();
+        SkyWildlifeVerification.Run();
         IllustratedCostumeVerification.Run();
         string folder=Environment.GetEnvironmentVariable("WEB_OUT");Directory.CreateDirectory(folder);
         PlayerSettings.productName="Kök Yankısı";PlayerSettings.bundleVersion="0.6.0";PlayerSettings.runInBackground=true;

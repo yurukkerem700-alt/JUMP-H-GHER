@@ -29,6 +29,7 @@ public class GraveDecor : MonoBehaviour
     class Perch { public SpriteRenderer shadow; public float drop, width; public SpriteRenderer sr; public Sprite[] frames; public float u, v, next, until, minWait, maxWait; }
     readonly System.Collections.Generic.List<Perch> perches = new System.Collections.Generic.List<Perch>();
     SpriteRenderer[] bats, wisps, ravenShadows; Sprite[] batFrames; float[] wispSeed;
+    Sprite[][] batModels;
     SpriteRenderer bg, zombie, zombieNext, shadow;
     Sprite[] zombieFrames, ravenFrames;
     SpriteRenderer[] ravens;
@@ -71,7 +72,8 @@ public class GraveDecor : MonoBehaviour
         if (batFrames != null)
         {
             bats = new SpriteRenderer[BatCount];
-            for (int i = 0; i < BatCount; i++) { bats[i] = Make("Yarasa " + (i + 1), batFrames[0], material, -25); bats[i].color = BatTint; }
+            batModels=new Sprite[BatCount][];
+            for (int i = 0; i < BatCount; i++) { batModels[i]=SkyCreatureArt.Get(2+i%2); bats[i] = Make("Yarasa " + (i + 1), batModels[i]!=null?batModels[i][0]:batFrames[0], material, -25); bats[i].color = BatTint; }
         }
         BuildWisps(material);
         if (zombie == null && ravens == null && perches.Count == 0 && bats == null && wisps == null) enabled = false;
@@ -138,7 +140,12 @@ public class GraveDecor : MonoBehaviour
                 float v = .16f + i * .07f + Mathf.Sin(t * 1.3f + i * 2f) * .035f;
                 float flap = .55f + .45f * Mathf.Abs(Mathf.Cos(t * (11f + i * 2f)));
                 bats[i].transform.position = At(u, v);
-                bats[i].transform.localScale = new Vector3(flap, 1f, 1f);
+                if(batModels[i]!=null)
+                {
+                    bats[i].sprite=batModels[i][(Mathf.FloorToInt(t*(9+i))+i)%4];
+                    bats[i].transform.localScale=Vector3.one;
+                }
+                else bats[i].transform.localScale = new Vector3(flap, 1f, 1f);
                 bats[i].transform.rotation = Quaternion.Euler(0, 0, Mathf.Sin(t * 2.2f + i) * 6f);
                 bats[i].flipX = !right;
             }
