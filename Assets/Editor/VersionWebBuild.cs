@@ -25,6 +25,7 @@ public static class VersionWebBuild
             File.Move(path,dest);
             html=html.Replace("Build/"+name,"Build/"+versioned);
         }
+        if(keep.Count==0) return;
         foreach(string old in Directory.GetFiles(Path.Combine(folder,"Build")))
             if(Regex.IsMatch(Path.GetFileName(old),@"^web\.[a-f0-9]{12}\.(data|wasm|framework\.js|loader\.js)(\.br)?$") && !keep.Contains(old)) File.Delete(old);
         File.WriteAllText(Path.Combine(folder,"index.html"),html);
