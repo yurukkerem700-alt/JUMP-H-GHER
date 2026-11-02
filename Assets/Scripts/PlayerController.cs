@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     private Collider2D oyuncuCollider;
     private float movementX;
     bool airJumpUsed;
+    float jumpBufferedUntil = -1;
     private int zeminMask;
     private Vector2 startPosition;
     private CoinSequence coinSequence;
@@ -45,10 +46,15 @@ public class PlayerController : MonoBehaviour
 #if UNITY_EDITOR
         if (VerificationControl) { movementX = VerificationMovement; return; }
 #endif
-        if (GameFlow.IsMenu) {movementX=0;GameInput.Clear();return;}
+        if (GameFlow.IsMenu) {movementX=0;jumpBufferedUntil=-1;GameInput.Clear();return;}
         movementX = GameInput.Horizontal;
-        if (GameInput.ConsumeJump()) ZiplamayiDene();
-        else if (GameInput.JumpHeld) { GroundPlatform(out bool onGround); if (onGround) ZiplamayiDene(); }
+        if (GameInput.ConsumeJump()) jumpBufferedUntil = Time.time + .12f;
+        GroundPlatform(out bool onGround);
+        bool canAirJump = TowerPowers.Instance && TowerPowers.Instance.DoubleJumpActive && !airJumpUsed;
+        if ((Time.time <= jumpBufferedUntil && (onGround || canAirJump)) || (GameInput.JumpHeld && onGround))
+        {
+            ZiplamayiDene(); jumpBufferedUntil = -1;
+        }
         if (Input.GetKeyDown(KeyCode.R)) RestartRun();
         if (rb.position.y < -5.5f) FallToGround();
     }
@@ -164,6 +170,7 @@ public class PlayerController : MonoBehaviour
     {
         standingPlatform = null;
         airJumpUsed = false;
+        jumpBufferedUntil = -1;
         supportCollider = null;
         lastGroundContact = -100;
         rb.position = startPosition;

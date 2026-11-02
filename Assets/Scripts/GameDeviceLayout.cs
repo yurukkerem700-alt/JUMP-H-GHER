@@ -34,6 +34,7 @@ public class GameDeviceLayout : MonoBehaviour
         // PC'de (WebGL dahil) joystick/butonlar görünmez; dokunmatik ekranlı bilgisayarlar da PC sayılır.
         // T tuşu elle değiştirir.
         touchEnabled = Application.isMobilePlatform;
+        if (Application.isMobilePlatform) Screen.orientation = ScreenOrientation.Portrait;
         joystick = TouchJoystick.Create(this);
         var legacy = new System.Collections.Generic.List<GameObject>();
         foreach (var b in touchControls.GetComponentsInChildren<TouchControlButton>(true)) legacy.Add(b.gameObject);
@@ -101,7 +102,12 @@ public class GameDeviceLayout : MonoBehaviour
         if (titlePanel) titlePanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Min(385, referenceWidth * .52f - 25));
         if (scorePanel) scorePanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Min(260, referenceWidth * .35f));
     }
-    void OnApplicationFocus(bool focused) { if (!focused) GameInput.Clear(); }
-    void OnApplicationPause(bool paused) { if (paused) GameInput.Clear(); }
+    void OnApplicationFocus(bool focused) { if (!focused) SuspendGame(); }
+    void OnApplicationPause(bool paused) { if (paused) SuspendGame(); }
+    void SuspendGame()
+    {
+        GameInput.Clear();
+        if (GameFlow.Instance) GameFlow.Instance.PauseForBackground();
+    }
     void OnDisable() { GameInput.Clear(); }
 }

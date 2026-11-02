@@ -27,6 +27,7 @@ public class PlayerHealth : MonoBehaviour
         for (int i = 0; i < Max; i++)
         {
             icons[i] = UiArt.Pic(canvas.transform, UiArt.Heart, Full, 0, 1, 46, 46);
+            icons[i].gameObject.AddComponent<SafeHudAnchor>();
             icons[i].rectTransform.anchoredPosition = new Vector2(46 + i * 54, -140);
         }
         Refresh();

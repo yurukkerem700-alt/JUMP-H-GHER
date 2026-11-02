@@ -81,7 +81,8 @@ public class EnemyManager : MonoBehaviour
         for (int i = 0; i < markers.Length; i++) { markers[i] = UiArt.Pic(canvas.transform, UiArt.Disc, new Color(1, .2f, .2f, .9f), 0, 0, 34, 34); markers[i].gameObject.SetActive(false); }
         // Dokunmatik ekran için tekme düğmesi (bilgisayarda F / K / Sol Shift).
         kickCanvas = UiArt.NewCanvas("Tekme Düğmesi", 855);
-        kickButton = UiArt.Btn(kickCanvas.transform, t.floorLabel.font, "TEKME", .88f, .34f, 190, 110, GameInput.Kick).gameObject;
+        kickButton = UiArt.Btn(kickCanvas.transform, t.floorLabel.font, "TEKME", .87f, .11f, 160, 120, GameInput.Kick).gameObject;
+        kickButton.AddComponent<SafeHudAnchor>();
         kickButton.SetActive(false);
     }
 

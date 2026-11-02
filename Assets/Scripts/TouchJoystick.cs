@@ -11,6 +11,7 @@ public class TouchJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler, I
     GameObject[] legacyButtons = new GameObject[0];
     int pointer; bool active; Vector2 origin; bool preview;
     GameDeviceLayout layout;
+    GameObject jumpButton;
 
     public static TouchJoystick Create(GameDeviceLayout owner)
     {
@@ -29,6 +30,15 @@ public class TouchJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler, I
 
     void Build()
     {
+        jumpButton = new GameObject("Mobil Zipla", typeof(Image), typeof(TouchControlButton));
+        jumpButton.transform.SetParent(canvas.transform, false);
+        jumpButton.GetComponent<TouchControlButton>().action = TouchControlButton.Action.Jump;
+        jumpButton.GetComponent<Image>().color = new Color(.25f,.14f,.18f,.9f);
+        var jr = jumpButton.GetComponent<RectTransform>();
+        jr.anchorMin = jr.anchorMax = new Vector2(.87f,.24f); jr.sizeDelta = new Vector2(160,140);
+        jumpButton.AddComponent<SafeHudAnchor>();
+        UiArt.Label(jumpButton.transform, null, "ZIPLA", .5f,.5f,150,80,30,Color.white);
+
         var go = new GameObject("Joystick Görünümü", typeof(RectTransform), typeof(CanvasGroup)); go.transform.SetParent(canvas.transform, false);
         visual = go.GetComponent<RectTransform>(); group = go.GetComponent<CanvasGroup>();
         group.blocksRaycasts = false; group.interactable = false;
@@ -128,12 +138,18 @@ public class TouchJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler, I
     {
         if (!this || !canvas) return;
         bool on = Wanted || (preview && GameSettings.JoyEnabled);
-        float size = GameSettings.JoySize, x = GameSettings.JoyX, y = GameSettings.JoyY;
+        float size = Mathf.Clamp(GameSettings.JoySize, .6f, 1.6f);
+        var safe = Screen.safeArea;
+        float insetX = BaseSize * size * canvas.scaleFactor * .5f / Mathf.Max(1, Screen.width);
+        float insetY = BaseSize * size * canvas.scaleFactor * .5f / Mathf.Max(1, Screen.height);
+        float x = Mathf.Clamp(GameSettings.JoyX, safe.xMin / Screen.width + insetX, safe.xMax / Screen.width - insetX);
+        float y = Mathf.Clamp(GameSettings.JoyY, safe.yMin / Screen.height + insetY, safe.yMax / Screen.height - insetY);
         zone.gameObject.SetActive(Wanted && !preview);
         visual.gameObject.SetActive(on);
+        if(jumpButton) { jumpButton.SetActive(Wanted && !preview); jumpButton.transform.SetAsLastSibling(); }
         // Yakalama alanı: halkanın yatayda iki yanı, aşağıda ekranın tabanına kadar
-        zone.anchorMin = new Vector2(Mathf.Max(0, x - .36f), 0);
-        zone.anchorMax = new Vector2(Mathf.Min(1, x + .36f), Mathf.Min(.7f, y + .26f));
+        zone.anchorMin = new Vector2(Mathf.Max(safe.xMin / Screen.width, x - .36f), safe.yMin / Screen.height);
+        zone.anchorMax = new Vector2(Mathf.Min(safe.xMax / Screen.width, x + .36f), Mathf.Min(safe.yMax / Screen.height, y + .16f));
         zone.offsetMin = zone.offsetMax = Vector2.zero;
         visual.anchorMin = visual.anchorMax = new Vector2(x, y);
         visual.anchoredPosition = Vector2.zero;
@@ -145,11 +161,11 @@ public class TouchJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler, I
         if (!Wanted) Release();
     }
 
-    float RadiusPixels => BaseSize * .5f * GameSettings.JoySize * canvas.scaleFactor;
+    float RadiusPixels => BaseSize * .5f * Mathf.Clamp(GameSettings.JoySize, .6f, 1.6f) * canvas.scaleFactor;
 
     public void OnPointerDown(PointerEventData e)
     {
-        if (active) ResetState(); // takılı kalmış eski parmak varsa bırak
+        if (active || GameFlow.IsMenu) return; // ikinci parmak joystick sahipliğini devralamaz
         active = true; pointer = e.pointerId; origin = e.position;
         Evaluate(e.position);
     }
@@ -170,7 +186,7 @@ public class TouchJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler, I
         bool wasUp = lastUp; lastUp = up;
         GameInput.SetJoystick(h, up, down);
         if (up && !wasUp) GameInput.Jump();
-        knob.anchoredPosition = Vector2.ClampMagnitude(delta / canvas.scaleFactor / GameSettings.JoySize, BaseSize * .36f);
+        knob.anchoredPosition = Vector2.ClampMagnitude(delta / canvas.scaleFactor / Mathf.Clamp(GameSettings.JoySize, .6f, 1.6f), BaseSize * .36f);
     }
     bool lastUp;
 
