@@ -12,6 +12,7 @@ public class PlayerVisual2D : MonoBehaviour
     PlayerController controller;
     bool wasGrounded = true;
     float landedAt = -100;
+    float kickStarted = -100;
     public int CurrentFrame { get; private set; }
 
     void Start()
@@ -25,12 +26,13 @@ public class PlayerVisual2D : MonoBehaviour
         visual.transform.localScale=Vector3.one*VisualScale;
         if (!GetComponent<CostumeEffects>()) gameObject.AddComponent<CostumeEffects>();
         Costumes.DefaultSheet=animationSheet;
-        Costumes.Changed+=ApplyCostume; ApplyCostume();
+        Costumes.Changed+=ApplyCostume; GameInput.Kicked+=OnKick; ApplyCostume();
     }
 
     // Seçili kostümün sayfasından 8 kareyi kurar; sayfa yoksa ya da okunamıyorsa varsayılan gezgin kullanılır.
     void ApplyCostume()
     {
+        CurrentFrame=0; kickStarted=-100; landedAt=-100; wasGrounded=true;
         if(rig) { rig.gameObject.SetActive(false); Destroy(rig.gameObject); rig=null; }
         int rigIndex=CostumeRig2D.Index(Costumes.SelectedId);
         display.enabled=rigIndex<0;
@@ -43,22 +45,30 @@ public class PlayerVisual2D : MonoBehaviour
         }
         var sheet=Costumes.Sheet(Costumes.SelectedId); if(!sheet) sheet=animationSheet;
         if(frames!=null) foreach(var old in frames) if(old) Destroy(old);
-        int w=sheet.width/4,h=sheet.height/2;
-        var bottoms=new int[8]; int tallest=1;
-        for(int i=0;i<8;i++)
+        int rows=sheet==animationSheet?2:Costumes.FrameRows(Costumes.SelectedId);
+        frames=BuildFrames(sheet,rows);
+        display.sprite=frames[CurrentFrame];
+    }
+
+    public static Sprite[] BuildFrames(Texture2D sheet,int rows)
+    {
+        int count=rows*4;
+        int w=sheet.width/4,h=sheet.height/rows;
+        var bottoms=new int[count]; int tallest=1;
+        for(int i=0;i<count;i++)
         {
-            var pixels=sheet.GetPixels((i%4)*w,(1-i/4)*h,w,h);
+            var pixels=sheet.GetPixels((i%4)*w,(rows-1-i/4)*h,w,h);
             int low=h-1,high=0;
             for(int y=0;y<h;y++)
             {
-                int count=0; for(int x=0;x<w;x++) if(pixels[y*w+x].a>.5f) count++;
-                if(count>=5) {low=Mathf.Min(low,y);high=Mathf.Max(high,y);}
+                int opaque=0; for(int x=0;x<w;x++) if(pixels[y*w+x].a>.5f) opaque++;
+                if(opaque>=5) {low=Mathf.Min(low,y);high=Mathf.Max(high,y);}
             }
             bottoms[i]=low; tallest=Mathf.Max(tallest,high-low+1);
         }
-        frames=new Sprite[8]; float ppu=tallest/1.08f;
-        for(int i=0;i<8;i++) frames[i]=Sprite.Create(sheet,new Rect((i%4)*w,(1-i/4)*h,w,h),new Vector2(.5f,(bottoms[i]+.5f)/h),ppu);
-        display.sprite=frames[CurrentFrame];
+        var result=new Sprite[count]; float ppu=tallest/1.08f;
+        for(int i=0;i<count;i++) result[i]=Sprite.Create(sheet,new Rect((i%4)*w,(rows-1-i/4)*h,w,h),new Vector2(.5f,(bottoms[i]+.5f)/h),ppu);
+        return result;
     }
 
     void Update()
@@ -67,13 +77,15 @@ public class PlayerVisual2D : MonoBehaviour
         var support=controller.GroundPlatform(out bool grounded);
         float relative=body.linearVelocity.x-(support?support.CurrentVelocity.x:0);
         if(grounded&&!wasGrounded) landedAt=Time.time;
-        if(!grounded) CurrentFrame=body.linearVelocity.y>.15f?5:6;
+        if(frames.Length>8 && Time.time-kickStarted<.3f) CurrentFrame=8+Mathf.Clamp(Mathf.FloorToInt((Time.time-kickStarted)*10),0,2);
+        else if(!grounded) CurrentFrame=body.linearVelocity.y>.15f?5:6;
         else if(Time.time-landedAt<.12f) CurrentFrame=7;
-        else if(Mathf.Abs(relative)>.3f) CurrentFrame=1+Mathf.FloorToInt(Time.time*8)%4;
-        else CurrentFrame=0;
+        else if(Mathf.Abs(relative)>.3f) CurrentFrame=1+Mathf.FloorToInt(Time.time*(frames.Length>8?Mathf.Clamp(Mathf.Abs(relative)*2,6,12):8))%4;
+        else CurrentFrame=frames.Length>8 && Mathf.Repeat(Time.time,3.4f)>3.1f?11:0;
         if(GameInput.Horizontal>.1f) display.flipX=false;
         if(GameInput.Horizontal<-.1f) display.flipX=true;
         display.sprite=frames[CurrentFrame]; wasGrounded=grounded;
     }
-    void OnDestroy() {Costumes.Changed-=ApplyCostume; if(frames!=null) foreach(var frame in frames) if(frame) Destroy(frame);}
+    void OnKick() { if(!rig && frames!=null && frames.Length>8 && !GameFlow.IsMenu) kickStarted=Time.time; }
+    void OnDestroy() {Costumes.Changed-=ApplyCostume; GameInput.Kicked-=OnKick; if(frames!=null) foreach(var frame in frames) if(frame) Destroy(frame);}
 }

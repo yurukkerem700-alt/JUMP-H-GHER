@@ -6,6 +6,9 @@ using UnityEngine;
 public static class Costumes
 {
     public const string Default = "gezgin";
+    public const string Elara = "elara";
+    public static int FrameRows(string id) => id == Elara ? 3 : 2;
+    public static int FrameCount(string id) => 4 * FrameRows(id);
 
     public readonly struct Entry
     {
@@ -26,6 +29,7 @@ public static class Costumes
         new Entry("kum_saati_bekcisi", "KUM SAATİ BEKÇİSİ", "Zamanın altın tozlarını korur"),
         new Entry("buz_pervanesi", "BUZ PERVANESİ", "Kristal kanatlarıyla soğuğu dokur"),
         new Entry("bordo_kovboy", "BORDO KOVBOY", "Kırmızı gözlü, sarı saçlı yetişkin gece yolcusu"),
+        new Entry(Elara, "ELARA", "Kök tılsımının ışığında yolunu bulan gezgin"),
     };
 
     public static event Action Changed;
@@ -61,7 +65,7 @@ public static class Costumes
         int rig = CostumeRig2D.Index(id); if(rig >= 0) return CostumeRig2D.Preview(rig);
         var sheet = Sheet(id);
         if (!sheet) return null;
-        int w = sheet.width / 4, h = sheet.height / 2;
-        return Sprite.Create(sheet, new Rect(0, h, w, h), new Vector2(.5f, .5f), 100);
+        int rows = FrameRows(id), w = sheet.width / 4, h = sheet.height / rows;
+        return Sprite.Create(sheet, new Rect(0, (rows-1)*h, w, h), new Vector2(.5f, .5f), 100);
     }
 }

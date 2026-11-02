@@ -49,6 +49,7 @@ public class CostumeEffects : MonoBehaviour
         Color[] colors={new Color(.6f,.85f,.4f),new Color(1,.45f,.12f),new Color(.65f,.9f,1),new Color(.45f,.65f,1),new Color(1,.18f,.3f),new Color(.8f,.65f,1)};
         int rig=CostumeRig2D.Index(Costumes.SelectedId);
         tint=rig>=0?CostumeRig2D.Tints[rig]:colors[Mathf.Clamp(style,0,colors.Length-1)]; clock=0;
+        if(Costumes.SelectedId==Costumes.Elara) tint=new Color(1,.55f,.72f);
         for(int i=0;i<Count;i++)
         {
             ages[i]=1; motes[i].enabled=false;
