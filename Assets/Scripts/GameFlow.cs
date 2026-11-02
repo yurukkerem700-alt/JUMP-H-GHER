@@ -172,8 +172,15 @@ public class GameFlow : MonoBehaviour
     // Sonuç ekranı açıkken oyun donar ama ana menü görünmez.
     public void Hold(bool on){holding=on;Apply();}
     void Apply(){IsMenu=menuVisible||holding;Time.timeScale=IsMenu?0:1;GameInput.Clear();}
-    public void StartLevel(int n){map.Close();begun=true;Show(false);run.Begin(n);}
-    void StartEndless(){map.Close();run.Stop();run.BeginEndless();begun=true;Show(false);tower.player.RestartRun();}
+    public void StartLevel(int n){map.Close();begun=true;Show(false);run.Begin(n);FirstRunLayout();}
+    void StartEndless(){map.Close();run.Stop();run.BeginEndless();begun=true;Show(false);tower.player.RestartRun();FirstRunLayout();}
+    // Dokunmatik cihazda ilk oyun başlangıcında kontrol yerleşim ekranı açılır; oyun bu sırada durur.
+    void FirstRunLayout()
+    {
+        var device=FindFirstObjectByType<GameDeviceLayout>();var joy=device?device.Joystick:null;
+        if(!joy||!device.TouchEnabled||GameSettings.LayoutDone)return;
+        Hold(true);joy.BeginEdit(.45f,()=>Hold(false));
+    }
     public void OpenMap(){if(run.Finished)run.Stop();Show(true);map.Open();}
     void OnDestroy(){Time.timeScale=1;IsMenu=false;Instance=null;if(run)Destroy(run.gameObject);if(health)Destroy(health.gameObject);if(canvas)Destroy(canvas.gameObject);PlayerPrefs.Save();}
 }

@@ -23,8 +23,25 @@ public static class GameSettings
     public static float JumpX { get => Get("JumpX", 0f); set => Put("JumpX", value); }   // ZIPLA sola
     public static float JumpY { get => Get("JumpY", 0f); set => Put("JumpY", value); }   // ZIPLA yukarı
 
+    // Oyuncunun sürükleyerek seçtiği kontrol konumları: 5 kontrol (joystick, sol, sağ, zıpla, tekme), güvenli alanın 0..1 oranı.
+    public const int ControlCount = 5;
+    public static bool LayoutDone { get => Bool("LayoutDone", false); set => SetBool("LayoutDone", value); }
+    public static bool HasLayout => PlayerPrefs.HasKey("Ctl0X");
+    public static Vector2 Control(int i) => new Vector2(Get("Ctl" + i + "X", .5f), Get("Ctl" + i + "Y", .5f));
+    public static void SaveLayout(Vector2[] positions)
+    {
+        for (int i = 0; i < ControlCount; i++) { PlayerPrefs.SetFloat("Ctl" + i + "X", positions[i].x); PlayerPrefs.SetFloat("Ctl" + i + "Y", positions[i].y); }
+        PlayerPrefs.Save();
+    }
+    public static void ResetLayout()
+    {
+        for (int i = 0; i < ControlCount; i++) { PlayerPrefs.DeleteKey("Ctl" + i + "X"); PlayerPrefs.DeleteKey("Ctl" + i + "Y"); }
+        PlayerPrefs.Save(); Changed?.Invoke();
+    }
+
     public static void ResetJoystick()
     {
+        ResetLayout();
         foreach (var key in new[] { "JoyEnabled", "JoyVisible", "JoyX", "JoyY", "JoySize", "JoyOpacity", "JoySens", "BtnSize", "BtnOpacity", "MoveX", "MoveY", "JumpX", "JumpY" }) PlayerPrefs.DeleteKey(key);
         PlayerPrefs.Save(); Changed?.Invoke();
     }
