@@ -23,6 +23,10 @@ public static class GameInput
 
     // Joystick yukarıda tutuluyorsa yere inince tekrar zıplanır.
     public static bool JumpHeld => joyUp;
+    static int touchJumpPointers;
+    // Zıplama tuşu / ekran düğmesi / joystick yukarısı şu an basılı mı? (değişken zıplama yüksekliği için)
+    public static bool JumpButtonDown => joyUp || touchJumpPointers > 0 || Input.GetButton("Jump") || Input.GetKey(KeyCode.W);
+    public static void SetJumpButton(bool pressed) { touchJumpPointers = Mathf.Max(0, touchJumpPointers + (pressed ? 1 : -1)); }
     public static bool DownHeld => joyDown;
 
     public static bool ConsumeJump()
@@ -52,5 +56,5 @@ public static class GameInput
     {
         joyHorizontal = horizontal; joyUp = up; joyDown = down;
     }
-    public static void Clear() { left.Clear(); right.Clear(); touchJump = false; touchKick = false; joyHorizontal = 0; joyUp = joyDown = false; Cleared?.Invoke(); }
+    public static void Clear() { touchJumpPointers = 0; left.Clear(); right.Clear(); touchJump = false; touchKick = false; joyHorizontal = 0; joyUp = joyDown = false; Cleared?.Invoke(); }
 }

@@ -16,19 +16,20 @@ public class TouchControlButton : MonoBehaviour, IPointerDownHandler, IPointerUp
     public void OnPointerDown(PointerEventData data)
     {
         held.Add(data.pointerId);
-        if (action == Action.Jump) GameInput.Jump();
+        if (action == Action.Jump) { GameInput.Jump(); GameInput.SetJumpButton(true); }
         else GameInput.Hold(action == Action.Left, data.pointerId, true);
         if (image) image.color = pressed;
     }
     public void OnPointerUp(PointerEventData data)
     {
-        held.Remove(data.pointerId);
+        if (held.Remove(data.pointerId) && action == Action.Jump) GameInput.SetJumpButton(false);
         if (action != Action.Jump) GameInput.Hold(action == Action.Left, data.pointerId, false);
         if (image && held.Count == 0) image.color = normal;
     }
     void OnDisable()
     {
         foreach (int id in held) if (action != Action.Jump) GameInput.Hold(action == Action.Left, id, false);
+        if (action == Action.Jump) for (int i = 0; i < held.Count; i++) GameInput.SetJumpButton(false);
         held.Clear();
         if (image) image.color = normal;
     }

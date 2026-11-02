@@ -21,6 +21,18 @@ Unity projesi: **6000.0.84f1**. Ana sahne: `Assets/Scenes/SampleScene.unity`.
 - Her 35 katta bölge değişir: Kül Mezarlığı, Yitik Bulutlar, Fırtına Geçidi, Kızıl Kökler, Yıldız Külleri. Bölgeler daha yüksek irtifalarda tekrar eder.
 - 2X (turuncu çift ok) 10 saniye boyunca tek ek hava zıplaması; mıknatıs (mor nal) 7,5 saniye coin çeker. Etkinken karakterin çevresinde renkli aura, mıknatısta çekim alanını gösteren dalga görünür; son 3 saniyede aura yanıp söner. Bulut/fırtına bölgesinde yukarı hava akımı vardır.
 
+## Oyun hissi (kontrol rahatlığı)
+
+`PlayerController` sabitleri (üst kısım) ile ayarlanır:
+
+- **Coyote time (0,10 sn)**: platform kenarından ayrıldıktan hemen sonra basılan zıplama hâlâ yerden sayılır.
+- **Zıplama tamponu (0,12 sn)**: yere inmeden az önce basılan zıplama, inince otomatik uygulanır; art arda basamak çıkmak akıcıdır.
+- **Değişken zıplama**: tuşu erken bırakınca yükseliş kesilir, ama kat aralığı (1,15) her zaman aşılır; hızlı dokunuş da bir kat çıkar. Ekran düğmesi ve joystick için de çalışır.
+- **Tok düşüş**: düşerken yerçekimi x1,4, tepe noktasında x0,75 (kısa süzülme), düşüş hızı sınırı 20.
+- **Squash & stretch**: zıplarken uzama, inerken (iniş hızına göre) ezilme (`PlayerVisual2D`).
+
+Bu değişiklikler Unity'de derlenip test edilmedi; `web/` çıktısı eski sürümdür. Değerler `PlayerController` içindeki sabitlerden kolayca ayarlanır; WebGL yeniden derlenmeli.
+
 ## Bölüm haritası
 
 - **OYNA** kıvrımlı bir harita açar: 100 bölüm, 1. bölüm en altta. Bir bölüm ancak öncekini bitirince açılır; ilerleme ve yıldızlar cihazda saklanır.

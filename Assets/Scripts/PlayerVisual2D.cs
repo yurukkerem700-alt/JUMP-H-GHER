@@ -12,6 +12,9 @@ public class PlayerVisual2D : MonoBehaviour
     bool wasGrounded = true;
     float landedAt = -100;
     public int CurrentFrame { get; private set; }
+    // Squash & stretch: ayaklardan sabit, yay gibi geri döner.
+    Vector2 squash = Vector2.one, squashVelocity;
+    float previousVy;
 
     void Start()
     {
@@ -22,6 +25,7 @@ public class PlayerVisual2D : MonoBehaviour
         display=visual.GetComponent<SpriteRenderer>(); display.sharedMaterial=spriteMaterial; display.sortingOrder=20;
         // Sprite tabanı ayakta olduğu için ayaklardan yukarı büyür; çarpışma kutusu ve fizik değişmez.
         visual.transform.localScale=Vector3.one*VisualScale;
+        controller.Jumped+=OnJumped;
         Costumes.DefaultSheet=animationSheet;
         Costumes.Changed+=ApplyCostume; ApplyCostume();
     }
@@ -53,7 +57,13 @@ public class PlayerVisual2D : MonoBehaviour
     {
         var support=controller.GroundPlatform(out bool grounded);
         float relative=body.linearVelocity.x-(support?support.CurrentVelocity.x:0);
-        if(grounded&&!wasGrounded) landedAt=Time.time;
+        if(grounded&&!wasGrounded)
+        {
+            landedAt=Time.time;
+            float impact=Mathf.Clamp01(-previousVy/14f); // sert inişte daha çok ezilir
+            squash=new Vector2(1f+.28f*impact+.06f,1f-.30f*impact-.06f); squashVelocity=Vector2.zero;
+        }
+        previousVy=body.linearVelocity.y;
         if(!grounded) CurrentFrame=body.linearVelocity.y>.15f?5:6;
         else if(Time.time-landedAt<.12f) CurrentFrame=7;
         else if(Mathf.Abs(relative)>.3f) CurrentFrame=1+Mathf.FloorToInt(Time.time*8)%4;
@@ -61,6 +71,17 @@ public class PlayerVisual2D : MonoBehaviour
         if(GameInput.Horizontal>.1f) display.flipX=false;
         if(GameInput.Horizontal<-.1f) display.flipX=true;
         display.sprite=frames[CurrentFrame]; wasGrounded=grounded;
+        // Sönümlü yay: scale 1'e döner (unscaledDeltaTime değil; duraklatınca zaten donar).
+        float dt=Mathf.Min(Time.deltaTime,.05f);
+        Vector2 diff=squash-Vector2.one;
+        squashVelocity+=(-diff*320f-squashVelocity*16f)*dt;
+        squash+=squashVelocity*dt;
+        display.transform.localScale=new Vector3(VisualScale*squash.x,VisualScale*squash.y,VisualScale);
     }
-    void OnDestroy() {Costumes.Changed-=ApplyCostume; if(frames!=null) foreach(var frame in frames) if(frame) Destroy(frame);}
+
+    void OnJumped()
+    {
+        squash=new Vector2(.82f,1.22f); squashVelocity=Vector2.zero;
+    }
+    void OnDestroy() {if(controller) controller.Jumped-=OnJumped; Costumes.Changed-=ApplyCostume; if(frames!=null) foreach(var frame in frames) if(frame) Destroy(frame);}
 }

@@ -15,6 +15,20 @@ public class PlayerController : MonoBehaviour
     private MovingPlatform2D standingPlatform;
     private Collider2D supportCollider;
     private float lastGroundContact = -100;
+
+    // --- Oyun hissi ayarları ---
+    const float CoyoteTime = .10f;        // Kenardan ayrıldıktan sonra bu kadar süre hâlâ yerden zıplanabilir.
+    const float JumpBufferTime = .12f;    // Yere inmeden hemen önce basılan zıplama, inince otomatik uygulanır.
+    const float FallGravityMultiplier = 1.4f; // Düşüş yükselişten daha tok ve hızlı.
+    const float ApexGravityMultiplier = .75f; // Zıplamanın tepesinde kısa bir süzülme: konmak kolaylaşır.
+    const float ApexVelocity = 1.1f;
+    const float MaxFallSpeed = 20f;
+    const float ShortHopVelocity = 7.1f;  // Tuş erken bırakılırsa yükseliş hızı en az bu kadar kalır (kat aralığı aşılır).
+    private float baseGravity = 2f;
+    private float lastGroundedTime = -100;
+    private float jumpBufferedUntil = -100;
+    private bool jumpRising;
+    public event System.Action Jumped;
 #if UNITY_EDITOR
     public static bool VerificationControl;
     public static float VerificationMovement;
@@ -34,6 +48,7 @@ public class PlayerController : MonoBehaviour
         sesTower = FindFirstObjectByType<InfiniteTower>();
         rb = GetComponent<Rigidbody2D>();
         oyuncuCollider = GetComponent<Collider2D>();
+        baseGravity = rb.gravityScale;
         zeminMask = LayerMask.GetMask("Zemin");
         startPosition = rb.position;
         coinSequence = FindFirstObjectByType<CoinSequence>();
@@ -47,7 +62,7 @@ public class PlayerController : MonoBehaviour
 #endif
         if (GameFlow.IsMenu) {movementX=0;GameInput.Clear();return;}
         movementX = GameInput.Horizontal;
-        if (GameInput.ConsumeJump()) ZiplamayiDene();
+        if (GameInput.ConsumeJump()) { if (!ZiplamayiDene()) jumpBufferedUntil = Time.time + JumpBufferTime; }
         else if (GameInput.JumpHeld) { GroundPlatform(out bool onGround); if (onGround) ZiplamayiDene(); }
         if (Input.GetKeyDown(KeyCode.R)) RestartRun();
         if (rb.position.y < -5.5f) FallToGround();
@@ -88,23 +103,55 @@ public class PlayerController : MonoBehaviour
         lastGroundContact = -100;
     }
 
-    public void ZiplamayiDene()
+    // Zıplama gerçekleştiyse true döner. Yerde, ya da kenardan yeni ayrılmışken (coyote) yer zıplaması; yoksa güç varsa havada zıplama.
+    public bool ZiplamayiDene()
     {
         GroundPlatform(out bool grounded);
-        if (!grounded)
+        bool coyote = !grounded && Time.time - lastGroundedTime <= CoyoteTime && rb.linearVelocity.y <= .15f;
+        if (!grounded && !coyote)
         {
-            if (!TowerPowers.Instance || !TowerPowers.Instance.DoubleJumpActive || airJumpUsed) return;
+            if (!TowerPowers.Instance || !TowerPowers.Instance.DoubleJumpActive || airJumpUsed) return false;
             airJumpUsed = true;
             SesAtolyesi.Ses.Swoosh(.8f);
         }
         else airJumpUsed = false;
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+        lastGroundedTime = -100; jumpBufferedUntil = -100; jumpRising = true;
+        Jumped?.Invoke();
+        return true;
+    }
+
+    // Değişken zıplama yüksekliği, tok düşüş, tepe süzülmesi ve düşüş hızı sınırı.
+    void ApplyGameFeel(bool grounded)
+    {
+        float vy = rb.linearVelocity.y;
+        if (jumpRising)
+        {
+            if (vy <= 0) jumpRising = false;
+            else if (!GameInput.JumpButtonDown)
+            {
+                jumpRising = false;
+                if (vy > ShortHopVelocity) rb.linearVelocity = new Vector2(rb.linearVelocity.x, ShortHopVelocity);
+                vy = rb.linearVelocity.y;
+            }
+        }
+        float scale = baseGravity;
+        if (!grounded)
+        {
+            if (vy < -.1f) scale *= FallGravityMultiplier;
+            else if (Mathf.Abs(vy) < ApexVelocity) scale *= ApexGravityMultiplier;
+        }
+        rb.gravityScale = scale;
+        if (vy < -MaxFallSpeed) rb.linearVelocity = new Vector2(rb.linearVelocity.x, -MaxFallSpeed);
     }
 
     void FixedUpdate()
     {
         var platform = GroundPlatform(out bool grounded);
-        if (grounded) airJumpUsed=false;
+        if (grounded) { airJumpUsed = false; lastGroundedTime = Time.time; jumpRising = false; }
+        // Zıplama tamponu: yere değdiği anda bekleyen zıplama uygulanır.
+        if (grounded && Time.time <= jumpBufferedUntil) { jumpBufferedUntil = -100; ZiplamayiDene(); }
+        ApplyGameFeel(grounded);
         footsteps.grounded = grounded;
         footsteps.defaultSurface = SesWorld.Surface(sesTower ? sesTower.HighestReachedFloor : 0);
         if (grounded && Mathf.Abs(movementX) > .1f)
@@ -165,6 +212,7 @@ public class PlayerController : MonoBehaviour
         standingPlatform = null;
         supportCollider = null;
         lastGroundContact = -100;
+        lastGroundedTime = -100; jumpBufferedUntil = -100; jumpRising = false;
         rb.position = startPosition;
         rb.linearVelocity = Vector2.zero;
     }
