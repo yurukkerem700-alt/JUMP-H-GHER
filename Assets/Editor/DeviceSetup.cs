@@ -13,7 +13,8 @@ public static class DeviceSetup
 {
     const string Marker = "Library/DeviceSetup.v1.done";
     static TMP_FontAsset font;
-    static DeviceSetup() { EditorApplication.delayCall += AutoSetup; }
+    // Temiz klonda Library işaret dosyası yoktur; otomatik çalışınca her Play girişini kapatıyordu. Yalnızca menüden çalışır.
+    static DeviceSetup() { }
     static void AutoSetup()
     {
         if (File.Exists(Marker)) return;
