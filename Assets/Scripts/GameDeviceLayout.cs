@@ -100,8 +100,8 @@ public class GameDeviceLayout : MonoBehaviour
         if (titlePanel) titlePanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Min(385, referenceWidth * .52f - 25));
         if (scorePanel) scorePanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Min(260, referenceWidth * .35f));
     }
-    void OnApplicationFocus(bool focused) { if (!focused) SuspendGame(); }
-    void OnApplicationPause(bool paused) { if (paused) SuspendGame(); }
+    void OnApplicationFocus(bool focused) { AudioListener.pause = !focused; if (!focused) SuspendGame(); }
+    void OnApplicationPause(bool paused) { AudioListener.pause = paused; if (paused) SuspendGame(); }
     void SuspendGame()
     {
         GameInput.Clear();
