@@ -23,7 +23,7 @@ public class PlayerController : MonoBehaviour
     const float ApexGravityMultiplier = .75f; // Zıplamanın tepesinde kısa bir süzülme: konmak kolaylaşır.
     const float ApexVelocity = 1.1f;
     const float MaxFallSpeed = 20f;
-    const float ShortHopVelocity = 7.1f;  // Tuş erken bırakılırsa yükseliş hızı en az bu kadar kalır (kat aralığı aşılır).
+    const float ShortHopVelocity = 7.4f;  // Tuş erken bırakılırsa yükseliş hızı en az bu kadar kalır (kat aralığı aşılır).
     private float baseGravity = 2f;
     private float lastGroundedTime = -100;
     private float jumpBufferedUntil = -100;

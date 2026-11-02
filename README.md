@@ -32,7 +32,7 @@ Unity projesi: **6000.0.84f1**. Ana sahne: `Assets/Scenes/SampleScene.unity`.
 - **Efektler** (`Juice.cs`): iniş/zıplama tozu, coin toplama kıvılcımı, hasar alınca kırmızı patlama ve kısa ekran sarsıntısı. Havuzlu 48 parçacık; ek asset yok.
 - **Squash & stretch**: zıplarken uzama, inerken (iniş hızına göre) ezilme (`PlayerVisual2D`).
 
-Bu değişiklikler Unity'de derlenip test edilmedi; `web/` çıktısı eski sürümdür. Değerler `PlayerController` içindeki sabitlerden kolayca ayarlanır; WebGL yeniden derlenmeli.
+Zıplama sabitleri `python3 tools/test_jump_physics.py` ile (Unity fizik adımıyla simülasyon) doğrulanır: kat aralığı 1,15, tam zıplama tepesi ~1,56, hızlı dokunuş ~1,33. Sabitleri değiştirirsen bu testi çalıştır. Bu değişiklikler Unity'de derlenip oynanarak test edilmedi; `web/` çıktısı eski sürümdür. Değerler `PlayerController` içindeki sabitlerden kolayca ayarlanır; WebGL yeniden derlenmeli.
 
 ## Bölüm haritası
 
