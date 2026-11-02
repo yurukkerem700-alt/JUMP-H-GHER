@@ -79,11 +79,7 @@ public class EnemyManager : MonoBehaviour
         canvas = UiArt.NewCanvas("Düşman Göstergeleri", 870);
         markers = new Image[6];
         for (int i = 0; i < markers.Length; i++) { markers[i] = UiArt.Pic(canvas.transform, UiArt.Disc, new Color(1, .2f, .2f, .9f), 0, 0, 34, 34); markers[i].gameObject.SetActive(false); }
-        // Dokunmatik ekran için tekme düğmesi (bilgisayarda F / K / Sol Shift).
-        kickCanvas = UiArt.NewCanvas("Tekme Düğmesi", 855);
-        kickButton = UiArt.Btn(kickCanvas.transform, t.floorLabel.font, "TEKME", .87f, .11f, 160, 120, GameInput.Kick).gameObject;
-        kickButton.AddComponent<SafeHudAnchor>();
-        kickButton.SetActive(false);
+        // TouchJoystick owns the mobile kick button.
     }
 
     // Yakındaki düşmanları tekmeler: bir alt basamağa düşerler, bir süre sersemleyip geri çekilirler.
@@ -167,7 +163,7 @@ public class EnemyManager : MonoBehaviour
     {
         bool playing = active && !GameFlow.IsMenu && LevelRun.Instance && !LevelRun.Instance.Finished;
         if (!layout) layout = FindFirstObjectByType<GameDeviceLayout>();
-        if (kickButton) kickButton.SetActive(playing && layout && layout.TouchEnabled);
+        if (kickButton) kickButton.SetActive(false); // Mobil panel tekme girdisinin tek sahibidir.
         if (!playing) { GameInput.ConsumeKick(); return; }
         float now = Time.time, dt = Time.deltaTime;
         if (GameInput.ConsumeKick()) TryKick(now);

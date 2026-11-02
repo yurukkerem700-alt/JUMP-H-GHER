@@ -38,7 +38,7 @@ public class GameFlow : MonoBehaviour
     // Ana menü: boyalı harita resmi arkada, çelik levha içinde ikon, başlık ve butonlar. Geniş ekranda iki sütun, dikeyde tek sütun.
     Sprite plate,glowSprite;RectTransform panel,halo;Image haloImg,iconGlow;TextMeshProUGUI titleGlow;
     const string Tagline="100 BÖLÜMDE ZİRVEYE YÜKSEL";
-    const string HowTo="A / D veya oklar: yürü   •   W / Boşluk: zıpla   •   F / K: tekme (düşmanı bir kat aşağı düşürür)\nBölümün hedefini tamamla, hızlı bitirerek 3 yıldız topla.\nTelefon: sürükle = yürü, yukarı = zıpla. ZIPLA ve TEKME düğmelerini de kullanabilirsin.";
+    const string HowTo="A / D veya oklar: yürü   •   W / Boşluk: zıpla   •   F / K: tekme (düşmanı bir kat aşağı düşürür)\nBölümün hedefini tamamla, hızlı bitirerek 3 yıldız topla.\nTelefon / tablet: soldaki halka ile yürü. Sağdaki ZIPLA ve TEKME düğmelerini kullan.";
     struct SlotInfo{public RectTransform r;public Vector4 n,w;}
     readonly System.Collections.Generic.List<SlotInfo> slots=new System.Collections.Generic.List<SlotInfo>();
     Image[] embers;float[] emberSeed;Vector2 lastSize;float panelScale=1;
