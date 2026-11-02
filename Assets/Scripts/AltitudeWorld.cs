@@ -15,6 +15,7 @@ public class AltitudeWorld : MonoBehaviour
     SpriteRenderer[] birds;
     float[] birth, baseY, startX, speed, direction;
     Sprite[] frames;
+    int[] model;
     Camera view;
     public int ActiveBirdCount { get; private set; }
 
@@ -22,6 +23,7 @@ public class AltitudeWorld : MonoBehaviour
     {
         skies=new SpriteRenderer[3*SkyTiles];birds=new SpriteRenderer[6];skyProps=new MaterialPropertyBlock();
         birth=new float[6];baseY=new float[6];startX=new float[6];speed=new float[6];direction=new float[6];
+        model=new int[6];
         view = Camera.main;
         themeFrames = new Sprite[4];
         if(themeAtlas)for(int n=0;n<4;n++)themeFrames[n]=Sprite.Create(themeAtlas,new Rect((n%2)*(themeAtlas.width/2),(1-n/2)*(themeAtlas.height/2),themeAtlas.width/2,themeAtlas.height/2),Vector2.one*.5f,100);
@@ -105,6 +107,7 @@ public class AltitudeWorld : MonoBehaviour
             if (age > 13 || Mathf.Abs(baseY[i] - view.transform.position.y) > 8)
             {
                 direction[i] = i % 2 == 0 ? 1 : -1;
+                model[i]=SkyCreatureArt.VariantFor(i,view.transform.position.y);
                 startX[i] = direction[i] > 0 ? -halfWidth-1.2f : halfWidth+1.2f;
                 baseY[i] = Mathf.Max(7, view.transform.position.y + Random.Range(-2f,4.5f));
                 speed[i] = Random.Range(1.5f,2.6f); birth[i] = Time.time - i * .4f; age = i * .4f;
@@ -113,9 +116,11 @@ public class AltitudeWorld : MonoBehaviour
             }
             birds[i].gameObject.SetActive(true); ActiveBirdCount++;
             birds[i].transform.position = new Vector3(startX[i] + direction[i] * speed[i] * age, baseY[i] + Mathf.Sin(Time.time*3+i)*.16f, 0);
-            birds[i].sprite = frames[(Mathf.FloorToInt(Time.time*7)+i)%4];
+            var variants=model[i]>0?SkyCreatureArt.Get(model[i]-1):null;
+            int pose=(Mathf.FloorToInt(Time.time*(model[i]>=3?10:7))+i)%4;
+            birds[i].sprite = variants!=null?variants[pose]:frames[pose];
         }
     }
 
-    void OnDestroy() { if(themeFrames!=null)foreach(var f in themeFrames)if(f)Destroy(f); if (frames != null) foreach (var frame in frames) if(frame) Destroy(frame); }
+    void OnDestroy() { SkyCreatureArt.Release(); if(themeFrames!=null)foreach(var f in themeFrames)if(f)Destroy(f); if (frames != null) foreach (var frame in frames) if(frame) Destroy(frame); }
 }
