@@ -145,28 +145,9 @@ public class CostumeRig2D : MonoBehaviour
     }
     void OnDestroy() { GameInput.Kicked-=Kick; }
 
-    // Matching palette and silhouette for the costume picker, no external texture dependency.
+    // Selection cards use the same illustrated texture as the player.
     public static Sprite Preview(int index)
     {
-        var tex=new Texture2D(96,128,TextureFormat.RGBA32,false);
-        for(int y=0;y<128;y++) for(int x=0;x<96;x++)
-        {
-            float u=(x-47.5f)/96, v=y/128f;
-            bool head=u*u+(v-.78f)*(v-.78f)<.016f;
-            bool torso=Mathf.Abs(u)<.14f && v>.34f && v<.67f;
-            bool legs=Mathf.Abs(u)>.035f && Mathf.Abs(u)<.12f && v>.08f && v<.36f;
-            bool arms=Mathf.Abs(u)>.15f && Mathf.Abs(u)<.21f && v>.3f && v<.61f;
-            bool extra=index==4 ? (Mathf.Abs(u)<.27f && v>.89f && v<.94f) || (Mathf.Abs(u)<.15f && v>.93f) || (Mathf.Abs(u)>.11f && Mathf.Abs(u)<.18f && v>.56f && v<.85f)
-                : index==3 ? Mathf.Abs(u)>.16f && Mathf.Abs(u)<.36f && v>.4f && v<.8f
-                : index==0 ? Mathf.Abs(u)>.1f && Mathf.Abs(u)<.16f && v>.83f && v<.98f
-                : index==1 ? Mathf.Abs(u)<.18f && v>.88f && v<.95f
-                : u*u+(v-.78f)*(v-.78f)<.036f && u*u+(v-.78f)*(v-.78f)>.025f;
-            Color color=head||torso||legs||arms||extra?Tints[index]:Color.clear;
-            if(index==4 && head) color=new Color(.98f,.91f,.86f);
-            if(index==4 && Mathf.Abs(u)>.11f && Mathf.Abs(u)<.18f && v>.56f && v<.87f) color=new Color(1,.76f,.25f);
-            if(index==4 && Mathf.Abs(Mathf.Abs(u)-.055f)<.018f && Mathf.Abs(v-.79f)<.02f) color=Color.red;
-            tex.SetPixel(x,y,color);
-        }
-        tex.Apply(); return Sprite.Create(tex,new Rect(0,0,96,128),Vector2.one*.5f,100);
+        return Costumes.Preview(Ids[index]);
     }
 }

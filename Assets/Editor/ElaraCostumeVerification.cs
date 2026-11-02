@@ -32,7 +32,7 @@ public static class ElaraCostumeVerification
         }
         finally { foreach(var frame in frames) Object.DestroyImmediate(frame); }
         var preview=Costumes.Preview(Costumes.Elara);
-        Assert.IsNotNull(preview); Assert.AreEqual(sheet.height*2/3,preview.rect.y);
+        Assert.IsNotNull(preview); Assert.IsTrue(preview.rect.y>=sheet.height*2/3 && preview.rect.yMax<=sheet.height);
         Object.DestroyImmediate(preview);
         CostumeRigVerification.Run();
         Debug.Log("ELARA COSTUME VERIFICATION PASSED: 12 transparent frames and legacy compatibility");

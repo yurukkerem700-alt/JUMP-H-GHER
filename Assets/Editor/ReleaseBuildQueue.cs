@@ -56,7 +56,7 @@ public static class ReleaseBuildQueue
     // Toplu mod: WEB_OUT ortam değişkenindeki klasöre WebGL derlemesi + PWA dosyaları yazar.
     public static void BuildWebBatch()
     {
-        ElaraCostumeVerification.Run();
+        IllustratedCostumeVerification.Run();
         string folder=Environment.GetEnvironmentVariable("WEB_OUT");Directory.CreateDirectory(folder);
         PlayerSettings.productName="Kök Yankısı";PlayerSettings.bundleVersion="0.6.0";PlayerSettings.runInBackground=true;
         EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WebGL,BuildTarget.WebGL);

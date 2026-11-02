@@ -34,7 +34,10 @@ public class PlayerVisual2D : MonoBehaviour
     {
         CurrentFrame=0; kickStarted=-100; landedAt=-100; wasGrounded=true;
         if(rig) { rig.gameObject.SetActive(false); Destroy(rig.gameObject); rig=null; }
-        int rigIndex=CostumeRig2D.Index(Costumes.SelectedId);
+        var selectedSheet=Costumes.Sheet(Costumes.SelectedId);
+        if(!selectedSheet && Costumes.FrameRows(Costumes.SelectedId)==3)
+            throw new System.InvalidOperationException("Missing illustrated costume: "+Costumes.SelectedId);
+        int rigIndex=selectedSheet?-1:CostumeRig2D.Index(Costumes.SelectedId);
         display.enabled=rigIndex<0;
         if(rigIndex>=0)
         {
@@ -43,7 +46,7 @@ public class PlayerVisual2D : MonoBehaviour
             rig=go.GetComponent<CostumeRig2D>(); rig.Init(controller,spriteMaterial,rigIndex);
             return;
         }
-        var sheet=Costumes.Sheet(Costumes.SelectedId); if(!sheet) sheet=animationSheet;
+        var sheet=selectedSheet; if(!sheet) sheet=animationSheet;
         if(frames!=null) foreach(var old in frames) if(old) Destroy(old);
         int rows=sheet==animationSheet?2:Costumes.FrameRows(Costumes.SelectedId);
         frames=BuildFrames(sheet,rows);

@@ -40,7 +40,7 @@ public static class CostumeRigVerification
                 Assert.IsTrue(Quaternion.Angle(ascent,leg.localRotation)>10);
                 var preview=CostumeRig2D.Preview(i);
                 Assert.IsTrue(System.Array.Exists(preview.texture.GetPixels(),pixel=>pixel.a>.5f));
-                UnityEngine.Object.DestroyImmediate(preview.texture); UnityEngine.Object.DestroyImmediate(preview);
+                UnityEngine.Object.DestroyImmediate(preview);
                 Debug.Log("COSTUME PASS: "+CostumeRig2D.Ids[i]+"; rig hierarchy, jump/fall poses, collider and preview");
             }
             bool hadSelection=PlayerPrefs.HasKey("Costume");

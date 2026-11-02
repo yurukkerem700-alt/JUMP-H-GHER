@@ -7,7 +7,7 @@ public static class Costumes
 {
     public const string Default = "gezgin";
     public const string Elara = "elara";
-    public static int FrameRows(string id) => id == Elara ? 3 : 2;
+    public static int FrameRows(string id) => id == Elara || CostumeRig2D.Index(id)>=0 ? 3 : 2;
     public static int FrameCount(string id) => 4 * FrameRows(id);
 
     public readonly struct Entry
@@ -62,10 +62,15 @@ public static class Costumes
     // Bekleme karesi (sayfanın sol üst hücresi); kart önizlemesi için.
     public static Sprite Preview(string id)
     {
-        int rig = CostumeRig2D.Index(id); if(rig >= 0) return CostumeRig2D.Preview(rig);
         var sheet = Sheet(id);
         if (!sheet) return null;
         int rows = FrameRows(id), w = sheet.width / 4, h = sheet.height / rows;
-        return Sprite.Create(sheet, new Rect(0, (rows-1)*h, w, h), new Vector2(.5f, .5f), 100);
+        var pixels=sheet.GetPixels(0,(rows-1)*h,w,h);
+        int minX=w,minY=h,maxX=-1,maxY=-1;
+        for(int y=0;y<h;y++) for(int x=0;x<w;x++) if(pixels[y*w+x].a>.1f)
+        { minX=Mathf.Min(minX,x); minY=Mathf.Min(minY,y); maxX=Mathf.Max(maxX,x); maxY=Mathf.Max(maxY,y); }
+        if(maxX<0) return null;
+        minX=Mathf.Max(0,minX-4); minY=Mathf.Max(0,minY-4); maxX=Mathf.Min(w-1,maxX+4); maxY=Mathf.Min(h-1,maxY+4);
+        return Sprite.Create(sheet, new Rect(minX,(rows-1)*h+minY,maxX-minX+1,maxY-minY+1),new Vector2(.5f,.5f),100);
     }
 }
