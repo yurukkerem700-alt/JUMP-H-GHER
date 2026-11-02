@@ -9,9 +9,9 @@ public class SettingsScreen
 {
     readonly GameObject root;
     readonly TMP_FontAsset font;
-    TextMeshProUGUI enabledText, visibleText;
-    Slider x, y, size, opacity, sens;
-    TextMeshProUGUI xv, yv, sizev, opv, sensv;
+    TextMeshProUGUI enabledText;
+    Slider size, opacity, sens;
+    TextMeshProUGUI sizev, opv, sensv;
     public bool IsOpen => root.activeSelf;
 
     public SettingsScreen(Transform parent, TMP_FontAsset f, Action back)
@@ -38,27 +38,21 @@ public class SettingsScreen
 
         Legend(c, 0, "JOYSTICK  (telefon ve tablet)");
         enabledText = Toggle(c, 1, "Joystick", () => GameSettings.JoyEnabled = !GameSettings.JoyEnabled);
-        visibleText = Toggle(c, 2, "Görünüm", () => GameSettings.JoyVisible = !GameSettings.JoyVisible);
-        x = Row(c, 3, "Konum yatay", .15f, .85f, v => GameSettings.JoyX = v, out xv);
-        y = Row(c, 4, "Konum dikey", .12f, .32f, v => GameSettings.JoyY = v, out yv);
-        size = Row(c, 5, "Boyut", .6f, 1.5f, v => GameSettings.JoySize = v, out sizev);
-        opacity = Row(c, 6, "Şeffaflık", .1f, 1f, v => GameSettings.JoyOpacity = v, out opv);
-        sens = Row(c, 7, "Hassasiyet", .5f, 1.5f, v => GameSettings.JoySensitivity = v, out sensv);
+        UiArt.Label(c, font, "Konumlar ekranına göre otomatik ayarlanır", .5f, RowY(2), 660, 48, 22, Color.white);
+        size = Row(c, 3, "Boyut", .88f, 1.08f, v => GameSettings.JoySize = v, out sizev);
+        opacity = Row(c, 4, "Şeffaflık", .65f, 1f, v => GameSettings.JoyOpacity = v, out opv);
+        sens = Row(c, 5, "Hassasiyet", .5f, 1.5f, v => GameSettings.JoySensitivity = v, out sensv);
 
-        Legend(c, 8, "DÜĞMELER  (< > ZIPLA, joystick KAPALIYKEN)");
-        bsize = Row(c, 9, "Boyut", .5f, 1.8f, v => GameSettings.BtnSize = v, out bsizev);
-        bopacity = Row(c, 10, "Şeffaflık", .1f, 1f, v => GameSettings.BtnOpacity = v, out bopv);
-        mx = Row(c, 11, "< > sağa", 0f, .45f, v => GameSettings.MoveX = v, out mxv);
-        my = Row(c, 12, "< > yukarı", 0f, .6f, v => GameSettings.MoveY = v, out myv);
-        jx = Row(c, 13, "ZIPLA sola", 0f, .45f, v => GameSettings.JumpX = v, out jxv);
-        jy = Row(c, 14, "ZIPLA yukarı", 0f, .6f, v => GameSettings.JumpY = v, out jyv);
+        Legend(c, 6, "EYLEM DÜĞMELERİ (otomatik yerleşim)");
+        bsize = Row(c, 7, "Boyut", .95f, 1.1f, v => GameSettings.BtnSize = v, out bsizev);
+        bopacity = Row(c, 8, "Şeffaflık", .65f, 1f, v => GameSettings.BtnOpacity = v, out bopv);
         root.SetActive(false);
     }
 
-    const float ContentHeight = 1080, RowGap = 68, FirstRow = 50;
+    const float ContentHeight = 750, RowGap = 68, FirstRow = 50;
     RectTransform content; ScrollRect scroll;
-    Slider bsize, bopacity, mx, my, jx, jy;
-    TextMeshProUGUI bsizev, bopv, mxv, myv, jxv, jyv;
+    Slider bsize, bopacity;
+    TextMeshProUGUI bsizev, bopv;
     static float RowY(int i) => 1f - (FirstRow + i * RowGap) / ContentHeight;
 
     void Legend(Transform parent, int i, string text)
@@ -118,18 +112,12 @@ public class SettingsScreen
     void Refresh()
     {
         enabledText.text = GameSettings.JoyEnabled ? "AÇIK" : "KAPALI (düğmeler)";
-        visibleText.text = GameSettings.JoyVisible ? "GÖRÜNÜR" : "GİZLİ";
-        Set(x, xv, GameSettings.JoyX, v => Mathf.RoundToInt(v * 100) + "%");
-        Set(y, yv, GameSettings.JoyY, v => Mathf.RoundToInt(v * 100) + "%");
+
         Set(size, sizev, GameSettings.JoySize, v => Mathf.RoundToInt(v * 100) + "%");
         Set(opacity, opv, GameSettings.JoyOpacity, v => Mathf.RoundToInt(v * 100) + "%");
         Set(sens, sensv, GameSettings.JoySensitivity, v => v.ToString("0.0") + "x");
         Set(bsize, bsizev, GameSettings.BtnSize, v => Mathf.RoundToInt(v * 100) + "%");
         Set(bopacity, bopv, GameSettings.BtnOpacity, v => Mathf.RoundToInt(v * 100) + "%");
-        Set(mx, mxv, GameSettings.MoveX, v => Mathf.RoundToInt(v * 100) + "%");
-        Set(my, myv, GameSettings.MoveY, v => Mathf.RoundToInt(v * 100) + "%");
-        Set(jx, jxv, GameSettings.JumpX, v => Mathf.RoundToInt(v * 100) + "%");
-        Set(jy, jyv, GameSettings.JumpY, v => Mathf.RoundToInt(v * 100) + "%");
     }
 
     static void Set(Slider s, TextMeshProUGUI label, float value, Func<float, string> format)

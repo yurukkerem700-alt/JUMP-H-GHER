@@ -20,11 +20,11 @@ public static class NativePlatformSettings
         PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
         PlayerSettings.Android.bundleVersionCode = 31;
         PlayerSettings.iOS.buildNumber = "31";
-        PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
+        PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
         PlayerSettings.allowedAutorotateToPortrait = true;
         PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
-        PlayerSettings.allowedAutorotateToLandscapeLeft = true;
-        PlayerSettings.allowedAutorotateToLandscapeRight = true;
+        PlayerSettings.allowedAutorotateToLandscapeLeft = false;
+        PlayerSettings.allowedAutorotateToLandscapeRight = false;
         AssetDatabase.SaveAssets();
         File.WriteAllText(marker, "Native Android ARM64 and iOS configuration prepared; build modules and signing still required.");
     }

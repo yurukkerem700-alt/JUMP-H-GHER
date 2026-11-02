@@ -143,6 +143,7 @@ public static class UiArt
         canvas.renderMode = RenderMode.ScreenSpaceOverlay; canvas.sortingOrder = order;
         var scaler = canvas.GetComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize; scaler.referenceResolution = new Vector2(1080, 1080); scaler.matchWidthOrHeight = .5f;
+        canvas.gameObject.AddComponent<PortraitCanvas>();
         return canvas;
     }
 
@@ -151,7 +152,7 @@ public static class UiArt
     {
         var go = new GameObject(text, typeof(TextMeshProUGUI)); go.transform.SetParent(parent, false);
         var t = go.GetComponent<TextMeshProUGUI>(); t.font = font; t.text = text; t.fontSize = size; t.color = color; t.alignment = TextAlignmentOptions.Center; t.raycastTarget = false;
-        var r = t.rectTransform; r.anchorMin = r.anchorMax = new Vector2(cx, cy); r.sizeDelta = new Vector2(w, h); return t;
+        var r = t.rectTransform; r.anchorMin = r.anchorMax = new Vector2(cx, cy); r.sizeDelta = new Vector2(w, h); if(parent.GetComponent<Canvas>()) go.AddComponent<SafeHudAnchor>(); return t;
     }
 
     public static Image Pic(Transform parent, Sprite sprite, Color color, float cx, float cy, float w, float h)

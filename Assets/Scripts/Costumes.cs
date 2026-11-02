@@ -21,6 +21,11 @@ public static class Costumes
         new Entry("yildirim_kuklasi", "YILDIRIM KUKLASI", "Fırtınadan yapılma ipli kukla"),
         new Entry("kok_kalbi", "KÖK KALBİ", "Göğsünde kızıl kalp atan ağaç ruhu"),
         new Entry("ay_kirigi_tilkisi", "AY KIRIĞI TİLKİSİ", "Kuyruğu kırık bir ay parçası"),
+        new Entry("gece_zirhcisi", "GECE ZIRHÇISI", "Geceyi boynuzlarında taşıyan muhafız"),
+        new Entry("mercan_cadisi", "MERCAN CADISI", "Mercan tacıyla derinliklerden yükselir"),
+        new Entry("kum_saati_bekcisi", "KUM SAATİ BEKÇİSİ", "Zamanın altın tozlarını korur"),
+        new Entry("buz_pervanesi", "BUZ PERVANESİ", "Kristal kanatlarıyla soğuğu dokur"),
+        new Entry("bordo_kovboy", "BORDO KOVBOY", "Kırmızı gözlü, sarı saçlı yetişkin gece yolcusu"),
     };
 
     public static event Action Changed;
@@ -53,6 +58,7 @@ public static class Costumes
     // Bekleme karesi (sayfanın sol üst hücresi); kart önizlemesi için.
     public static Sprite Preview(string id)
     {
+        int rig = CostumeRig2D.Index(id); if(rig >= 0) return CostumeRig2D.Preview(rig);
         var sheet = Sheet(id);
         if (!sheet) return null;
         int w = sheet.width / 4, h = sheet.height / 2;

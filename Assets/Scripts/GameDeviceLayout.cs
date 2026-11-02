@@ -33,7 +33,8 @@ public class GameDeviceLayout : MonoBehaviour
         Application.targetFrameRate = 60;
         // PC'de (WebGL dahil) joystick/butonlar görünmez; dokunmatik ekranlı bilgisayarlar da PC sayılır.
         // T tuşu elle değiştirir.
-        touchEnabled = Application.isMobilePlatform;
+        touchEnabled = Application.isMobilePlatform || SystemInfo.deviceType == DeviceType.Handheld;
+        if (Application.isMobilePlatform) Screen.orientation = ScreenOrientation.Portrait;
         joystick = TouchJoystick.Create(this);
         var legacy = new System.Collections.Generic.List<GameObject>();
         foreach (var b in touchControls.GetComponentsInChildren<TouchControlButton>(true)) legacy.Add(b.gameObject);
@@ -44,6 +45,7 @@ public class GameDeviceLayout : MonoBehaviour
     public TouchJoystick Joystick => joystick;
     void Update()
     {
+        if (!touchEnabled && Input.touchCount > 0) { touchEnabled=true; Apply(); }
         if (Input.GetKeyDown(KeyCode.T)) { touchEnabled = !touchEnabled; GameInput.Clear(); Apply(); }
         if (Screen.width != lastWidth || Screen.height != lastHeight || Screen.safeArea != lastSafeArea) Apply();
     }
@@ -58,8 +60,8 @@ public class GameDeviceLayout : MonoBehaviour
 
     public void ApplyLayout(int width, int height, Rect area)
     {
-        bool portrait = height > width;
-        gameCamera.rect = touchEnabled && portrait ? new Rect(0, .16f, 1, .84f) : new Rect(0, 0, 1, 1);
+        float bottom = touchEnabled ? TouchJoystick.ReservedBottom(width,height,area) : 0;
+        gameCamera.rect = new Rect(0,bottom,1,1-bottom);
         // Oyun kamerası ekranın alt %16'sına çizmez; telefonda (iOS Safari) orası temizlenmediği için eski kare/menü
         // kalıntıları kalıyordu. Tüm ekranı her karede koyu renge boyayan boş bir kamera bunu önler.
         if (!floorCamera)
@@ -101,7 +103,12 @@ public class GameDeviceLayout : MonoBehaviour
         if (titlePanel) titlePanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Min(385, referenceWidth * .52f - 25));
         if (scorePanel) scorePanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Min(260, referenceWidth * .35f));
     }
-    void OnApplicationFocus(bool focused) { if (!focused) GameInput.Clear(); }
-    void OnApplicationPause(bool paused) { if (paused) GameInput.Clear(); }
+    void OnApplicationFocus(bool focused) { if (!focused) SuspendGame(); }
+    void OnApplicationPause(bool paused) { if (paused) SuspendGame(); }
+    void SuspendGame()
+    {
+        GameInput.Clear();
+        if (GameFlow.Instance) GameFlow.Instance.PauseForBackground();
+    }
     void OnDisable() { GameInput.Clear(); }
 }

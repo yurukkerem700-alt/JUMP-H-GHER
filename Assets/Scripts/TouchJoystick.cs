@@ -1,189 +1,156 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
-// Ekranın alt ortasındaki yüzen joystick. Parmağı sürüklediğin yöne karakter gider:
-// sağ / sol yürür, yukarı zıplar, aşağı hızlı iner, çaprazlar ikisini birden yapar.
-public class TouchJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
+// All mobile inputs share a dock whose space is reserved by the camera.
+public class TouchJoystick : MonoBehaviour
 {
-    const float BaseSize = 230;
-    Canvas canvas; RectTransform zone, visual, knob; CanvasGroup group;
-    GameObject[] legacyButtons = new GameObject[0];
-    int pointer; bool active; Vector2 origin; bool preview;
+    public const float DockHeight=144;
+    Canvas canvas; CanvasGroup group;
+    RectTransform dock,stick,knob,left,right,jump,kick;
     GameDeviceLayout layout;
-
+    bool preview,active; int pointer,lastWidth,lastHeight;
+    Vector2 origin; float radius; Rect lastSafe;
+    public static float ScaleFor(int width,int height) => Mathf.Max(.75f,Mathf.Min(width/400f,height/700f));
+    public static float ReservedBottom(int width,int height,Rect safe)
+        => Mathf.Clamp01((safe.yMin+DockHeight*ScaleFor(width,height))/Mathf.Max(1,height));
+    public static Rect[] Targets(float availableWidth,float joySize,float buttonSize)
+    {
+        float w=availableWidth, stickX=Mathf.Min(w*.22f,100), jumpX=w-Mathf.Min(w*.17f,68);
+        float actionScale=Mathf.Clamp(buttonSize,.95f,1.1f);
+        var result=new[] {
+            Target(stickX,76,Mathf.Clamp(100*joySize,88,108)),
+            Target(stickX-36,76,60), Target(stickX+36,76,60),
+            Target(jumpX,80,76*actionScale), Target(jumpX-96,76,64*actionScale)
+        };
+        if(w<340)
+        {
+            result[1]=Target(w*.13f,76,60); result[2]=Target(w*.32f,76,60);
+            result[3]=Target(w*.8f,48,64); result[4]=Target(w*.8f,112,48);
+        }
+        return result;
+    }
+    static Rect Target(float x,float y,float size) => new Rect(x-size*.5f,y-size*.5f,size,size);
     public static TouchJoystick Create(GameDeviceLayout owner)
     {
-        var canvas = UiArt.NewCanvas("Joystick", 850);
-        var zoneGo = new GameObject("Joystick Alanı", typeof(Image), typeof(TouchJoystick));
-        zoneGo.transform.SetParent(canvas.transform, false);
-        zoneGo.GetComponent<Image>().color = new Color(0, 0, 0, 0);
-        var joy = zoneGo.GetComponent<TouchJoystick>();
-        joy.canvas = canvas; joy.zone = zoneGo.GetComponent<RectTransform>(); joy.layout = owner;
-        joy.Build();
-        GameSettings.Changed += joy.Apply;
-        GameInput.Cleared += joy.ResetState;
-        joy.Apply();
-        return joy;
+        var go=new GameObject("Mobil Kontrol Paneli",typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster),typeof(TouchJoystick));
+        var joy=go.GetComponent<TouchJoystick>(); joy.layout=owner;
+        joy.canvas=go.GetComponent<Canvas>(); joy.canvas.renderMode=RenderMode.ScreenSpaceOverlay; joy.canvas.sortingOrder=850;
+        go.GetComponent<CanvasScaler>().uiScaleMode=CanvasScaler.ScaleMode.ConstantPixelSize;
+        joy.Build(); GameSettings.Changed+=joy.Apply; GameInput.Cleared+=joy.ResetState; joy.Apply(); return joy;
     }
-
     void Build()
     {
-        var go = new GameObject("Joystick Görünümü", typeof(RectTransform), typeof(CanvasGroup)); go.transform.SetParent(canvas.transform, false);
-        visual = go.GetComponent<RectTransform>(); group = go.GetComponent<CanvasGroup>();
-        group.blocksRaycasts = false; group.interactable = false;
-        visual.anchorMin = visual.anchorMax = Vector2.zero; visual.sizeDelta = new Vector2(BaseSize, BaseSize);
-        UiArt.Pic(visual, UiArt.Disc, new Color(0, 0, 0, .35f), .5f, .5f, BaseSize, BaseSize);
-        UiArt.Pic(visual, Ring, Color.white, .5f, .5f, BaseSize, BaseSize);
-        UiArt.Pic(visual, InnerRing, new Color(1, 1, 1, .6f), .5f, .5f, BaseSize * .8f, BaseSize * .8f);
-        for (int i = 0; i < 4; i++)
-        {
-            var arrow = UiArt.Pic(visual, Chevron, new Color(1, 1, 1, .85f), .5f, .5f, 30, 30);
-            var dir = i == 0 ? Vector2.up : i == 1 ? Vector2.right : i == 2 ? Vector2.down : Vector2.left;
-            arrow.rectTransform.anchoredPosition = dir * BaseSize * .4f;
-            arrow.rectTransform.localRotation = Quaternion.Euler(0, 0, -90 * i);
-        }
-        knob = UiArt.Pic(visual, UiArt.Disc, new Color(.85f, .85f, .85f, .95f), .5f, .5f, BaseSize * .42f, BaseSize * .42f).rectTransform;
+        var root=new GameObject("Kontrol Zemini",typeof(Image),typeof(CanvasGroup)); root.transform.SetParent(canvas.transform,false);
+        dock=root.GetComponent<RectTransform>(); group=root.GetComponent<CanvasGroup>();
+        root.GetComponent<Image>().color=new Color(.045f,.035f,.065f,.98f); root.GetComponent<Image>().raycastTarget=false;
+        var line=UiArt.Pic(dock,null,new Color(.85f,.6f,.35f,.4f),.5f,1,0,1).rectTransform;
+        line.anchorMin=new Vector2(0,1); line.anchorMax=Vector2.one; line.sizeDelta=new Vector2(0,1);
+        stick=new GameObject("Hareket",typeof(Image),typeof(CanvasGroup),typeof(JoystickPad)).GetComponent<RectTransform>();
+        stick.SetParent(dock,false); stick.GetComponent<Image>().sprite=UiArt.Disc;
+        stick.GetComponent<Image>().color=new Color(.16f,.14f,.22f,1); stick.GetComponent<JoystickPad>().owner=this;
+        UiArt.Pic(stick,UiArt.Disc,new Color(.6f,.49f,.38f,1),.5f,.5f,92,92);
+        UiArt.Pic(stick,UiArt.Disc,new Color(.085f,.075f,.13f,1),.5f,.5f,88,88);
+        knob=UiArt.Pic(stick,UiArt.Disc,new Color(.95f,.78f,.53f,1),.5f,.5f,40,40).rectTransform;
+        Label(stick,"SOL / SAĞ",new Vector2(0,-60),11);
+        left=Action("SOL",MobileDockAction.Kind.Left); right=Action("SAĞ",MobileDockAction.Kind.Right);
+        jump=Action("ZIPLA",MobileDockAction.Kind.Jump); kick=Action("TEKME",MobileDockAction.Kind.Kick);
     }
-
-    static Sprite ring, innerRing, chevron;
-    static Sprite Ring => ring ? ring : ring = UiArt.Build(128, 128, 128, (u, v) => { float r = Mathf.Sqrt(u * u + v * v) * 2; return Mathf.Clamp01((.03f - Mathf.Abs(r - .96f)) * 64 + .5f); });
-    static Sprite InnerRing => innerRing ? innerRing : innerRing = UiArt.Build(128, 128, 128, (u, v) => { float r = Mathf.Sqrt(u * u + v * v) * 2; return Mathf.Clamp01((.012f - Mathf.Abs(r - .96f)) * 64 + .5f); });
-    static Sprite Chevron => chevron ? chevron : chevron = UiArt.Build(64, 64, 64, (u, v) =>
+    void Label(Transform parent,string value,Vector2 at,float size)
     {
-        float d = Mathf.Abs(v - (.12f - Mathf.Abs(u))) * .7071f;
-        return Mathf.Abs(u) < .34f ? Mathf.Clamp01((.04f - d) * 64 + .5f) : 0;
-    });
-
-    // Ayarlar açıkken halkayı ayar paneli üstünde göstermek için.
-    public void SetPreview(bool on)
-    {
-        preview = on; canvas.sortingOrder = on ? 1001 : 850;
-        // Düğmeler ayar panelinin üstünde canlı görünsün; ayar satırlarına dokunuşu engellemesinler.
-        var tc = layout ? layout.touchControls : null;
-        if (tc)
-        {
-            var c = tc.GetComponent<Canvas>();
-            if (!c) { c = tc.AddComponent<Canvas>(); tc.AddComponent<GraphicRaycaster>(); }
-            c.overrideSorting = on; c.sortingOrder = 1001;
-            tc.GetComponent<GraphicRaycaster>().enabled = !on;
-        }
-        Apply();
+        var tower=FindFirstObjectByType<InfiniteTower>();
+        var text=UiArt.Label(parent,tower?tower.floorLabel.font:null,value,.5f,.5f,100,26,size,new Color(.95f,.85f,.7f));
+        text.rectTransform.anchoredPosition=at;
     }
-
-    // Eski sol / sağ / zıpla düğmeleri joystick kapalıyken geri gelir.
-    public void SetLegacyButtons(GameObject[] buttons) { legacyButtons = buttons; Apply(); }
-
-    struct Base { public Vector2 pos, size; }
-    readonly System.Collections.Generic.Dictionary<RectTransform, Base> baseRects = new System.Collections.Generic.Dictionary<RectTransform, Base>();
-    Vector2 lastParentSize;
-
-    // < > ZIPLA düğmelerinin boyut, şeffaflık ve konum ayarı. Başlangıç değerleri ilk çağrıda sahneden okunur.
-    void ApplyButtons()
+    RectTransform Action(string label,MobileDockAction.Kind kind)
     {
-        float size = Mathf.Clamp(GameSettings.BtnSize, .5f, 1.8f), alpha = Mathf.Clamp(GameSettings.BtnOpacity, .1f, 1f);
-        float originX = 0; bool haveOrigin = false;
-        foreach (var go in legacyButtons)
-        {
-            if (!go) continue;
-            var rt = (RectTransform)go.transform;
-            if (!baseRects.ContainsKey(rt)) baseRects[rt] = new Base { pos = rt.anchoredPosition, size = rt.sizeDelta };
-            var tcb = go.GetComponent<TouchControlButton>();
-            if (tcb && tcb.action != TouchControlButton.Action.Jump) { float x = baseRects[rt].pos.x; originX = haveOrigin ? Mathf.Min(originX, x) : x; haveOrigin = true; }
-        }
-        foreach (var go in legacyButtons)
-        {
-            if (!go) continue;
-            var rt = (RectTransform)go.transform; var parent = rt.parent as RectTransform; var b = baseRects[rt];
-            float w = parent ? parent.rect.width : 0, h = parent ? parent.rect.height : 0;
-            if (parent) lastParentSize = new Vector2(w, h);
-            if (!go.TryGetComponent<CanvasGroup>(out var g)) g = go.AddComponent<CanvasGroup>();
-            g.alpha = alpha;
-            var tcb = go.GetComponent<TouchControlButton>();
-            bool jump = tcb && tcb.action == TouchControlButton.Action.Jump;
-            var size2 = b.size * size;
-            Vector2 pos;
-            if (jump) pos = new Vector2(b.pos.x - GameSettings.JumpX * w, b.pos.y + GameSettings.JumpY * h);
-            else pos = new Vector2(originX + (b.pos.x - originX) * size + GameSettings.MoveX * w, b.pos.y + GameSettings.MoveY * h);
-            if (w > 0)
-            {
-                // Her zaman ekranın içinde kal (jump sağa, diğerleri sola sabitli).
-                if (jump) pos.x = Mathf.Clamp(pos.x, -(w - size2.x), 0);
-                else pos.x = Mathf.Clamp(pos.x, 0, Mathf.Max(0, w - size2.x));
-                pos.y = Mathf.Clamp(pos.y, 0, Mathf.Max(0, h - size2.y));
-            }
-            rt.sizeDelta = size2; rt.anchoredPosition = pos;
-        }
+        var go=new GameObject(label,typeof(Image),typeof(CanvasGroup),typeof(MobileDockAction)); go.transform.SetParent(dock,false);
+        var image=go.GetComponent<Image>(); image.sprite=UiArt.Disc;
+        image.color=kind==MobileDockAction.Kind.Jump?new Color(.48f,.22f,.12f,1):new Color(.2f,.17f,.25f,1);
+        var action=go.GetComponent<MobileDockAction>(); action.kind=kind; action.normal=image.color;
+        Label(go.transform,label,Vector2.zero,kind==MobileDockAction.Kind.Jump?15:12);
+        return go.GetComponent<RectTransform>();
     }
-
-    void LateUpdate()
+    static void Place(RectTransform rect,float x,float y,float size)
     {
-        var p = legacyButtons.Length > 0 && legacyButtons[0] ? legacyButtons[0].transform.parent as RectTransform : null;
-        if (p && (Vector2)p.rect.size != lastParentSize) ApplyButtons();
+        rect.anchorMin=rect.anchorMax=Vector2.zero; rect.anchoredPosition=new Vector2(x,y); rect.sizeDelta=Vector2.one*size;
     }
-
-    bool Wanted => GameSettings.JoyEnabled && layout && layout.TouchEnabled;
-
+    public void SetLegacyButtons(GameObject[] buttons) { foreach(var b in buttons) if(b) b.SetActive(false); }
+    public void SetPreview(bool on) { preview=on; ResetState(); Apply(); }
     public void Apply()
     {
-        if (!this || !canvas) return;
-        bool on = Wanted || (preview && GameSettings.JoyEnabled);
-        float size = GameSettings.JoySize, x = GameSettings.JoyX, y = GameSettings.JoyY;
-        zone.gameObject.SetActive(Wanted && !preview);
-        visual.gameObject.SetActive(on);
-        // Yakalama alanı: halkanın yatayda iki yanı, aşağıda ekranın tabanına kadar
-        zone.anchorMin = new Vector2(Mathf.Max(0, x - .36f), 0);
-        zone.anchorMax = new Vector2(Mathf.Min(1, x + .36f), Mathf.Min(.7f, y + .26f));
-        zone.offsetMin = zone.offsetMax = Vector2.zero;
-        visual.anchorMin = visual.anchorMax = new Vector2(x, y);
-        visual.anchoredPosition = Vector2.zero;
-        visual.sizeDelta = new Vector2(BaseSize, BaseSize);
-        visual.localScale = Vector3.one * size;
-        group.alpha = GameSettings.JoyVisible || preview ? Mathf.Clamp01(GameSettings.JoyOpacity) : 0;
-        foreach (var b in legacyButtons) if (b) b.SetActive(!GameSettings.JoyEnabled);
-        ApplyButtons();
-        if (!Wanted) Release();
+        if(!canvas) return;
+        GameInput.Clear();
+        float scale=ScaleFor(Screen.width,Screen.height); canvas.scaleFactor=scale; canvas.GetComponent<CanvasScaler>().scaleFactor=scale;
+        var safe=Screen.safeArea;
+        dock.anchorMin=dock.anchorMax=Vector2.zero; dock.pivot=Vector2.zero;
+        dock.anchoredPosition=new Vector2(safe.xMin/scale,safe.yMin/scale);
+        dock.sizeDelta=new Vector2(safe.width/scale,DockHeight);
+        var targets=Targets(dock.sizeDelta.x,GameSettings.JoySize,GameSettings.BtnSize);
+        var controls=new[]{stick,left,right,jump,kick};
+        for(int i=0;i<controls.Length;i++) Place(controls[i],targets[i].center.x,targets[i].center.y,targets[i].width);
+        radius=targets[0].width*.5f*scale;
+        stick.gameObject.SetActive(GameSettings.JoyEnabled);
+        left.gameObject.SetActive(!GameSettings.JoyEnabled); right.gameObject.SetActive(!GameSettings.JoyEnabled);
+        group.alpha=1;
+        stick.GetComponent<CanvasGroup>().alpha=Mathf.Clamp(GameSettings.JoyOpacity,.65f,1);
+        foreach(var target in new[]{left,right,jump,kick}) target.GetComponent<CanvasGroup>().alpha=Mathf.Clamp(GameSettings.BtnOpacity,.65f,1); group.blocksRaycasts=!preview; group.interactable=!preview;
+        canvas.sortingOrder=preview?1001:850;
+        UpdateVisibility(); lastWidth=Screen.width; lastHeight=Screen.height; lastSafe=safe;
     }
+    void UpdateVisibility()
+    {
+        bool show=layout && (layout.TouchEnabled || preview) && (preview || !GameFlow.IsMenu);
+        if(dock.gameObject.activeSelf!=show) { ResetState(); dock.gameObject.SetActive(show); }
+    }
+    void LateUpdate()
+    {
+        if(Screen.width!=lastWidth || Screen.height!=lastHeight || Screen.safeArea!=lastSafe) Apply();
+        UpdateVisibility();
+    }
+    public void Press(PointerEventData e)
+    {
+        if(active || preview || GameFlow.IsMenu) return;
+        active=true; pointer=e.pointerId; origin=RectTransformUtility.WorldToScreenPoint(null,stick.position); Drag(e);
+    }
+    public void Drag(PointerEventData e)
+    {
+        if(!active || pointer!=e.pointerId) return;
+        var delta=Vector2.ClampMagnitude(e.position-origin,radius);
+        float dead=radius*.18f/Mathf.Clamp(GameSettings.JoySensitivity,.5f,1.5f);
+        GameInput.SetJoystick(Mathf.Abs(delta.x)>dead?Mathf.Sign(delta.x):0,false,false);
+        knob.anchoredPosition=Vector2.ClampMagnitude(delta/canvas.scaleFactor,32);
+    }
+    public void Release(PointerEventData e) { if(active && pointer==e.pointerId) { ResetState(); GameInput.SetJoystick(0,false,false); } }
+    void ResetState() { active=false; if(knob) knob.anchoredPosition=Vector2.zero; }
+    void OnDisable() { ResetState(); GameInput.SetJoystick(0,false,false); }
+    void OnDestroy() { GameSettings.Changed-=Apply; GameInput.Cleared-=ResetState; }
+}
 
-    float RadiusPixels => BaseSize * .5f * GameSettings.JoySize * canvas.scaleFactor;
+public class JoystickPad : MonoBehaviour,IPointerDownHandler,IDragHandler,IPointerUpHandler
+{
+    public TouchJoystick owner;
+    public void OnPointerDown(PointerEventData e) { owner.Press(e); }
+    public void OnDrag(PointerEventData e) { owner.Drag(e); }
+    public void OnPointerUp(PointerEventData e) { owner.Release(e); }
+}
 
+public class MobileDockAction : MonoBehaviour,IPointerDownHandler,IPointerUpHandler,IPointerExitHandler
+{
+    public enum Kind { Left,Right,Jump,Kick }
+    public Kind kind; public Color normal;
+    bool held; int pointer;
+    void OnEnable() { GameInput.Cleared+=ResetState; }
     public void OnPointerDown(PointerEventData e)
     {
-        if (active) ResetState(); // takılı kalmış eski parmak varsa bırak
-        active = true; pointer = e.pointerId; origin = e.position;
-        Evaluate(e.position);
+        if(held || GameFlow.IsMenu) return;
+        held=true; pointer=e.pointerId;
+        if(kind==Kind.Jump) GameInput.Jump(); else if(kind==Kind.Kick) GameInput.Kick(); else GameInput.Hold(kind==Kind.Left,pointer,true);
+        GetComponent<Image>().color=new Color(.55f,.22f,.08f,1);
     }
-    public void OnDrag(PointerEventData e) { if (active && e.pointerId == pointer) Evaluate(e.position); }
-    public void OnPointerUp(PointerEventData e) { if (active && e.pointerId == pointer) Release(); }
-
-    void Evaluate(Vector2 position)
-    {
-        float radius = RadiusPixels;
-        var delta = position - origin;
-        // Parmak çok uzaklaşırsa başlangıç noktası ardından gelir; yön değiştirmek hızlı olur.
-        if (delta.magnitude > radius * 1.6f) { origin = position - delta.normalized * radius * 1.6f; delta = position - origin; }
-        float dead = radius * .3f / Mathf.Clamp(GameSettings.JoySensitivity, .4f, 2f);
-        float ax = Mathf.Abs(delta.x), ay = Mathf.Abs(delta.y);
-        float h = ax > dead && ax > ay * .35f ? Mathf.Sign(delta.x) : 0;
-        bool up = delta.y > dead * 1.15f && delta.y > ax * .6f;
-        bool down = delta.y < -dead * 1.15f && ay > ax * .6f;
-        bool wasUp = lastUp; lastUp = up;
-        GameInput.SetJoystick(h, up, down);
-        if (up && !wasUp) GameInput.Jump();
-        knob.anchoredPosition = Vector2.ClampMagnitude(delta / canvas.scaleFactor / GameSettings.JoySize, BaseSize * .36f);
-    }
-    bool lastUp;
-
-    void Release()
-    {
-        active = false; lastUp = false;
-        GameInput.SetJoystick(0, false, false);
-        if (knob) knob.anchoredPosition = Vector2.zero;
-    }
-
-    // GameInput.Clear() (menü, odak kaybı) sırasında çağrılır.
-    void ResetState() { active = false; lastUp = false; if (knob) knob.anchoredPosition = Vector2.zero; }
-
-    void OnDisable() { if (active) Release(); }
-    void OnDestroy() { GameSettings.Changed -= Apply; GameInput.Cleared -= ResetState; if (canvas) Destroy(canvas.gameObject); }
+    public void OnPointerUp(PointerEventData e) { if(held && pointer==e.pointerId) Release(); }
+    public void OnPointerExit(PointerEventData e) { if(held && pointer==e.pointerId) Release(); }
+    void Release() { if(held && (kind==Kind.Left || kind==Kind.Right)) GameInput.Hold(kind==Kind.Left,pointer,false); ResetState(); }
+    void ResetState() { held=false; GetComponent<Image>().color=normal; }
+    void OnDisable() { Release(); GameInput.Cleared-=ResetState; }
 }

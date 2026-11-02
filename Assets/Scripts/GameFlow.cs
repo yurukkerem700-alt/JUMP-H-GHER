@@ -17,11 +17,12 @@ public class GameFlow : MonoBehaviour
         tower=FindFirstObjectByType<InfiniteTower>();
         canvas=new GameObject("Ana Menü",typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster)).GetComponent<Canvas>();canvas.renderMode=RenderMode.ScreenSpaceOverlay;canvas.sortingOrder=1000;
         var scaler=canvas.GetComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;scaler.referenceResolution=new Vector2(1080,1080);scaler.matchWidthOrHeight=.5f;
+        canvas.gameObject.AddComponent<PortraitCanvas>();
         overlay=new GameObject("Menu Perdesi",typeof(Image));overlay.transform.SetParent(canvas.transform,false);var rect=overlay.GetComponent<RectTransform>();rect.anchorMin=Vector2.zero;rect.anchorMax=Vector2.one;rect.offsetMin=rect.offsetMax=Vector2.zero;overlay.GetComponent<Image>().color=new Color(.035f,.025f,.045f,1f);
         BuildMenu();
-        var pause=new GameObject("Duraklat",typeof(Image),typeof(Button));pause.transform.SetParent(canvas.transform,false);pause.GetComponent<Image>().color=new Color(.16f,.1f,.15f,.8f);var pr=pause.GetComponent<RectTransform>();pr.anchorMin=pr.anchorMax=new Vector2(.5f,.96f);pr.sizeDelta=new Vector2(70,52);
+        var pause=new GameObject("Duraklat",typeof(Image),typeof(Button));pause.transform.SetParent(canvas.transform,false);pause.GetComponent<Image>().color=new Color(.16f,.1f,.15f,.8f);var pr=pause.GetComponent<RectTransform>();pr.anchorMin=pr.anchorMax=new Vector2(.5f,.96f);pr.sizeDelta=new Vector2(110,100);
         var pt=new GameObject("II",typeof(TextMeshProUGUI));pt.transform.SetParent(pause.transform,false);var textPause=pt.GetComponent<TextMeshProUGUI>();textPause.text="II";textPause.fontSize=26;textPause.alignment=TextAlignmentOptions.Center;textPause.raycastTarget=false;var ptr=textPause.rectTransform;ptr.anchorMin=Vector2.zero;ptr.anchorMax=Vector2.one;ptr.offsetMin=ptr.offsetMax=Vector2.zero;
-        pause.GetComponent<Button>().onClick.AddListener(()=>{if(holding)return;SesAtolyesi.Ses.UiClick();if(settings.IsOpen)settings.Close();else if(costumes.IsOpen)costumes.Close();else if(map.IsOpen)map.Close();else if(IsMenu&&begun)Begin(true);else Show(true);});pause.transform.SetAsFirstSibling();
+        pause.GetComponent<Button>().onClick.AddListener(()=>{if(holding)return;SesAtolyesi.Ses.UiClick();if(settings.IsOpen)settings.Close();else if(costumes.IsOpen)costumes.Close();else if(map.IsOpen)map.Close();else if(IsMenu&&begun)Begin(true);else Show(true);});pause.transform.SetAsFirstSibling();pause.AddComponent<SafeHudAnchor>();
         map=new LevelMap(canvas.transform,tower.floorLabel.font,StartLevel,StartEndless,()=>map.Close());
         settings=new SettingsScreen(canvas.transform,tower.floorLabel.font,()=>settings.Close());
         costumes=new CostumeScreen(canvas.transform,tower.floorLabel.font,()=>costumes.Close());
@@ -37,7 +38,7 @@ public class GameFlow : MonoBehaviour
     // Ana menü: boyalı harita resmi arkada, çelik levha içinde ikon, başlık ve butonlar. Geniş ekranda iki sütun, dikeyde tek sütun.
     Sprite plate,glowSprite;RectTransform panel,halo;Image haloImg,iconGlow;TextMeshProUGUI titleGlow;
     const string Tagline="100 BÖLÜMDE ZİRVEYE YÜKSEL";
-    const string HowTo="A / D veya oklar: yürü   •   W / Boşluk: zıpla   •   F / K: tekme (düşmanı bir kat aşağı düşürür)\nBölümün hedefini tamamla, hızlı bitirerek 3 yıldız topla.\nTelefon: ekranın altında parmağını sürükle, karakter o yöne gider (yukarı = zıpla)";
+    const string HowTo="A / D veya oklar: yürü   •   W / Boşluk: zıpla   •   F / K: tekme (düşmanı bir kat aşağı düşürür)\nBölümün hedefini tamamla, hızlı bitirerek 3 yıldız topla.\nTelefon / tablet: soldaki halka ile yürü. Sağdaki ZIPLA ve TEKME düğmelerini kullan.";
     struct SlotInfo{public RectTransform r;public Vector4 n,w;}
     readonly System.Collections.Generic.List<SlotInfo> slots=new System.Collections.Generic.List<SlotInfo>();
     Image[] embers;float[] emberSeed;Vector2 lastSize;float panelScale=1;
@@ -90,19 +91,31 @@ public class GameFlow : MonoBehaviour
         subtitle=Slot(Label(Tagline,23,new Color(.82f,.72f,.66f)),new Vector4(0,398,560,104),new Vector4(250,146,480,70));
         subtitle.enableAutoSizing=true;subtitle.fontSizeMin=11;subtitle.fontSizeMax=23;subtitle.outlineColor=new Color32(10,2,4,255);subtitle.outlineWidth=.15f;
         status=Slot(Label("",18,new Color(.9f,.75f,.5f)),new Vector4(0,510,560,30),new Vector4(-270,420,380,30));
-        start=MenuButton("OYNA",()=>{if(begun)Begin(true);else map.Open();},44,true,new Vector4(0,556,540,96),new Vector4(250,226,480,84));
-        MenuButton("BÖLÜM HARİTASI",()=>map.Open(),25,false,new Vector4(0,666,540,66),new Vector4(250,320,480,58));
-        MenuButton("KOSTÜMLER",()=>costumes.Open(),23,false,new Vector4(-138,744,264,66),new Vector4(128,388,236,58));
-        MenuButton("AYARLAR",()=>settings.Open(),23,false,new Vector4(138,744,264,66),new Vector4(372,388,236,58));
-        MenuButton("NASIL OYNANIR",()=>{subtitle.text=subtitle.text==HowTo?Tagline:HowTo;},25,false,new Vector4(0,822,540,66),new Vector4(250,456,480,58));
-        MenuButton(Application.platform==RuntimePlatform.WebGLPlayer?"TAM EKRAN":"ÇIKIŞ",()=>{if(Application.platform==RuntimePlatform.WebGLPlayer)Screen.fullScreen=!Screen.fullScreen;else Application.Quit();},25,false,new Vector4(0,900,540,66),new Vector4(250,524,480,58));
+        start=MenuButton("OYNA",()=>{if(begun)Begin(true);else map.Open();},44,true,new Vector4(0,556,540,112),new Vector4(250,226,480,84));
+        MenuButton("BÖLÜM HARİTASI",()=>map.Open(),25,false,new Vector4(0,680,540,112),new Vector4(250,320,480,58));
+        MenuButton("KOSTÜMLER",()=>costumes.Open(),23,false,new Vector4(-138,804,264,112),new Vector4(128,388,236,58));
+        MenuButton("AYARLAR",()=>settings.Open(),23,false,new Vector4(138,804,264,112),new Vector4(372,388,236,58));
+        MenuButton("NASIL OYNANIR",ToggleInstructions,25,false,new Vector4(0,928,540,112),new Vector4(250,456,480,58));
+        MenuButton(Application.platform==RuntimePlatform.WebGLPlayer?"TAM EKRAN":"ÇIKIŞ",()=>{if(Application.platform==RuntimePlatform.WebGLPlayer)Screen.fullScreen=!Screen.fullScreen;else Application.Quit();},25,false,new Vector4(0,1052,540,112),new Vector4(250,524,480,58));
         lastSize=Vector2.zero;Layout();
+    }
+    void ToggleInstructions()
+    {
+        var go = new GameObject("Kontroller", typeof(Image), typeof(Button));
+        go.transform.SetParent(canvas.transform, false);
+        var r = go.GetComponent<RectTransform>();
+        r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one; r.offsetMin = r.offsetMax = Vector2.zero;
+        go.GetComponent<Image>().color = new Color(.03f,.02f,.04f,.98f);
+        var label = UiArt.Label(go.transform, tower.floorLabel.font, HowTo + "\n\nKapatmak için dokun", .5f,.5f,800,700,28,Color.white);
+        label.enableAutoSizing = true; label.fontSizeMin = 16; label.fontSizeMax = 28;
+        label.raycastTarget = false;
+        go.GetComponent<Button>().onClick.AddListener(() => Destroy(go));
     }
     void Layout()
     {
         var size=canvas.GetComponent<RectTransform>().rect.size;if(size.x<1||size.y<1)return;
         bool wide=size.x/size.y>1.25f;lastSize=size;
-        panel.sizeDelta=wide?new Vector2(1060,620):new Vector2(640,1000);
+        panel.sizeDelta=wide?new Vector2(1060,620):new Vector2(640,1180);
         panelScale=Mathf.Min(1,size.x*.95f/panel.sizeDelta.x,size.y*.94f/panel.sizeDelta.y);panel.localScale=Vector3.one*panelScale;
         halo.sizeDelta=panel.sizeDelta*panelScale*1.28f+new Vector2(120,120);
         foreach(var s in slots){var v=wide?s.w:s.n;var r=s.r;r.anchorMin=r.anchorMax=new Vector2(.5f,1);r.pivot=new Vector2(.5f,1);r.anchoredPosition=new Vector2(v.x,-v.y);r.sizeDelta=new Vector2(v.z,v.w);}
@@ -153,6 +166,7 @@ public class GameFlow : MonoBehaviour
         if(IsMenu){Animate();bool sub=settings.IsOpen||costumes.IsOpen||map.IsOpen;if(panel.gameObject.activeSelf==sub){panel.gameObject.SetActive(!sub);halo.gameObject.SetActive(!sub);}int best=PlayerPrefs.GetInt("BestFloor",0);status.text="EN YÜKSEK KAT  "+best+"   •   YILDIZ  "+LevelDefs.TotalStars()+" / "+LevelDefs.Count*3;}
         else if(tower.HighestReachedFloor+1>PlayerPrefs.GetInt("BestFloor",0))PlayerPrefs.SetInt("BestFloor",tower.HighestReachedFloor+1);
     }
+    public void PauseForBackground() { if(overlay && !IsMenu) Show(true); }
     public void Begin(bool resume){if(!resume&&begun)tower.player.RestartRun();begun=true;Show(false);}
     public void Show(bool visible){menuVisible=visible;if(subtitle)subtitle.text=Tagline;overlay.SetActive(visible);Apply();if(begun)start.GetComponentInChildren<TextMeshProUGUI>(true).text="DEVAM ET";}
     // Sonuç ekranı açıkken oyun donar ama ana menü görünmez.

@@ -9,6 +9,7 @@ public static class GameInput
     static float joyHorizontal;
     static bool joyUp, joyDown;
     public static event System.Action Cleared;
+    public static event System.Action Kicked;
 
     public static float Horizontal
     {
@@ -45,6 +46,7 @@ public static class GameInput
     {
         bool result = touchKick || Input.GetKeyDown(KeyCode.F) || Input.GetKeyDown(KeyCode.K) || Input.GetKeyDown(KeyCode.LeftShift);
         touchKick = false;
+        if(result) Kicked?.Invoke();
         return result;
     }
 
