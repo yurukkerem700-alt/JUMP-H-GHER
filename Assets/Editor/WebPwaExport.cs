@@ -106,14 +106,6 @@ self.addEventListener('fetch',event=>{
         var src=new Texture2D(2,2,TextureFormat.RGBA32,false);
         src.LoadImage(File.ReadAllBytes(sourcePath));
         int inner=Mathf.RoundToInt(size*scale);
-        var rt=RenderTexture.GetTemporary(inner,inner,0,RenderTextureFormat.ARGB32,RenderTextureReadWrite.sRGB);
-        var previous=RenderTexture.active;
-        Graphics.Blit(src,rt);
-        RenderTexture.active=rt;
-        var resized=new Texture2D(inner,inner,TextureFormat.RGBA32,false);
-        resized.ReadPixels(new Rect(0,0,inner,inner),0,0);resized.Apply();
-        RenderTexture.active=previous;RenderTexture.ReleaseTemporary(rt);
-
         var output=new Texture2D(size,size,TextureFormat.RGBA32,false);
         var background=new Color32(16,14,22,255);
         var pixels=Enumerable.Repeat(background,size*size).ToArray();
@@ -121,12 +113,13 @@ self.addEventListener('fetch',event=>{
         int offset=(size-inner)/2;
         for(int y=0;y<inner;y++)for(int x=0;x<inner;x++)
         {
-            Color c=resized.GetPixel(x,y);
+            // CPU sampling also works in -nographics batch exports.
+            Color c=src.GetPixelBilinear((x+.5f)/inner,(y+.5f)/inner);
             Color under=output.GetPixel(x+offset,y+offset);
             output.SetPixel(x+offset,y+offset,Color.Lerp(under,new Color(c.r,c.g,c.b,1f),c.a));
         }
         output.Apply();
         File.WriteAllBytes(targetPath,output.EncodeToPNG());
-        UnityEngine.Object.DestroyImmediate(src);UnityEngine.Object.DestroyImmediate(resized);UnityEngine.Object.DestroyImmediate(output);
+        UnityEngine.Object.DestroyImmediate(src);UnityEngine.Object.DestroyImmediate(output);
     }
 }

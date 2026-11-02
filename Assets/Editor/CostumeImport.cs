@@ -18,7 +18,8 @@ public class CostumeImport : AssetPostprocessor
         importer.filterMode = FilterMode.Bilinear;
         importer.wrapMode = TextureWrapMode.Clamp;
         importer.npotScale = TextureImporterNPOTScale.None;
-        importer.maxTextureSize = 2048;
+        string id=System.IO.Path.GetFileNameWithoutExtension(assetPath);
+        importer.maxTextureSize = Costumes.FrameRows(id)==3 ? 1024 : 2048;
         importer.textureCompression = TextureImporterCompression.Uncompressed;
     }
 }

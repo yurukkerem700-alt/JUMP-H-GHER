@@ -17,7 +17,7 @@ public static class CostumeRigVerification
         var created=new GameObject[CostumeRig2D.Ids.Length];
         try
         {
-            Assert.AreEqual(11,Costumes.All.Length);
+            Assert.AreEqual(12,Costumes.All.Length);
             for(int i=0;i<CostumeRig2D.Ids.Length;i++)
             {
                 Assert.AreEqual(i,CostumeRig2D.Index(CostumeRig2D.Ids[i]));
@@ -40,7 +40,7 @@ public static class CostumeRigVerification
                 Assert.IsTrue(Quaternion.Angle(ascent,leg.localRotation)>10);
                 var preview=CostumeRig2D.Preview(i);
                 Assert.IsTrue(System.Array.Exists(preview.texture.GetPixels(),pixel=>pixel.a>.5f));
-                UnityEngine.Object.DestroyImmediate(preview.texture); UnityEngine.Object.DestroyImmediate(preview);
+                UnityEngine.Object.DestroyImmediate(preview);
                 Debug.Log("COSTUME PASS: "+CostumeRig2D.Ids[i]+"; rig hierarchy, jump/fall poses, collider and preview");
             }
             bool hadSelection=PlayerPrefs.HasKey("Costume");
@@ -56,7 +56,7 @@ public static class CostumeRigVerification
                     Costumes.SelectedId=entry.Id;
                     Assert.AreEqual(18,effectObject.GetComponentsInChildren<SpriteRenderer>().Length);
                 }
-                Debug.Log("COSTUME EFFECT SWITCH PASSED: 11/11; fixed 18-particle pool");
+                Debug.Log("COSTUME EFFECT SWITCH PASSED: 12/12; fixed 18-particle pool");
             }
             finally
             {

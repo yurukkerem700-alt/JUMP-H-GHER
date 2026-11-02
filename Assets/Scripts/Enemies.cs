@@ -48,10 +48,11 @@ class EnemyArt
 class Enemy
 {
     public float attackSoundAt;
-    public const int Stand = 0, Leap = 1, Climb = 2, Land = 3, Fall = 4;
+    public const int Stand = 0, Leap = 1, Climb = 2, Land = 3, Fall = 4, Attack = 5;
     public EnemyKind kind; public GameObject go; public SpriteRenderer sr; public EnemyArt art;
     public int floor, state, toFloor; public float offset, toOffset, side = 1, t0, dur, readyAt, staggerUntil, spawnedAt, waitSince;
-    public Vector3 from; public bool faceRight = true, dead;
+    public Vector3 from; public bool faceRight = true, dead, moving, attackResolved;
+    public float attackReadyAt;
 }
 
 class EnemySlot { public EnemyKind kind; public Enemy enemy; public float readyAt; }
@@ -180,6 +181,7 @@ public class EnemyManager : MonoBehaviour
             }
             var e = slot.enemy;
             Tick(e, dt, now);
+            if (slots.Count == 0) return;
             if (!e.dead && (e.floor < playerFloor - 9 || e.floor > playerFloor + 7)) e.dead = true;
             if (e.dead) { Destroy(e.go); slot.enemy = null; slot.readyAt = now + RespawnDelay; continue; }
             Touch(e, now);
@@ -208,7 +210,7 @@ public class EnemyManager : MonoBehaviour
         return c ? c.bounds.extents.x : 1.2f;
     }
     static Vector3 StandPos(MovingPlatform2D plat, float offset) => new Vector3(plat.transform.position.x + offset, plat.Top, 0);
-    static Vector3 HangPos(MovingPlatform2D plat, float side, float height) => new Vector3(plat.transform.position.x + side * (Half(plat) + .12f), plat.Top - height * .95f, 0);
+    static Vector3 HangPos(MovingPlatform2D plat, float side, float height) => new Vector3(plat.transform.position.x + side * (Half(plat) + height * .30f), plat.Top - height * .94f, 0);
     static void Place(Enemy e, Vector3 pos) { e.go.transform.position = pos; }
 
     void Tick(Enemy e, float dt, float now)
@@ -216,6 +218,7 @@ public class EnemyManager : MonoBehaviour
         float speed = Speed;
         var player = tower.player.transform.position;
         bool zombie = EnemyKinds.Climber(e.kind);
+        e.moving=false;
         float alpha = Mathf.Clamp01((now - e.spawnedAt) / .6f);
         float pulse = .5f + .5f * Mathf.Sin(now * 6f);
         e.sr.color = new Color(1f, 1f - .35f * pulse, 1f - .35f * pulse, alpha);
@@ -225,6 +228,7 @@ public class EnemyManager : MonoBehaviour
             float half = Half(plat), limit = half - .25f;
             bool staggered = now < e.staggerUntil;
             float posX = plat.transform.position.x + e.offset;
+            float previousOffset=e.offset;
             if (e.floor == playerFloor || staggered)
             {
                 float want = Mathf.Clamp(player.x - plat.transform.position.x, -limit, limit);
@@ -257,15 +261,18 @@ public class EnemyManager : MonoBehaviour
                     StartLeap(e, to, 0, toOffset, now, (zombie ? .5f : .6f) / speed);
                 }
             }
-            if (e.state == Enemy.Stand) { var p = tower.GetPlatform(e.floor); if (p) Place(e, StandPos(p, e.offset) + Vector3.up * Bob(e, now)); }
+            e.moving=Mathf.Abs(e.offset-previousOffset)>.001f;
+            if (e.state == Enemy.Stand) { var p = tower.GetPlatform(e.floor); if (p) Place(e, StandPos(p, e.offset)); }
         }
         else if (e.state == Enemy.Leap) TickLeap(e, now);
         else if (e.state == Enemy.Climb) TickClimb(e, now);
         else if (e.state == Enemy.Fall) TickFall(e, now);
+        else if (e.state == Enemy.Attack) TickAttack(e, now);
         else TickLand(e, now);
         e.sr.flipX = !e.faceRight;
-        float lean = e.state == Enemy.Fall ? (e.faceRight ? -60f : 60f) : e.state == Enemy.Stand && (e.floor == playerFloor) ? (e.faceRight ? -8f : 8f) : 0;
-        float stretch = e.state == Enemy.Leap ? 1.12f : 1f + .05f * Mathf.Sin(now * 12f);
+        float attackPhase=e.state==Enemy.Attack ? Mathf.Clamp01((now-e.t0)/e.dur) : 0;
+        float lean = e.state == Enemy.Fall ? (e.faceRight ? -60f : 60f) : e.state==Enemy.Attack ? Mathf.Sin(attackPhase*Mathf.PI)*(e.faceRight?-18:18) : 0;
+        float stretch = e.state == Enemy.Leap ? 1.06f : 1;
         e.go.transform.rotation = Quaternion.Euler(0, 0, lean);
         e.go.transform.localScale = new Vector3(1f / stretch, stretch, 1);
         e.sr.sprite = e.art.frames[FrameFor(e, now)];
@@ -294,7 +301,7 @@ public class EnemyManager : MonoBehaviour
         if (hang) { e.state = Enemy.Climb; e.t0 = now; e.dur = 1.0f / Speed; }
         else
         {
-            SesWorld.EnemyLand(e.go.transform.position, tower.player.transform.position, e.toFloor); e.offset = e.toOffset; e.state = !EnemyKinds.Climber(e.kind) ? Enemy.Land : Enemy.Stand; e.t0 = now; e.dur = .4f;
+            SesWorld.EnemyLand(e.go.transform.position, tower.player.transform.position, e.toFloor); e.offset = e.toOffset; e.state = Enemy.Land; e.t0 = now; e.dur = .4f;
             e.readyAt = now + (!EnemyKinds.Climber(e.kind) ? .5f : .35f) / Speed;
         }
     }
@@ -303,11 +310,14 @@ public class EnemyManager : MonoBehaviour
     {
         var plat = tower.GetPlatform(e.floor); if (!plat) { e.dead = true; return; }
         float s = Mathf.Clamp01((now - e.t0) / e.dur), half = Half(plat);
-        float x = plat.transform.position.x + e.side * Mathf.Lerp(half + .12f, half - .45f, s);
-        float y = Mathf.Lerp(plat.Top - e.art.height * .95f, plat.Top, s);
-        Place(e, new Vector3(x, y, 0)); e.faceRight = e.side < 0;
+        var hang=HangPos(plat,e.side,e.art.height);
+        // First hold the ledge, then raise the body before moving over the lip.
+        float lift=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.25f,.85f,s));
+        float across=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.6f,1,s));
+        var top=StandPos(plat,e.side*(half-.45f));
+        Place(e,new Vector3(Mathf.Lerp(hang.x,top.x,across),Mathf.Lerp(hang.y,top.y,lift),0)); e.faceRight = e.side < 0;
         if (s < 1) return;
-        e.offset = e.side * (half - .45f); e.state = Enemy.Stand; e.readyAt = now + .3f / Speed; e.waitSince = now;
+        e.offset = e.side * (half - .45f); e.state = Enemy.Land; e.t0=now; e.dur=.25f; e.readyAt = now + .3f / Speed; e.waitSince = now;
     }
 
     void TickLand(Enemy e, float now)
@@ -328,14 +338,16 @@ public class EnemyManager : MonoBehaviour
         bool climber = e.kind == EnemyKind.Karakoncolos;
         if (e.state == Enemy.Fall) return climber ? 5 : 7;
         if (e.state == Enemy.Leap) return climber ? 5 : (Mathf.Clamp01((now - e.t0) / e.dur) < .5f ? 6 : 7);
-        if (e.state == Enemy.Climb) return 6 + Mathf.FloorToInt(now * 5) % 2;
+        if (e.state == Enemy.Climb) return (now-e.t0)/e.dur < .55f ? 6 : 7;
+        if (e.state == Enemy.Attack) {float s=(now-e.t0)/e.dur; return s<.4f?4:s<.7f?5:0;}
         if (e.state == Enemy.Land) return Mathf.Clamp01((now - e.t0) / e.dur) < .35f ? 4 : 0;
-        return Mathf.FloorToInt(now * (climber ? 4 : 9)) % 4;
+        return e.moving ? Mathf.FloorToInt(now * (climber ? 4 : 9)) % 4 : 0;
     }
 
     static int FrameFor(Enemy e, float now)
     {
         if (e.kind == EnemyKind.Karakoncolos || e.kind == EnemyKind.KaraKurt) return FrameForNew(e, now);
+        if (e.state == Enemy.Attack) return (now-e.t0)/e.dur<.4f ? IdleFrame(e.kind) : e.kind==EnemyKind.Zombie?14:5;
         if (e.state == Enemy.Fall) return e.kind == EnemyKind.Zombie ? 13 : 5; // havada savrulma karesi
         if (e.kind == EnemyKind.Zombie)
         {
@@ -358,7 +370,7 @@ public class EnemyManager : MonoBehaviour
     void Touch(Enemy e, float now)
     {
         var health = PlayerHealth.Instance;
-        if (health == null || now < e.staggerUntil || now - e.spawnedAt < .7f) return;
+        if (health == null || e.state!=Enemy.Stand || now<e.attackReadyAt || now < e.staggerUntil || now - e.spawnedAt < .7f) return;
         bool zombie = EnemyKinds.Climber(e.kind);
         var pos = e.go.transform.position;
         float centerY = pos.y + e.art.height * (zombie && e.state == Enemy.Climb ? .6f : .45f);
@@ -368,7 +380,25 @@ public class EnemyManager : MonoBehaviour
         float dx = Mathf.Abs(p.x - pos.x), dy = Mathf.Abs(p.y - centerY);
         // Yaklaşırken saldırı narası (yakın ve aynı hizada), arada bekleme ile.
         if (dx < 2.2f && dy < 1.4f * scale && now >= e.attackSoundAt) { e.attackSoundAt = now + 1.6f; EnemySfx.Play(attackSound, .8f); }
-        if (dx < (zombie ? .55f : .6f) * scale && dy < (zombie ? .85f : .7f) * scale && health.Hit()) { e.staggerUntil = now + 1.2f; e.attackSoundAt = now + 1.6f; EnemySfx.Play(attackSound, 1f); }
+        if (dx < (zombie ? .55f : .6f) * scale && dy < (zombie ? .85f : .7f) * scale)
+        { e.state=Enemy.Attack; e.t0=now; e.dur=.75f; e.attackResolved=false; e.faceRight=p.x>=pos.x; }
+    }
+
+    void TickAttack(Enemy e,float now)
+    {
+        var plat=tower.GetPlatform(e.floor); if(!plat){e.dead=true;return;}
+        float phase=Mathf.Clamp01((now-e.t0)/e.dur);
+        Place(e,StandPos(plat,e.offset));
+        if(phase>=.45f && !e.attackResolved)
+        {
+            e.attackResolved=true;
+            var p=tower.player.transform.position; var pos=e.go.transform.position;
+            float scale=e.art.height/(EnemyKinds.Climber(e.kind)?1.35f:1);
+            bool inFront=(p.x-pos.x)*(e.faceRight?1:-1)>=-.15f;
+            if(inFront && Mathf.Abs(p.x-pos.x)<.65f*scale && Mathf.Abs(p.y-(pos.y+e.art.height*.45f))<.8f*scale)
+                PlayerHealth.Instance?.Hit();
+        }
+        if(phase>=1){e.state=Enemy.Stand;e.attackReadyAt=now+.65f;e.waitSince=now;}
     }
 
     // Ekranın altında kalan düşmanlar için altta kırmızı uyarı noktası.

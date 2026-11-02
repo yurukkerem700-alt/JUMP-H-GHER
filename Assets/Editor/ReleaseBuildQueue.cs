@@ -23,7 +23,7 @@ public static class ReleaseBuildQueue
         if(stage=="done"||stage.StartsWith("FAILED"))return;
         try
         {
-            PlayerSettings.productName="Kök Yankısı";PlayerSettings.bundleVersion="0.5.0";PlayerSettings.runInBackground=true;
+            PlayerSettings.productName="Kök Yankısı";PlayerSettings.bundleVersion="0.6.0";PlayerSettings.runInBackground=true;
             if(stage=="windows")
             {
                 if(EditorUserBuildSettings.activeBuildTarget!=BuildTarget.StandaloneWindows64){EditorUserBuildSettings.SwitchActiveBuildTargetAsync(BuildTargetGroup.Standalone,BuildTarget.StandaloneWindows64);return;}
@@ -56,16 +56,23 @@ public static class ReleaseBuildQueue
     // Toplu mod: WEB_OUT ortam değişkenindeki klasöre WebGL derlemesi + PWA dosyaları yazar.
     public static void BuildWebBatch()
     {
+        IllustratedCostumeVerification.Run();
         string folder=Environment.GetEnvironmentVariable("WEB_OUT");Directory.CreateDirectory(folder);
-        PlayerSettings.productName="Kök Yankısı";PlayerSettings.bundleVersion="0.5.0";PlayerSettings.runInBackground=true;
+        PlayerSettings.productName="Kök Yankısı";PlayerSettings.bundleVersion="0.6.0";PlayerSettings.runInBackground=true;
         EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WebGL,BuildTarget.WebGL);
         PlayerSettings.WebGL.compressionFormat=WebGLCompressionFormat.Disabled;PlayerSettings.WebGL.initialMemorySize=256;
         Build(BuildTarget.WebGL,folder,"WebGL");
+        FinalizeWebBatch();
+    }
+    public static void FinalizeWebBatch()
+    {
+        string folder=Environment.GetEnvironmentVariable("WEB_OUT");
         File.Copy(Application.dataPath+"/WebTemplates/web-index.html",folder+"/index.html",true);
         string html=File.ReadAllText(folder+"/index.html");
         foreach(string suffix in new[]{"loader.js","framework.js","data","wasm"})
         {string path=Directory.GetFiles(folder+"/Build","*."+suffix).Single();html=html.Replace("__"+suffix.ToUpperInvariant().Replace('.','_')+"__","Build/"+Path.GetFileName(path));}
         File.WriteAllText(folder+"/index.html",html);
+        File.WriteAllText(folder+"/build-info.json", JsonUtility.ToJson(new WebBuildInfo { version=Application.version, sourceRevision=Environment.GetEnvironmentVariable("BUILD_SOURCE_REVISION"), costumeIds=Costumes.All.Select(c=>c.Id).ToArray() },true));
         WebPwaExport.Apply(folder);
         File.WriteAllText("Library/WebBatch.txt","done");
     }
@@ -73,10 +80,11 @@ public static class ReleaseBuildQueue
     public static void BuildWindowsBatch()
     {
         string folder=Environment.GetEnvironmentVariable("WIN_OUT");if(string.IsNullOrEmpty(folder))folder=OutputRoot+"/KokYankisi-Windows";Directory.CreateDirectory(folder);
-        PlayerSettings.productName="Kök Yankısı";PlayerSettings.bundleVersion="0.5.0";PlayerSettings.runInBackground=true;
+        PlayerSettings.productName="Kök Yankısı";PlayerSettings.bundleVersion="0.6.0";PlayerSettings.runInBackground=true;
         EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone,BuildTarget.StandaloneWindows64);
         Build(BuildTarget.StandaloneWindows64,folder+"/KokYankisi.exe","Windows");
     }
+    [Serializable] class WebBuildInfo { public string version; public string sourceRevision; public string[] costumeIds; }
     static void Build(BuildTarget target,string path,string label)
     {
         File.WriteAllText("Library/ReleaseBuild-status.txt","Building "+label+" at "+DateTime.Now);

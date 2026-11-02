@@ -15,18 +15,11 @@ public class CostumeRig2D : MonoBehaviour
     bool wasGrounded;
     float facing=1;
     Material material;
-    Transform bag, artRoot;
+    Transform bag;
 
     public void Init(PlayerController owner, Material mat, int index)
     {
-        controller=owner; body=owner.GetComponent<Rigidbody2D>();
-        Build(mat,index);
-        GameInput.Kicked+=Kick;
-    }
-    // İskeleti ve parçaları kurar; oyuncuya bağlamaz (kostüm seçim ekranı önizlemesi de bunu kullanır).
-    void Build(Material mat, int index)
-    {
-        material=mat; style=index;
+        controller=owner; body=owner.GetComponent<Rigidbody2D>(); material=mat; style=index;
         skeleton=Bone("Iskelet",transform,Vector2.zero);
         var dark=Color.Lerp(Tints[style],new Color(.07f,.06f,.13f),.7f);
         var skin=new Color(.98f,.91f,.86f);
@@ -101,27 +94,8 @@ public class CostumeRig2D : MonoBehaviour
             Part("Kirmizi Mini Canta",bag,new Vector2(0,-.14f),new Vector2(.22f,.17f),new Color(.95f,.035f,.08f),27);
             Part("Canta Tokasi",bag,new Vector2(0,-.1f),Vector2.one*.035f,new Color(1,.8f,.4f),28);
         }
-        if(style==4) AttachArt();
         renderers=GetComponentsInChildren<SpriteRenderer>();
-    }
-    // Bordo Kovboy için boyalı çizim (Resources/Costumes/bordo_kovboy_art.png); yoksa kod ile çizilen iskelet kalır.
-    static Sprite art; static bool artTried;
-    public static Sprite Art()
-    {
-        if(!artTried)
-        {
-            artTried=true;
-            var tex=Resources.Load<Texture2D>("Costumes/bordo_kovboy_art");
-            if(tex){ tex.filterMode=FilterMode.Bilinear; art=Sprite.Create(tex,new Rect(0,0,tex.width,tex.height),new Vector2(.5f,0),tex.height/1.5f); }
-        }
-        return art;
-    }
-    void AttachArt()
-    {
-        var picture=Art(); if(!picture) return;
-        foreach(var r in GetComponentsInChildren<SpriteRenderer>(true)) r.enabled=false;
-        artRoot=Bone("Boyali Resim",skeleton,Vector2.zero);
-        var sr=artRoot.gameObject.AddComponent<SpriteRenderer>(); sr.sprite=picture; sr.sharedMaterial=material; sr.sortingOrder=24;
+        GameInput.Kicked+=Kick;
     }
     static Transform Bone(string name, Transform parent, Vector2 at)
     {
@@ -161,7 +135,6 @@ public class CostumeRig2D : MonoBehaviour
         bool land=Time.time<landUntil;
         skeleton.localScale=new Vector3(land?1.12f:1,land?.85f:1,1);
         skeleton.localPosition=new Vector3(0,ground?Mathf.Abs(Mathf.Sin(phase))*.025f:0,0);
-        if(artRoot) Angle(skeleton,(Mathf.Abs(speed)>.3f?Mathf.Sin(phase)*3f:Mathf.Sin(phase)*.6f)-jump*4+(Time.time<kickUntil?-8:0));
         Angle(chest,Mathf.Sin(phase)* (style==1?6:2)); Angle(head,-Mathf.Sin(phase)*3);
         Angle(accessoryL,Mathf.Sin(phase*(style==3?2:1))*(style==3?35:12));
         Angle(accessoryR,-Mathf.Sin(phase*(style==3?2:1))*(style==3?35:12));
@@ -172,55 +145,9 @@ public class CostumeRig2D : MonoBehaviour
     }
     void OnDestroy() { GameInput.Kicked-=Kick; }
 
-    // Kostüm seçim ekranı için önizleme: gerçek iskelet dinlenme pozunda kurulur ve her parça
-    // (elips) CPU'da pürüzsüz olarak çizilir; böylece küçük resim oyundaki karakterle birebir aynıdır.
+    // Selection cards use the same illustrated texture as the player.
     public static Sprite Preview(int index)
     {
-        if(index==4 && Art() && Art().texture.isReadable)
-        {
-            var source=Art().texture; var copy=new Texture2D(source.width,source.height,TextureFormat.RGBA32,false){filterMode=FilterMode.Bilinear,wrapMode=TextureWrapMode.Clamp};
-            copy.SetPixels(source.GetPixels()); copy.Apply();
-            return Sprite.Create(copy,new Rect(0,0,copy.width,copy.height),Vector2.one*.5f,100);
-        }
-        const int W=260, H=296; const float MinX=-.65f, MinY=-.08f, PerUnit=200f;
-        var go=new GameObject("Kostum Onizleme"); go.SetActive(false);
-        var rig=go.AddComponent<CostumeRig2D>(); rig.Build(null,index);
-        Angle(rig.elbowL,-15); Angle(rig.elbowR,15);
-        var parts=new System.Collections.Generic.List<SpriteRenderer>(go.GetComponentsInChildren<SpriteRenderer>(true));
-        var order=new System.Collections.Generic.Dictionary<SpriteRenderer,int>(); for(int i=0;i<parts.Count;i++) order[parts[i]]=i;
-        parts.Sort((a,b)=>a.sortingOrder!=b.sortingOrder?a.sortingOrder.CompareTo(b.sortingOrder):order[a].CompareTo(order[b]));
-        var pixels=new Color[W*H];
-        foreach(var part in parts)
-        {
-            var sprite=part.sprite; if(!sprite) continue;
-            var box=sprite.bounds; var tr=part.transform; var tint=part.color;
-            // Renderer.bounds etkin olmayan nesnede güvenilmez; dünya sınırı sprite köşelerinden hesaplanır.
-            Vector2 lo=new Vector2(float.MaxValue,float.MaxValue), hi=new Vector2(float.MinValue,float.MinValue);
-            for(int c=0;c<4;c++)
-            {
-                var corner=tr.TransformPoint(box.center+new Vector3((c&1)==0?-box.extents.x:box.extents.x,(c&2)==0?-box.extents.y:box.extents.y,0));
-                lo=Vector2.Min(lo,corner); hi=Vector2.Max(hi,corner);
-            }
-            int x0=Mathf.Max(0,Mathf.FloorToInt((lo.x-MinX)*PerUnit)-1), x1=Mathf.Min(W-1,Mathf.CeilToInt((hi.x-MinX)*PerUnit)+1);
-            int y0=Mathf.Max(0,Mathf.FloorToInt((lo.y-MinY)*PerUnit)-1), y1=Mathf.Min(H-1,Mathf.CeilToInt((hi.y-MinY)*PerUnit)+1);
-            for(int y=y0;y<=y1;y++) for(int x=x0;x<=x1;x++)
-            {
-                int hit=0;
-                for(int sy=0;sy<2;sy++) for(int sx=0;sx<2;sx++)
-                {
-                    var local=tr.InverseTransformPoint(new Vector3(MinX+(x+.25f+sx*.5f)/PerUnit,MinY+(y+.25f+sy*.5f)/PerUnit,0));
-                    float nx=(local.x-box.center.x)/box.extents.x, ny=(local.y-box.center.y)/box.extents.y;
-                    if(nx*nx+ny*ny<=.94f) hit++;
-                }
-                if(hit==0) continue;
-                float a=tint.a*hit/4f; var dst=pixels[y*W+x]; float outA=a+dst.a*(1-a);
-                var rgb=(new Vector3(Mathf.Min(tint.r,1),Mathf.Min(tint.g,1),Mathf.Min(tint.b,1))*a+new Vector3(dst.r,dst.g,dst.b)*dst.a*(1-a))/outA;
-                pixels[y*W+x]=new Color(rgb.x,rgb.y,rgb.z,outA);
-            }
-        }
-        Object.Destroy(go);
-        var tex=new Texture2D(W,H,TextureFormat.RGBA32,false){filterMode=FilterMode.Bilinear,wrapMode=TextureWrapMode.Clamp};
-        tex.SetPixels(pixels); tex.Apply();
-        return Sprite.Create(tex,new Rect(0,0,W,H),Vector2.one*.5f,100);
+        return Costumes.Preview(Ids[index]);
     }
 }
