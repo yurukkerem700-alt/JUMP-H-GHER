@@ -16,6 +16,9 @@ public class LevelRun : MonoBehaviour
     Transform door; SpriteRenderer doorGlow;
     EnemyManager enemies;
     bool finished;
+    int exitFloor=-1;
+    bool wasInsideDoor, wasDoorReady;
+    public bool ExitReady => LevelExitRules.ObjectiveReady(Def,tower.player.Score,Elapsed);
     static readonly Color Gold = new Color(1f, .77f, .3f), Dim = new Color(.25f, .2f, .26f);
 
     void Awake() { Instance = this; }
@@ -64,7 +67,7 @@ public class LevelRun : MonoBehaviour
         CloseResult();
         if (PlayerHealth.Instance) PlayerHealth.Instance.SetAllowed(Def.hearts);
         tower.player.RestartRun();
-        Elapsed = 0; finished = false;
+        Elapsed = 0; finished = false; ResetExit();
     }
 
     // Sonsuz mod: düşmanlar yüksekliğe göre kendiliğinden artar (EnemyManager.BeginEndless).
@@ -73,20 +76,35 @@ public class LevelRun : MonoBehaviour
     public void Stop() { Active = false; Endless = false; finished = false; if (PlayerHealth.Instance) PlayerHealth.Instance.SetAllowed(PlayerHealth.Max); enemies.Clear(); CloseResult(); hud.gameObject.SetActive(false); hudBack.SetActive(false); door.gameObject.SetActive(false); }
 
     // R ile yeniden başlatma bölümün süresini ve durumunu da sıfırlar.
-    public void OnRunRestarted() { if (Endless) { enemies.BeginEndless(); return; } if (!Active) return; Elapsed = 0; finished = false; enemies.Begin(Def); }
+    public void OnRunRestarted() { if (Endless) { enemies.BeginEndless(); return; } if (!Active) return; Elapsed = 0; finished = false; ResetExit(); enemies.Begin(Def); }
+
+    void ResetExit() { exitFloor=-1; wasInsideDoor=false; wasDoorReady=false; if(door) door.gameObject.SetActive(false); }
+
+    void UpdateExit()
+    {
+        if(Def.kind!=GoalKind.Survive) exitFloor=LevelExitRules.FixedExitFloor(Def);
+        else if(exitFloor<0 && ExitReady)
+        {
+            exitFloor=Mathf.Max(0,Mathf.FloorToInt((tower.player.transform.position.y-InfiniteTower.FirstSurface)/InfiniteTower.FloorGap)+1);
+            tower.EnsureThroughFloor(exitFloor);
+        }
+        if(exitFloor<0){door.gameObject.SetActive(false);return;}
+        var platform=tower.GetPlatform(exitFloor);
+        door.gameObject.SetActive(platform);
+        if(!platform) return;
+        door.position=new Vector3(platform.transform.position.x,platform.Top+.57f,0);
+        doorGlow.color=ExitReady?new Color(.45f,.95f,1f,.6f+.25f*Mathf.Sin(Time.time*3f)):new Color(.3f,.27f,.3f,.55f);
+    }
 
     void Update()
     {
         if (!Active || finished || GameFlow.IsMenu) return;
         Elapsed += Time.deltaTime;
-        bool done;
-        if (Def.kind == GoalKind.Survive) done = Elapsed >= Def.survive;
-        else if (Def.kind == GoalKind.Coins) done = tower.player.Score >= Def.target;
-        else
-        {
-            var p = tower.player.transform.position;
-            done = door.gameObject.activeSelf && Mathf.Abs(p.x - door.position.x) < .4f && Mathf.Abs(p.y - door.position.y) < .7f;
-        }
+        UpdateExit();
+        var p=tower.player.transform.position;
+        bool inside=door.gameObject.activeSelf && Mathf.Abs(p.x-door.position.x)<.4f && Mathf.Abs(p.y-door.position.y)<.7f;
+        bool done=LevelExitRules.EnteredOpenDoor(ExitReady,wasDoorReady,inside,wasInsideDoor);
+        wasInsideDoor=inside; wasDoorReady=ExitReady;
         if (done) Finish(true);
         else if (Def.HardLimit && Elapsed >= Def.limit) Finish(false, "SÜRE DOLDU");
     }
@@ -96,13 +114,7 @@ public class LevelRun : MonoBehaviour
         hud.gameObject.SetActive(Active && !finished); hudBack.SetActive(Active && !finished);
         // Bölüm HUD'u aynı yerde durduğu için kule modunun "KAT • tema" yazısını bölümde gizle (üst üste biniyordu).
         if (tower.floorLabel) tower.floorLabel.enabled = !(Active && !finished);
-        var platform = Active && !finished && Def.kind == GoalKind.Floor ? tower.GetPlatform(Def.target - 1) : null;
-        door.gameObject.SetActive(platform);
-        if (platform)
-        {
-            door.position = new Vector3(platform.transform.position.x, platform.Top + .57f, 0);
-            doorGlow.color = new Color(.45f, .95f, 1f, .6f + .25f * Mathf.Sin(Time.time * 3f));
-        }
+        if(!Active || finished) door.gameObject.SetActive(false);
         if (!Active || finished) return;
         string foes = Def.HasEnemies ? "  •  " + Def.EnemyText : "";
         string head = "BÖLÜM " + Def.number + "  •  " + Def.TierName;
@@ -115,7 +127,8 @@ public class LevelRun : MonoBehaviour
         else time = "SÜRE " + LevelDefs.Clock(Elapsed);
         int lost = PlayerHealth.Instance ? PlayerHealth.Instance.Lost : 0;
         string next = "  •  ŞU AN " + Def.StarsFor(Elapsed, lost) + " YILDIZ";
-        hud.text = goal + "\n" + time + next;
+        string exit=ExitReady && Def.kind!=GoalKind.Floor ? "  •  KAPIYA GİR: KAT "+(exitFloor+1) : "";
+        hud.text = goal + "\n" + time + next + exit;
     }
 
     void Finish(bool win, string reason = null)
