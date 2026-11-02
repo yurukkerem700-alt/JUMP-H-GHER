@@ -22,6 +22,7 @@ public class PlayerVisual2D : MonoBehaviour
         display=visual.GetComponent<SpriteRenderer>(); display.sharedMaterial=spriteMaterial; display.sortingOrder=20;
         // Sprite tabanı ayakta olduğu için ayaklardan yukarı büyür; çarpışma kutusu ve fizik değişmez.
         visual.transform.localScale=Vector3.one*VisualScale;
+        if (!GetComponent<CostumeEffects>()) gameObject.AddComponent<CostumeEffects>();
         Costumes.DefaultSheet=animationSheet;
         Costumes.Changed+=ApplyCostume; ApplyCostume();
     }

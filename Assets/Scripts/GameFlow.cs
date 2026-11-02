@@ -94,9 +94,21 @@ public class GameFlow : MonoBehaviour
         MenuButton("BÖLÜM HARİTASI",()=>map.Open(),25,false,new Vector4(0,666,540,66),new Vector4(250,320,480,58));
         MenuButton("KOSTÜMLER",()=>costumes.Open(),23,false,new Vector4(-138,744,264,66),new Vector4(128,388,236,58));
         MenuButton("AYARLAR",()=>settings.Open(),23,false,new Vector4(138,744,264,66),new Vector4(372,388,236,58));
-        MenuButton("NASIL OYNANIR",()=>{subtitle.text=subtitle.text==HowTo?Tagline:HowTo;},25,false,new Vector4(0,822,540,66),new Vector4(250,456,480,58));
+        MenuButton("NASIL OYNANIR",ToggleInstructions,25,false,new Vector4(0,822,540,66),new Vector4(250,456,480,58));
         MenuButton(Application.platform==RuntimePlatform.WebGLPlayer?"TAM EKRAN":"ÇIKIŞ",()=>{if(Application.platform==RuntimePlatform.WebGLPlayer)Screen.fullScreen=!Screen.fullScreen;else Application.Quit();},25,false,new Vector4(0,900,540,66),new Vector4(250,524,480,58));
         lastSize=Vector2.zero;Layout();
+    }
+    void ToggleInstructions()
+    {
+        var go = new GameObject("Kontroller", typeof(Image), typeof(Button));
+        go.transform.SetParent(canvas.transform, false);
+        var r = go.GetComponent<RectTransform>();
+        r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one; r.offsetMin = r.offsetMax = Vector2.zero;
+        go.GetComponent<Image>().color = new Color(.03f,.02f,.04f,.98f);
+        var label = UiArt.Label(go.transform, tower.floorLabel.font, HowTo + "\n\nKapatmak için dokun", .5f,.5f,800,700,28,Color.white);
+        label.enableAutoSizing = true; label.fontSizeMin = 16; label.fontSizeMax = 28;
+        label.raycastTarget = false;
+        go.GetComponent<Button>().onClick.AddListener(() => Destroy(go));
     }
     void Layout()
     {

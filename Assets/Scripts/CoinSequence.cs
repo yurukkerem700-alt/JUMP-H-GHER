@@ -33,10 +33,11 @@ public class CoinSequence : MonoBehaviour
             if(TowerPowers.Instance && TowerPowers.Instance.Status.Length>0) hintText.text += "  •  " + TowerPowers.Instance.Status;
         }
     }
+    static float CoinLimit => Mathf.Max(.1f, GameDeviceLayout.HorizontalLimit - .5f);
     public Vector3 GetCoinPosition()
     {
         if (SpawnMode == 1 && targetPlatform)
-            return new Vector3(targetPlatform.transform.position.x + horizontalOffset, targetPlatform.Top + heightOffset + Mathf.Sin(Time.time * 3) * .035f, 0);
+            return new Vector3(Mathf.Clamp(targetPlatform.transform.position.x + horizontalOffset, -CoinLimit, CoinLimit), targetPlatform.Top + heightOffset + Mathf.Sin(Time.time * 3) * .035f, 0);
         return staticPosition + Vector3.up * (Mathf.Sin(Time.time * 3) * .035f);
     }
     public bool TryCollect(Collider2D candidate)

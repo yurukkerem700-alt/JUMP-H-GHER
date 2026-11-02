@@ -163,6 +163,7 @@ public class PlayerController : MonoBehaviour
     private void Respawn()
     {
         standingPlatform = null;
+        airJumpUsed = false;
         supportCollider = null;
         lastGroundContact = -100;
         rb.position = startPosition;
