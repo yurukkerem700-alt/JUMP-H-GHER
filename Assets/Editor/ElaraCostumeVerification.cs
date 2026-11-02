@@ -21,6 +21,8 @@ public static class ElaraCostumeVerification
                 int solid=0,clear=0;
                 foreach(var p in pixels) { if(p.a>.5f) solid++; if(p.a<.01f) clear++; }
                 Assert.IsTrue(solid>500); Assert.IsTrue(clear>pixels.Length/4);
+                for(int x=0;x<(int)r.width;x++) { Assert.IsTrue(pixels[x].a<.5f); Assert.IsTrue(pixels[(int)(r.height-1)*(int)r.width+x].a<.5f); }
+                for(int y=0;y<(int)r.height;y++) { Assert.IsTrue(pixels[y*(int)r.width].a<.5f); Assert.IsTrue(pixels[y*(int)r.width+(int)r.width-1].a<.5f); }
                 Assert.IsTrue(frames[i].pivot.y>=0 && frames[i].pivot.y<r.height);
                 var foot=sheet.GetPixels((int)r.x,(int)(r.y+frames[i].pivot.y-.5f),(int)r.width,1);
                 int supported=0; foreach(var p in foot) if(p.a>.5f) supported++;

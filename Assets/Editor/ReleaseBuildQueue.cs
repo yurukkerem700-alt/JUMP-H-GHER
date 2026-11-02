@@ -56,18 +56,24 @@ public static class ReleaseBuildQueue
     // Toplu mod: WEB_OUT ortam değişkenindeki klasöre WebGL derlemesi + PWA dosyaları yazar.
     public static void BuildWebBatch()
     {
+        ElaraCostumeVerification.Run();
         string folder=Environment.GetEnvironmentVariable("WEB_OUT");Directory.CreateDirectory(folder);
         PlayerSettings.productName="Kök Yankısı";PlayerSettings.bundleVersion="0.6.0";PlayerSettings.runInBackground=true;
         EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WebGL,BuildTarget.WebGL);
         PlayerSettings.WebGL.compressionFormat=WebGLCompressionFormat.Disabled;PlayerSettings.WebGL.initialMemorySize=256;
         Build(BuildTarget.WebGL,folder,"WebGL");
+        FinalizeWebBatch();
+    }
+    public static void FinalizeWebBatch()
+    {
+        string folder=Environment.GetEnvironmentVariable("WEB_OUT");
         File.Copy(Application.dataPath+"/WebTemplates/web-index.html",folder+"/index.html",true);
         string html=File.ReadAllText(folder+"/index.html");
         foreach(string suffix in new[]{"loader.js","framework.js","data","wasm"})
         {string path=Directory.GetFiles(folder+"/Build","*."+suffix).Single();html=html.Replace("__"+suffix.ToUpperInvariant().Replace('.','_')+"__","Build/"+Path.GetFileName(path));}
         File.WriteAllText(folder+"/index.html",html);
-        WebPwaExport.Apply(folder);
         File.WriteAllText(folder+"/build-info.json", JsonUtility.ToJson(new WebBuildInfo { version=Application.version, sourceRevision=Environment.GetEnvironmentVariable("BUILD_SOURCE_REVISION"), costumeIds=Costumes.All.Select(c=>c.Id).ToArray() },true));
+        WebPwaExport.Apply(folder);
         File.WriteAllText("Library/WebBatch.txt","done");
     }
     // Toplu mod: Builds/KokYankisi-Windows/KokYankisi.exe yazar (WIN_OUT ile klasör değiştirilebilir).
