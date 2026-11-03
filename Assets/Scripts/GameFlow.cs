@@ -176,7 +176,8 @@ public class GameFlow : MonoBehaviour
     }
     public void PauseForBackground() { if(overlay && !IsMenu) Show(true); }
     public void Begin(bool resume){if(!resume&&begun)tower.player.RestartRun();begun=true;Show(false);}
-    public void Show(bool visible){menuVisible=visible;if(subtitle)subtitle.text=Tagline;overlay.SetActive(visible);Apply();if(begun)start.GetComponentInChildren<TextMeshProUGUI>(true).text="DEVAM ET";}
+    public void Show(bool visible){menuVisible=visible;if(subtitle)subtitle.text=Tagline;overlay.SetActive(visible);Apply();start.GetComponentInChildren<TextMeshProUGUI>(true).text=begun?"DEVAM ET":"OYNA";}
+    public void ToMenu(){begun=false;Show(true);}
     // Sonuç ekranı açıkken oyun donar ama ana menü görünmez.
     public void Hold(bool on){holding=on;Apply();}
     void Apply(){IsMenu=menuVisible||holding;Time.timeScale=IsMenu?0:1;GameInput.Clear();}

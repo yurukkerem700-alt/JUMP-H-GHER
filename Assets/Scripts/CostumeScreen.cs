@@ -41,12 +41,12 @@ public class CostumeScreen
         if (plate) { var bar = UiArt.Pic(t, plate, Color.white, .5f, .95f, 520, 84); bar.type = Image.Type.Sliced; }
         var title = UiArt.Label(t, font, "KOSTÜMLER", .5f, .95f, 500, 70, 40, new Color(1, .82f, .56f)); title.outlineColor = new Color32(30, 5, 5, 255); title.outlineWidth = .2f;
         walletLabel = UiArt.Label(t, font, "", .86f, .95f, 300, 60, 24, new Color(1f, .77f, .3f));
-        notice = UiArt.Label(t, font, "", .5f, .89f, 800, 50, 26, new Color(1, .5f, .4f));
+        notice = UiArt.Label(t, font, "", .5f, .885f, 800, 50, 26, new Color(1, .5f, .4f));
         var backBtn = UiArt.Btn(t, font, "GERİ", .14f, .95f, 190, 66, () => back());
         var backImg = backBtn.GetComponent<Image>(); if (plate) { backImg.sprite = plate; backImg.type = Image.Type.Sliced; backImg.color = new Color(.9f, .85f, .9f); }
 
         var view = new GameObject("Kaydırma Alanı", typeof(RectTransform), typeof(Image), typeof(RectMask2D), typeof(ScrollRect)); view.transform.SetParent(t, false);
-        var vr = view.GetComponent<RectTransform>(); vr.anchorMin = Vector2.zero; vr.anchorMax = new Vector2(1, .9f); vr.offsetMin = vr.offsetMax = Vector2.zero;
+        var vr = view.GetComponent<RectTransform>(); vr.anchorMin = Vector2.zero; vr.anchorMax = new Vector2(1, .86f); vr.offsetMin = vr.offsetMax = Vector2.zero;
         view.GetComponent<Image>().color = new Color(0, 0, 0, 0);
         var contentGo = new GameObject("İçerik", typeof(RectTransform)); contentGo.transform.SetParent(view.transform, false);
         var content = contentGo.GetComponent<RectTransform>(); content.anchorMin = new Vector2(0, 1); content.anchorMax = new Vector2(1, 1); content.pivot = new Vector2(.5f, 1);

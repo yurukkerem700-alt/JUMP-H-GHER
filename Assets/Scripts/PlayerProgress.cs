@@ -112,6 +112,25 @@ public static class PlayerProgress
         return true;
     }
 
+    static readonly HashSet<string> announced = new HashSet<string>();
+    static bool primed;
+    // Oyun sırasında yeni tamamlanan görev ya da başarımın bildirimi (her çağrıda en çok bir tane). İlk çağrı mevcut durumu sessizce kaydeder.
+    public static string PollNotice()
+    {
+        var tasks = Today();
+        if (!primed)
+        {
+            for (int i = 0; i < tasks.Length; i++) if (Ready(tasks[i]) || Claimed(tasks[i].kind)) announced.Add("T" + DayNumber + "_" + i);
+            for (int i = 0; i < Achievements.Length; i++) if (AchievementReady(i) || AchievementClaimed(i)) announced.Add("A" + i);
+            primed = true; return null;
+        }
+        for (int i = 0; i < tasks.Length; i++)
+            if (Ready(tasks[i]) && announced.Add("T" + DayNumber + "_" + i)) return "GÖREV TAMAMLANDI: " + tasks[i].text;
+        for (int i = 0; i < Achievements.Length; i++)
+            if (AchievementReady(i) && announced.Add("A" + i)) return "BAŞARIM: " + Achievements[i].title;
+        return null;
+    }
+
     public static int ClaimableCount()
     {
         int n = LoginClaimable ? 1 : 0;

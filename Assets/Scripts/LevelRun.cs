@@ -16,6 +16,7 @@ public class LevelRun : MonoBehaviour
     Transform door; SpriteRenderer doorGlow;
     EnemyManager enemies;
     bool finished, endlessOver;
+    TextMeshProUGUI toast; float toastUntil, nextPoll;
     float endlessElapsed; int bestAtStart;
     int exitFloor=-1;
     bool wasInsideDoor, wasDoorReady;
@@ -35,6 +36,8 @@ public class LevelRun : MonoBehaviour
         hud = UiArt.Label(canvas.transform, font, "", .5f, .815f, 900, 90, 24, new Color(1, .86f, .66f));
         hud.richText = true; hud.gameObject.SetActive(false); hudBack.SetActive(false);
         BuildDoor();
+        toast = UiArt.Label(canvas.transform, font, "", .5f, .70f, 900, 70, 30, new Color(.6f, 1f, .75f));
+        toast.outlineColor = new Color32(10, 30, 15, 255); toast.outlineWidth = .25f; toast.gameObject.SetActive(false);
         enemies = gameObject.AddComponent<EnemyManager>(); enemies.Init(t);
         if (PlayerHealth.Instance) PlayerHealth.Instance.Died += OnPlayerDied;
     }
@@ -122,6 +125,13 @@ public class LevelRun : MonoBehaviour
 
     void LateUpdate()
     {
+        if (!GameFlow.IsMenu && (Active || Endless) && Time.unscaledTime >= nextPoll)
+        {
+            nextPoll = Time.unscaledTime + 1f;
+            var msg = PlayerProgress.PollNotice();
+            if (msg != null) { toast.text = msg; toastUntil = Time.unscaledTime + 3.2f; SesAtolyesi.Ses.Pickup(); }
+        }
+        toast.gameObject.SetActive(Time.unscaledTime < toastUntil && !GameFlow.IsMenu);
         hud.gameObject.SetActive(Active && !finished); hudBack.SetActive(Active && !finished);
         // Bölüm HUD'u aynı yerde durduğu için kule modunun "KAT • tema" yazısını bölümde gizle (üst üste biniyordu).
         if (tower.floorLabel) tower.floorLabel.enabled = !(Active && !finished);
@@ -207,7 +217,7 @@ public class LevelRun : MonoBehaviour
         UiArt.Label(t, font, "COIN  " + coins + "   •   SÜRE  " + LevelDefs.Clock(endlessElapsed), .5f, .50f, 900, 56, 28, new Color(1, .86f, .66f));
         UiArt.Label(t, font, "CÜZDAN  " + PlayerProgress.Wallet + " COIN", .5f, .43f, 900, 50, 24, Gold);
         UiArt.Btn(t, font, "TEKRAR", .5f, .29f, 440, 70, () => { flow.Hold(false); CloseResult(); tower.player.RestartRun(); });
-        UiArt.Btn(t, font, "ANA MENÜ", .5f, .20f, 440, 70, () => { flow.Hold(false); CloseResult(); Stop(); tower.player.RestartRun(); flow.Show(true); });
+        UiArt.Btn(t, font, "ANA MENÜ", .5f, .20f, 440, 70, () => { flow.Hold(false); CloseResult(); Stop(); tower.player.RestartRun(); flow.ToMenu(); });
     }
 
     void Condition(Transform parent, float y, string text, bool met)
