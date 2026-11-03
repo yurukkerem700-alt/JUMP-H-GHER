@@ -104,8 +104,8 @@ def build(glow):
             if not al: continue
             if y>g: p[x,y]=(0,0,0,0)
             elif y>=g-1: p[x,y]=(r,gg,b,int(al*(.45 if y==g else .75)))
-    # --- harmonise with the scene: bake the scene tint, haze toward the hill colour, warm sky rim light ---
-    TINT=(.74,.62,.58);HILL=(98,65,49);SKY=(196,112,56)
+    # --- flat, pale distant silhouette like the chapels on the far hills (measured ~ (75,53,43)); haze toward the hill at the base ---
+    BASE=(78,54,43);HILL=(98,65,49);RIM=(150,88,52);GLOWC=(205,122,52)
     def mix(c,t,k): return tuple(int(c[i]*(1-k)+t[i]*k) for i in range(3))
     snap=im.copy();q=snap.load()
     def clear(x,y): return not(0<=x<N and 0<=y<N) or q[x,y][3]<40
@@ -113,17 +113,16 @@ def build(glow):
         for x in range(N):
             r,g,b,al=q[x,y]
             if not al: continue
-            if r>200 and g>140 and b<160:   # window glow keeps its warmth, only slightly softened
-                p[x,y]=mix((r,g,b),HILL,.12)+(int(al*.97),);continue
-            c=(int(r*TINT[0]),int(g*TINT[1]),int(b*TINT[2]))
+            if r>200 and g>140 and b<160:
+                p[x,y]=mix(GLOWC,BASE,.15)+(int(al*.95),);continue
+            lum=(.3*r+.59*g+.11*b)/255
+            k=1+(lum-.33)*.6
+            c=tuple(min(255,int(v*k)) for v in BASE)
             gy=GROUND+round((x-64)*0.40)
             depth=min(1,max(0,y/max(1,gy)))
-            c=mix(c,HILL,.22+.32*depth**2)            # distance haze, thicker toward the base
-            if clear(x-1,y) or clear(x,y-1) or clear(x-1,y-1):   # edges facing the moon / sky catch warm light
-                c=mix(c,SKY,.3)
-            elif clear(x+1,y) or clear(x,y+1):
-                c=mix(c,(60,38,32),.25)               # shaded edge on the far side
-            p[x,y]=c+(int(al*.95),)
+            c=mix(c,HILL,.55*depth**2)
+            if clear(x-1,y) or clear(x,y-1) or clear(x-1,y-1): c=mix(c,RIM,.2)
+            p[x,y]=c+(int(al*.97),)
     return im
 a=build(False);b=build(True)
 strip=Image.new('RGBA',(N*2,N),(0,0,0,0));strip.paste(a,(0,0));strip.paste(b,(N,0))
