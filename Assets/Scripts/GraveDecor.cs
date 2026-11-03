@@ -19,7 +19,7 @@ public class GraveDecor : MonoBehaviour
     const float RavenHeight = 1.15f, FootMargin = .031f; // FootMargin: karenin altı ile ayakların arası (kare yüksekliğine oranla)
     const float OwlU = .165f, OwlV = .189f, OwlHeight = 1.05f; // sol ağacın dalının üstü
     const float CatU = .863f, CatV = .5455f, CatHeight = 1.15f; // mezar taşının tepe noktası
-    const float TowerU = .46f, TowerV = .56f, TowerHeight = 2.8f; // vadi sırtındaki uzak kule; tabanı sise karışır
+    const float TowerU = .40f, TowerV = .455f, TowerHeight = 2.8f; // sol tepenin sırtında eğri duran kule; tabanı tepeye oturur
     static readonly Color TowerTint = new Color(.5f, .43f, .42f, .95f);
     const float BatHeight = 1.9f; const int BatCount = 2, WispCount = 16;
     static readonly Color OwlTint = new Color(.85f, .8f, .82f), CatTint = new Color(.8f, .78f, .86f), BatTint = new Color(.7f, .62f, .66f);

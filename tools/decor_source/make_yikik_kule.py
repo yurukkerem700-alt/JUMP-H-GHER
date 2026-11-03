@@ -85,14 +85,37 @@ def build(glow):
         c=random.choice([MID,LIGHT,DARK]);put(x,y,c);put(x+1,y,c)
     # a few stones mid-air near the crown
     for sx,sy in ((82,34),(86,46),(44,40)): put(sx,sy,LIGHT);put(sx+1,sy,MID);put(sx,sy+1,DARK)
-    # mist fade at the bottom: smooth alpha quantised to 4 steps
+    # lean: shear the tower rows around the ground line so it tilts to the right
+    GROUND=114
+    src=im.copy();sp=src.load();im.paste((0,0,0,0),(0,0,N,N));p=im.load()
     for y in range(N):
+        sh=round((GROUND-y)*0.16) if y<GROUND else 0
         for x in range(N):
-            r,g,b,a=p[x,y]
-            if a==0 or y<88: continue
-            f=max(0,1-(y-88)/38)
-            q=round(f*4)/4
-            p[x,y]=(r,g,b,int(255*q))
+            if sp[x,y][3]==0: continue
+            nx=x+sh
+            if 0<=nx<N: p[nx,y]=sp[x,y]
+    def put2(x,y,c,al=255):
+        if 0<=x<N and 0<=y<N: p[x,y]=c+(al,)
+    # toppled block lying on the slope
+    for (bx,by,bw,bh) in ((92,108,9,5),(104,112,7,4),(18,111,8,4)):
+        for yy in range(bh):
+            for xx in range(bw):
+                c=HI if yy==0 else (LIGHT if xx<bw//2 else MID)
+                if xx==bw-1 or yy==bh-1: c=DARK
+                put2(bx+xx,by+yy-(xx//4),c)
+    # earth mound the tower stands on (matches the hill body colour after tint)
+    EARTH=(206,158,114);EARTH2=(196,148,106)
+    for x in range(22,108):
+        d=abs(x-64)/42
+        top=GROUND-7+int((x-22)*0.19)
+        for y in range(top,N):
+            if y>=N-8 and random.random()<(y-(N-8))/8: continue
+            if x<30 and random.random()>(x-22)/8: continue
+            c=EARTH if random.random()>.12 else EARTH2
+            put2(x,y,c)
+    for x in range(26,104,4):
+        top=GROUND-7+int((x-22)*0.19)
+        put2(x,top-1,DARK)
     return im
 a=build(False);b=build(True)
 strip=Image.new('RGBA',(N*2,N),(0,0,0,0));strip.paste(a,(0,0));strip.paste(b,(N,0))
