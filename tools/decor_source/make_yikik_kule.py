@@ -86,7 +86,7 @@ def build(glow):
     # a few stones mid-air near the crown
     for sx,sy in ((82,34),(86,46),(44,40)): put(sx,sy,LIGHT);put(sx+1,sy,MID);put(sx,sy+1,DARK)
     # lean: shear the tower rows around the ground line so it tilts to the right
-    GROUND=114
+    GROUND=108
     src=im.copy();sp=src.load();im.paste((0,0,0,0),(0,0,N,N));p=im.load()
     for y in range(N):
         sh=round((GROUND-y)*0.16) if y<GROUND else 0
@@ -98,7 +98,7 @@ def build(glow):
         if 0<=x<N and 0<=y<N: p[x,y]=c+(al,)
     # base follows the hill slope (ground drops to the right); only the last rows are soft
     for x in range(N):
-        g=GROUND+round((x-64)*0.31)
+        g=GROUND+round((x-64)*0.40)
         for y in range(N):
             r,gg,b,al=p[x,y]
             if not al: continue
