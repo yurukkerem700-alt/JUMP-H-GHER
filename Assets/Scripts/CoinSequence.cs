@@ -47,7 +47,7 @@ public class CoinSequence : MonoBehaviour
     }
     void SpawnNext()
     {
-        SpawnMode = ActiveIndex % 2 == 0 ? 1 : 2;
+        SpawnMode = 1; // her coin basamağın tam ortasında durur ve basamakla birlikte gider
         int nextFloor = SpawnFloor + 1;
         var tower = FindFirstObjectByType<InfiniteTower>();
         tower.EnsureThroughFloor(nextFloor + 7);
@@ -55,14 +55,9 @@ public class CoinSequence : MonoBehaviour
         if (!chosen) throw new System.InvalidOperationException("Coin platform missing: " + nextFloor);
         targetPlatform = null;
         SpawnFloor = nextFloor;
-        horizontalOffset = Random.Range(-.68f, .68f);
-        heightOffset = Random.Range(.65f, .9f);
-        if (SpawnMode == 1) targetPlatform = chosen;
-        else
-        {
-            float limit = Mathf.Min(2.65f, GameDeviceLayout.HorizontalLimit - .5f);
-            staticPosition = new Vector3(Random.Range(-limit, limit), chosen.Top + heightOffset, 0);
-        }
+        horizontalOffset = 0;
+        heightOffset = .75f;
+        targetPlatform = chosen;
         coin.gameObject.SetActive(true); coin.position = GetCoinPosition();
     }
     public void ResetSequence()
