@@ -7,6 +7,7 @@ using UnityEngine;
 //   Resources/Decor/Baykus.png     : sol ağacın dalında baykuş (3 kare: durur / yana bakar)
 //   Resources/Decor/KaraKedi.png   : sağdaki mezar taşında kara kedi (3 kare: oturur / döner)
 //   Resources/Decor/Yarasa.png     : tek kare; kanat çırpma kodla (yarasalar ayın çevresinde uçar)
+//   Resources/Decor/YikikKule.png  : vadinin ardındaki yıkık kule (2 kare: pencere sönük / yanık); pencere düzensiz titrer
 //   Ruh ışıkları (ateşböcekleri) tamamen kodla çizilir, dosya gerekmez.
 // Konumlar arka plan resminin kenarlarına göre oranlıdır; ekran oranı değişince birlikte kayar.
 // Doğal dursun diye: sahnenin sisli turuncu ışığına boyanır, altında yumuşak gölge vardır, kareler birbirine
@@ -18,6 +19,8 @@ public class GraveDecor : MonoBehaviour
     const float RavenHeight = 1.15f, FootMargin = .031f; // FootMargin: karenin altı ile ayakların arası (kare yüksekliğine oranla)
     const float OwlU = .165f, OwlV = .189f, OwlHeight = 1.05f; // sol ağacın dalının üstü
     const float CatU = .863f, CatV = .5455f, CatHeight = 1.15f; // mezar taşının tepe noktası
+    const float TowerU = .46f, TowerV = .56f, TowerHeight = 2.8f; // vadi sırtındaki uzak kule; tabanı sise karışır
+    static readonly Color TowerTint = new Color(.5f, .43f, .42f, .95f);
     const float BatHeight = 1.9f; const int BatCount = 2, WispCount = 16;
     static readonly Color OwlTint = new Color(.85f, .8f, .82f), CatTint = new Color(.8f, .78f, .86f), BatTint = new Color(.7f, .62f, .66f);
     // Kuzgunlar sağ ağacın kalın dalının düz üst yüzeyine konar: (u, v) = ayakların bastığı nokta (arka plan görselinden ölçüldü).
@@ -30,6 +33,7 @@ public class GraveDecor : MonoBehaviour
     readonly System.Collections.Generic.List<Perch> perches = new System.Collections.Generic.List<Perch>();
     SpriteRenderer[] bats, wisps, ravenShadows; Sprite[] batFrames; float[] wispSeed;
     Sprite[][] batModels;
+    SpriteRenderer tower; Sprite[] towerFrames; float towerNext;
     SpriteRenderer bg, zombie, zombieNext, shadow;
     Sprite[] zombieFrames, ravenFrames;
     SpriteRenderer[] ravens;
@@ -75,8 +79,10 @@ public class GraveDecor : MonoBehaviour
             batModels=new Sprite[BatCount][];
             for (int i = 0; i < BatCount; i++) { batModels[i]=SkyCreatureArt.Get(2+i%2); bats[i] = Make("Yarasa " + (i + 1), batModels[i]!=null?batModels[i][0]:batFrames[0], material, -25); bats[i].color = BatTint; }
         }
+        towerFrames = Slice("YikikKule", TowerHeight);
+        if (towerFrames != null) { tower = Make("Yıkık Kule", towerFrames[0], material, -36); tower.color = TowerTint; }
         BuildWisps(material);
-        if (zombie == null && ravens == null && perches.Count == 0 && bats == null && wisps == null) enabled = false;
+        if (tower == null && zombie == null && ravens == null && perches.Count == 0 && bats == null && wisps == null) enabled = false;
     }
 
     void AddPerch(string name, string file, float height, float u, float v, Color tint, bool flip, Material material, float minWait, float maxWait)
@@ -131,6 +137,11 @@ public class GraveDecor : MonoBehaviour
             p.sr.transform.localScale = new Vector3(1, 1 + Mathf.Sin(t * 1.1f + p.u * 7f) * .007f, 1);
             p.shadow.transform.position = At(p.u, p.v) + new Vector3(.04f, 0, 0);
             p.shadow.transform.localScale = new Vector3(p.width, p.width * .2f, 1);
+        }
+        if (tower)
+        {
+            tower.transform.position = At(TowerU, TowerV);
+            if (t >= towerNext) { bool on = tower.sprite == towerFrames[0] && towerFrames.Length > 1; tower.sprite = towerFrames[on ? 1 : 0]; towerNext = t + (on ? Random.Range(.6f, 2.5f) : Random.Range(3f, 9f)); }
         }
         if (bats != null)
             for (int i = 0; i < bats.Length; i++)
