@@ -96,26 +96,13 @@ def build(glow):
             if 0<=nx<N: p[nx,y]=sp[x,y]
     def put2(x,y,c,al=255):
         if 0<=x<N and 0<=y<N: p[x,y]=c+(al,)
-    # toppled block lying on the slope
-    for (bx,by,bw,bh) in ((92,108,9,5),(104,112,7,4),(18,111,8,4)):
-        for yy in range(bh):
-            for xx in range(bw):
-                c=HI if yy==0 else (LIGHT if xx<bw//2 else MID)
-                if xx==bw-1 or yy==bh-1: c=DARK
-                put2(bx+xx,by+yy-(xx//4),c)
-    # earth mound the tower stands on (matches the hill body colour after tint)
-    EARTH=(206,158,114);EARTH2=(196,148,106)
-    for x in range(22,108):
-        d=abs(x-64)/42
-        top=GROUND-7+int((x-22)*0.19)
-        for y in range(top,N):
-            if y>=N-8 and random.random()<(y-(N-8))/8: continue
-            if x<30 and random.random()>(x-22)/8: continue
-            c=EARTH if random.random()>.12 else EARTH2
-            put2(x,y,c)
-    for x in range(26,104,4):
-        top=GROUND-7+int((x-22)*0.19)
-        put2(x,top-1,DARK)
+    # no mound: the base dissolves into the hill haze (alpha dither over the last rows)
+    for y in range(N):
+        for x in range(N):
+            if p[x,y][3]==0: continue
+            if y>=GROUND-10:
+                f=1-(y-(GROUND-10))/14
+                if f<=.3 or ((x%2)+(y%2)*2)/4 >= f: p[x,y]=(0,0,0,0)
     return im
 a=build(False);b=build(True)
 strip=Image.new('RGBA',(N*2,N),(0,0,0,0));strip.paste(a,(0,0));strip.paste(b,(N,0))
