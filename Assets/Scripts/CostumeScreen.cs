@@ -17,6 +17,7 @@ public class CostumeScreen
     readonly List<Card> cards = new List<Card>();
     readonly List<Sprite> previews = new List<Sprite>();
     readonly ScrollRect scroll;
+    TextMeshProUGUI walletLabel, notice; float noticeUntil;
     public bool IsOpen => root.activeSelf;
 
     public CostumeScreen(Transform parent, TMP_FontAsset font, Action back)
@@ -39,6 +40,8 @@ public class CostumeScreen
         }
         if (plate) { var bar = UiArt.Pic(t, plate, Color.white, .5f, .95f, 520, 84); bar.type = Image.Type.Sliced; }
         var title = UiArt.Label(t, font, "KOSTÜMLER", .5f, .95f, 500, 70, 40, new Color(1, .82f, .56f)); title.outlineColor = new Color32(30, 5, 5, 255); title.outlineWidth = .2f;
+        walletLabel = UiArt.Label(t, font, "", .86f, .95f, 300, 60, 24, new Color(1f, .77f, .3f));
+        notice = UiArt.Label(t, font, "", .5f, .89f, 800, 50, 26, new Color(1, .5f, .4f));
         var backBtn = UiArt.Btn(t, font, "GERİ", .14f, .95f, 190, 66, () => back());
         var backImg = backBtn.GetComponent<Image>(); if (plate) { backImg.sprite = plate; backImg.type = Image.Type.Sliced; backImg.color = new Color(.9f, .85f, .9f); }
 
@@ -69,7 +72,7 @@ public class CostumeScreen
         var frame = go.GetComponent<Image>();
         if (plate) { frame.sprite = plate; frame.type = Image.Type.Sliced; }
         var button = go.GetComponent<Button>(); string id = entry.Id;
-        button.onClick.AddListener(() => { SesAtolyesi.Ses.UiClick(); Costumes.SelectedId = id; Refresh(); });
+        button.onClick.AddListener(() => { SesAtolyesi.Ses.UiClick(); Choose(id); });
 
         // Önizleme sprite'ı Open() sırasında kurulur: varsayılan kostümün sayfası sahne başlarken hazır olmayabilir.
         var pic = UiArt.Pic(go.transform, null, Color.white, .5f, .6f, 0, 0);
@@ -85,19 +88,34 @@ public class CostumeScreen
         return new Card { Id = entry.Id, Frame = frame, Pic = pic, State = state };
     }
 
+    void Choose(string id)
+    {
+        if (!Costumes.Owned(id))
+        {
+            if (!Costumes.Buy(id)) { Say("COIN YETERSİZ  •  " + Costumes.Price(id) + " COIN GEREK"); return; }
+            SesAtolyesi.Ses.Pickup();
+        }
+        notice.text = ""; Costumes.SelectedId = id; Refresh();
+    }
+
+    void Say(string text) { notice.text = text; noticeUntil = Time.unscaledTime + 2.5f; }
+
     void Refresh()
     {
+        walletLabel.text = "CÜZDAN  " + PlayerProgress.Wallet;
         string selected = Costumes.SelectedId;
         foreach (var c in cards)
         {
             bool on = c.Id == selected;
             if (!c.Pic.sprite) { var sprite = Costumes.Preview(c.Id); if (sprite) { previews.Add(sprite); c.Pic.sprite = sprite; c.Pic.enabled = true; } }
             c.Frame.color = plate ? (on ? new Color(1.45f, .85f, .55f, 1) : new Color(.8f, .78f, .85f, 1)) : (on ? new Color(.45f, .24f, .14f, .98f) : new Color(.16f, .1f, .13f, .95f));
-            c.State.text = on ? "SEÇİLİ" : "SEÇ";
-            c.State.color = on ? new Color(1, .77f, .5f) : new Color(.75f, .66f, .62f);
+            bool owned = Costumes.Owned(c.Id);
+            c.State.text = on ? "SEÇİLİ" : owned ? "SEÇ" : "KİLİTLİ  •  " + Costumes.Price(c.Id) + " COIN";
+            c.State.color = on ? new Color(1, .77f, .5f) : owned ? new Color(.75f, .66f, .62f) : new Color(1f, .68f, .3f);
+            c.Pic.color = owned ? Color.white : new Color(.38f, .36f, .42f, 1);
         }
     }
 
-    public void Open() { Refresh(); root.SetActive(true); scroll.verticalNormalizedPosition = 1; }
+    public void Open() { notice.text = ""; Refresh(); root.SetActive(true); scroll.verticalNormalizedPosition = 1; }
     public void Close() { root.SetActive(false); }
 }

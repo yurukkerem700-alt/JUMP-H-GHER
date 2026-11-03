@@ -15,7 +15,8 @@ public class LevelRun : MonoBehaviour
     Canvas canvas; TextMeshProUGUI hud; GameObject result, hudBack;
     Transform door; SpriteRenderer doorGlow;
     EnemyManager enemies;
-    bool finished;
+    bool finished, endlessOver;
+    float endlessElapsed; int bestAtStart;
     int exitFloor=-1;
     bool wasInsideDoor, wasDoorReady;
     public bool ExitReady => LevelExitRules.ObjectiveReady(Def,tower.player.Score,Elapsed);
@@ -38,7 +39,13 @@ public class LevelRun : MonoBehaviour
         if (PlayerHealth.Instance) PlayerHealth.Instance.Died += OnPlayerDied;
     }
 
-    void OnPlayerDied() { if (Active && !finished) Finish(false, "CAN BİTTİ"); }
+    public void DebugKill() { if (PlayerHealth.Instance) for (int i = 0; i < PlayerHealth.Max; i++) PlayerHealth.Instance.Hit(true); }
+
+    void OnPlayerDied()
+    {
+        if (Endless) { if (!endlessOver) FinishEndless(); return; }
+        if (Active && !finished) Finish(false, "CAN BİTTİ");
+    }
 
     void BuildDoor()
     {
@@ -71,12 +78,13 @@ public class LevelRun : MonoBehaviour
     }
 
     // Sonsuz mod: düşmanlar yüksekliğe göre kendiliğinden artar (EnemyManager.BeginEndless).
-    public void BeginEndless() { Endless = true; enemies.BeginEndless(); }
+    public void BeginEndless() { Endless = true; StartEndlessRun(); enemies.BeginEndless(); }
+    void StartEndlessRun() { endlessOver = false; endlessElapsed = 0; bestAtStart = PlayerPrefs.GetInt("BestFloor", 0); CloseResult(); }
 
-    public void Stop() { Active = false; Endless = false; finished = false; if (PlayerHealth.Instance) PlayerHealth.Instance.SetAllowed(PlayerHealth.Max); enemies.Clear(); CloseResult(); hud.gameObject.SetActive(false); hudBack.SetActive(false); door.gameObject.SetActive(false); }
+    public void Stop() { Active = false; Endless = false; finished = false; endlessOver = false; if (PlayerHealth.Instance) PlayerHealth.Instance.SetAllowed(PlayerHealth.Max); enemies.Clear(); CloseResult(); hud.gameObject.SetActive(false); hudBack.SetActive(false); door.gameObject.SetActive(false); }
 
     // R ile yeniden başlatma bölümün süresini ve durumunu da sıfırlar.
-    public void OnRunRestarted() { if (Endless) { enemies.BeginEndless(); return; } if (!Active) return; Elapsed = 0; finished = false; ResetExit(); enemies.Begin(Def); }
+    public void OnRunRestarted() { if (Endless) { StartEndlessRun(); enemies.BeginEndless(); return; } if (!Active) return; Elapsed = 0; finished = false; ResetExit(); enemies.Begin(Def); }
 
     void ResetExit() { exitFloor=-1; wasInsideDoor=false; wasDoorReady=false; if(door) door.gameObject.SetActive(false); }
 
@@ -98,7 +106,10 @@ public class LevelRun : MonoBehaviour
 
     void Update()
     {
-        if (!Active || finished || GameFlow.IsMenu) return;
+        if (GameFlow.IsMenu) return;
+        if (Endless && !endlessOver) { endlessElapsed += Time.deltaTime; PlayerProgress.ReportFloor(tower.HighestReachedFloor + 1); }
+        if (!Active || finished) return;
+        PlayerProgress.ReportFloor(tower.HighestReachedFloor + 1);
         Elapsed += Time.deltaTime;
         UpdateExit();
         var p=tower.player.transform.position;
@@ -135,7 +146,7 @@ public class LevelRun : MonoBehaviour
     {
         finished = true; enemies.Clear(); if (win) SesAtolyesi.Ses.Pickup();
         int stars = win ? Def.StarsFor(Elapsed, PlayerHealth.Instance ? PlayerHealth.Instance.Lost : 0) : 0;
-        if (win) LevelDefs.SaveStars(Def.number, stars);
+        if (win) { LevelDefs.SaveStars(Def.number, stars); PlayerProgress.AddLevel(); }
         flow.Hold(true);
         ShowResult(win, stars, reason);
     }
@@ -154,18 +165,49 @@ public class LevelRun : MonoBehaviour
         for (int i = 0; i < 3; i++) UiArt.Pic(t, UiArt.Star, i < stars ? Gold : Dim, .5f + (i - 1) * .17f, .63f, 130, 130);
         if (win)
         {
-            UiArt.Label(t, font, "SÜRE  " + LevelDefs.Clock(Elapsed), .5f, .52f, 800, 50, 26, new Color(1, .86f, .66f));
+            UiArt.Label(t, font, "SÜRE  " + LevelDefs.Clock(Elapsed) + "   •   COIN  " + tower.player.Score + "   •   KAT  " + Mathf.Max(0, tower.HighestReachedFloor + 1), .5f, .52f, 900, 50, 26, new Color(1, .86f, .66f));
             var rules = Def.StarRules;
             Condition(t, .45f, rules[0], true);
             Condition(t, .40f, rules[1], stars >= 2);
             Condition(t, .35f, rules[2], stars >= 3);
         }
-        else UiArt.Label(t, font, reason == "CAN BİTTİ" ? "Tüm canlarını (" + Def.hearts + ") kaybettin. Bir daha dene." : "Bu bölümü " + LevelDefs.Clock(Def.limit) + " içinde bitirmelisin.", .5f, .50f, 900, 60, 24, new Color(.85f, .75f, .7f));
+        else UiArt.Label(t, font, "COIN  " + tower.player.Score + "   •   KAT  " + Mathf.Max(0, tower.HighestReachedFloor + 1) + "   •   CÜZDAN  " + PlayerProgress.Wallet, .5f, .44f, 900, 50, 24, Gold);
+        if (!win) UiArt.Label(t, font, reason == "CAN BİTTİ" ? "Tüm canlarını (" + Def.hearts + ") kaybettin. Bir daha dene." : "Bu bölümü " + LevelDefs.Clock(Def.limit) + " içinde bitirmelisin.", .5f, .50f, 900, 60, 24, new Color(.85f, .75f, .7f));
         int n = Def.number;
         float y = .24f;
         if (win && n < LevelDefs.Count) { UiArt.Btn(t, font, "SONRAKİ BÖLÜM", .5f, y, 440, 70, () => { flow.Hold(false); flow.StartLevel(n + 1); }); y -= .09f; }
         UiArt.Btn(t, font, "TEKRAR", .5f, y, 440, 70, () => { flow.Hold(false); flow.StartLevel(n); }); y -= .09f;
         UiArt.Btn(t, font, "HARİTA", .5f, y, 440, 70, () => { flow.Hold(false); flow.OpenMap(); });
+    }
+
+    // Sonsuz mod: can bitince sonuç paneli (kat, coin, süre, rekor) gösterilir.
+    void FinishEndless()
+    {
+        endlessOver = true; enemies.Clear();
+        int floor = Mathf.Max(0, tower.HighestReachedFloor + 1), coins = tower.player.Score;
+        bool record = floor > 0 && floor > bestAtStart;
+        if (floor > PlayerPrefs.GetInt("BestFloor", 0)) PlayerPrefs.SetInt("BestFloor", floor);
+        PlayerPrefs.Save();
+        flow.Hold(true);
+        ShowEndlessResult(floor, coins, record);
+    }
+
+    void ShowEndlessResult(int floor, int coins, bool record)
+    {
+        CloseResult();
+        result = new GameObject("Sonsuz Mod Sonucu", typeof(Image)); result.transform.SetParent(canvas.transform, false);
+        var rr = result.GetComponent<RectTransform>(); rr.anchorMin = Vector2.zero; rr.anchorMax = Vector2.one; rr.offsetMin = rr.offsetMax = Vector2.zero;
+        result.GetComponent<Image>().color = new Color(.035f, .025f, .045f, .9f);
+        var t = result.transform;
+        var soft = new Color(.85f, .75f, .7f);
+        UiArt.Label(t, font, "CAN BİTTİ", .5f, .84f, 900, 110, 52, new Color(1, .42f, .38f));
+        UiArt.Label(t, font, "KAT  " + floor, .5f, .70f, 900, 130, 84, Gold);
+        if (record) UiArt.Label(t, font, "YENİ REKOR!", .5f, .59f, 900, 70, 40, new Color(.55f, 1f, .75f));
+        else UiArt.Label(t, font, "EN İYİ KAT  " + Mathf.Max(floor, PlayerPrefs.GetInt("BestFloor", 0)), .5f, .59f, 900, 60, 28, soft);
+        UiArt.Label(t, font, "COIN  " + coins + "   •   SÜRE  " + LevelDefs.Clock(endlessElapsed), .5f, .50f, 900, 56, 28, new Color(1, .86f, .66f));
+        UiArt.Label(t, font, "CÜZDAN  " + PlayerProgress.Wallet + " COIN", .5f, .43f, 900, 50, 24, Gold);
+        UiArt.Btn(t, font, "TEKRAR", .5f, .29f, 440, 70, () => { flow.Hold(false); CloseResult(); tower.player.RestartRun(); });
+        UiArt.Btn(t, font, "ANA MENÜ", .5f, .20f, 440, 70, () => { flow.Hold(false); CloseResult(); Stop(); tower.player.RestartRun(); flow.Show(true); });
     }
 
     void Condition(Transform parent, float y, string text, bool met)

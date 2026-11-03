@@ -137,6 +137,7 @@ public class PlayerController : MonoBehaviour
         if (coinSequence && !coinSequence.TryCollect(collision)) return;
         SesAtolyesi.Ses.Coin();
         skor++;
+        PlayerProgress.AddCoin();
         SkoruGuncelle();
     }
 

@@ -6,6 +6,11 @@ public static class GameSettings
 {
     public static event Action Changed;
 
+    // Ses: Müzik = ortam müziği ve uzaktan canlı sesleri, Efekt = zıplama, coin, vuruş, arayüz sesleri (0..1).
+    public static float MusicVolume { get => Get("MusicVol", 1f); set { PlayerPrefs.SetFloat("MusicVol", value); ApplyAudio(); } }
+    public static float SfxVolume { get => Get("SfxVol", 1f); set { PlayerPrefs.SetFloat("SfxVol", value); ApplyAudio(); } }
+    public static void ApplyAudio() { SesAtolyesi.Ses.Ambience = MusicVolume; SesAtolyesi.Ses.Sfx = SfxVolume; }
+
     public static bool JoyEnabled { get => Bool("JoyEnabled", true); set { SetBool("JoyEnabled", value); Changed?.Invoke(); } }
     public static bool JoyVisible { get => Bool("JoyVisible", true); set { SetBool("JoyVisible", value); Changed?.Invoke(); } }
     // 0..1: ekranın soldan / alttan oranı
@@ -42,8 +47,8 @@ public static class GameSettings
     public static void ResetJoystick()
     {
         ResetLayout();
-        foreach (var key in new[] { "JoyEnabled", "JoyVisible", "JoyX", "JoyY", "JoySize", "JoyOpacity", "JoySens", "BtnSize", "BtnOpacity", "MoveX", "MoveY", "JumpX", "JumpY" }) PlayerPrefs.DeleteKey(key);
-        PlayerPrefs.Save(); Changed?.Invoke();
+        foreach (var key in new[] { "MusicVol", "SfxVol", "JoyEnabled", "JoyVisible", "JoyX", "JoyY", "JoySize", "JoyOpacity", "JoySens", "BtnSize", "BtnOpacity", "MoveX", "MoveY", "JumpX", "JumpY" }) PlayerPrefs.DeleteKey(key);
+        PlayerPrefs.Save(); ApplyAudio(); Changed?.Invoke();
     }
 
     static bool Bool(string key, bool fallback) => PlayerPrefs.GetInt(key, fallback ? 1 : 0) != 0;

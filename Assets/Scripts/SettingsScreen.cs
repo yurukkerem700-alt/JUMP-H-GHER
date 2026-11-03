@@ -36,23 +36,27 @@ public class SettingsScreen
         scroll.movementType = ScrollRect.MovementType.Clamped; scroll.scrollSensitivity = 40;
         var c = content;
 
-        Legend(c, 0, "JOYSTICK  (telefon ve tablet)");
-        enabledText = Toggle(c, 1, "Joystick", () => GameSettings.JoyEnabled = !GameSettings.JoyEnabled);
-        UiArt.Label(c, font, "Konumlar ekranına göre otomatik ayarlanır", .5f, RowY(2), 660, 48, 22, Color.white);
-        size = Row(c, 3, "Boyut", .88f, 1.08f, v => GameSettings.JoySize = v, out sizev);
-        opacity = Row(c, 4, "Şeffaflık", .65f, 1f, v => GameSettings.JoyOpacity = v, out opv);
-        sens = Row(c, 5, "Hassasiyet", .5f, 1.5f, v => GameSettings.JoySensitivity = v, out sensv);
+        Legend(c, 0, "SES");
+        musicS = Row(c, 1, "Müzik", 0f, 1f, v => GameSettings.MusicVolume = v, out musicv);
+        sfxS = Row(c, 2, "Efektler", 0f, 1f, v => GameSettings.SfxVolume = v, out sfxv);
+        Legend(c, 3, "JOYSTICK  (telefon ve tablet)");
+        enabledText = Toggle(c, 4, "Joystick", () => GameSettings.JoyEnabled = !GameSettings.JoyEnabled);
+        UiArt.Label(c, font, "Konumlar ekranına göre otomatik ayarlanır", .5f, RowY(5), 660, 48, 22, Color.white);
+        size = Row(c, 6, "Boyut", .88f, 1.08f, v => GameSettings.JoySize = v, out sizev);
+        opacity = Row(c, 7, "Şeffaflık", .65f, 1f, v => GameSettings.JoyOpacity = v, out opv);
+        sens = Row(c, 8, "Hassasiyet", .5f, 1.5f, v => GameSettings.JoySensitivity = v, out sensv);
 
-        Legend(c, 6, "EYLEM DÜĞMELERİ (otomatik yerleşim)");
-        bsize = Row(c, 7, "Boyut", .95f, 1.1f, v => GameSettings.BtnSize = v, out bsizev);
-        bopacity = Row(c, 8, "Şeffaflık", .65f, 1f, v => GameSettings.BtnOpacity = v, out bopv);
-        UiArt.Btn(c, font, "KONTROLLERİ YERLEŞTİR", .5f, RowY(9), 520, 60, () => { var j = Joystick; if (j) j.BeginEdit(.85f); });
+        Legend(c, 9, "EYLEM DÜĞMELERİ (otomatik yerleşim)");
+        bsize = Row(c, 10, "Boyut", .95f, 1.1f, v => GameSettings.BtnSize = v, out bsizev);
+        bopacity = Row(c, 11, "Şeffaflık", .65f, 1f, v => GameSettings.BtnOpacity = v, out bopv);
+        UiArt.Btn(c, font, "KONTROLLERİ YERLEŞTİR", .5f, RowY(12), 520, 60, () => { var j = Joystick; if (j) j.BeginEdit(.85f); });
         root.SetActive(false);
     }
 
-    const float ContentHeight = 750, RowGap = 68, FirstRow = 50;
+    const float ContentHeight = 954, RowGap = 68, FirstRow = 50;
     RectTransform content; ScrollRect scroll;
-    Slider bsize, bopacity;
+    Slider bsize, bopacity, musicS, sfxS;
+    TextMeshProUGUI musicv, sfxv;
     TextMeshProUGUI bsizev, bopv;
     static float RowY(int i) => 1f - (FirstRow + i * RowGap) / ContentHeight;
 
@@ -112,6 +116,8 @@ public class SettingsScreen
 
     void Refresh()
     {
+        Set(musicS, musicv, GameSettings.MusicVolume, v => Mathf.RoundToInt(v * 100) + "%");
+        Set(sfxS, sfxv, GameSettings.SfxVolume, v => Mathf.RoundToInt(v * 100) + "%");
         enabledText.text = GameSettings.JoyEnabled ? "AÇIK" : "KAPALI (düğmeler)";
 
         Set(size, sizev, GameSettings.JoySize, v => Mathf.RoundToInt(v * 100) + "%");

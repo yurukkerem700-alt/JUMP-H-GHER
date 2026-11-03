@@ -33,6 +33,37 @@ public static class Costumes
     };
 
     public static event Action Changed;
+
+    // Mağaza: fiyatı olmayan kostümler ücretsizdir. Mağaza ilk kez görüldüğünde o an seçili kostüm sahipliğe yazılır (mevcut oyuncu kaybetmez).
+    static readonly System.Collections.Generic.Dictionary<string, int> Prices = new System.Collections.Generic.Dictionary<string, int>
+    { { "kok_kalbi", 150 }, { "ay_kirigi_tilkisi", 200 }, { "gece_zirhcisi", 250 }, { "mercan_cadisi", 300 }, { "kum_saati_bekcisi", 350 }, { "buz_pervanesi", 400 }, { "bordo_kovboy", 500 }, { "elara", 600 } };
+    public static int Price(string id) => Prices.TryGetValue(id, out var p) ? p : 0;
+    static void EnsureShop()
+    {
+        if (PlayerPrefs.GetInt("ShopV1", 0) != 0) return;
+        PlayerPrefs.SetInt("ShopV1", 1);
+        var current = PlayerPrefs.GetString("Costume", Default);
+        if (Price(current) > 0) PlayerPrefs.SetInt("Own_" + current, 1);
+        PlayerPrefs.Save();
+    }
+    public static bool Owned(string id)
+    {
+#if UNITY_EDITOR
+        return true;
+#else
+        EnsureShop();
+        return Price(id) == 0 || PlayerPrefs.GetInt("Own_" + id, 0) != 0;
+#endif
+    }
+    public static bool Buy(string id)
+    {
+        EnsureShop();
+        if (Owned(id)) return true;
+        int price = Price(id);
+        if (PlayerProgress.Wallet < price) return false;
+        PlayerPrefs.SetInt("Wallet", PlayerProgress.Wallet - price); PlayerPrefs.SetInt("Own_" + id, 1); PlayerPrefs.Save();
+        return true;
+    }
     // Oyun sahnesi başlarken PlayerVisual2D tarafından doldurulur; varsayılan kostümün önizlemesi için.
     public static Texture2D DefaultSheet;
 
@@ -41,7 +72,7 @@ public static class Costumes
         get
         {
             var id = PlayerPrefs.GetString("Costume", Default);
-            foreach (var e in All) if (e.Id == id) return id;
+            foreach (var e in All) if (e.Id == id) return Owned(id) ? id : Default;
             return Default;
         }
         set

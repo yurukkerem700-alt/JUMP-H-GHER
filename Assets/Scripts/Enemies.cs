@@ -100,6 +100,7 @@ public class EnemyManager : MonoBehaviour
 
     void Knock(Enemy e, float dir, float now)
     {
+        PlayerProgress.AddKick();
         e.staggerUntil = now + 1.8f;
         EnemySfx.Play(EnemyKinds.Hurt(e.kind), 1f);
         var below = e.floor > 0 ? tower.GetPlatform(e.floor - 1) : null;
