@@ -10,6 +10,10 @@ public class AltitudeWorld : MonoBehaviour
     public Texture2D themeAtlas;
     Sprite[] themeFrames;
     MaterialPropertyBlock skyProps;
+    const int Slots = 3; // ekranda aynı anda en fazla üç canlı
+    // Her tür kendi irtifa şeridinde uçar (kameraya göre): 0 karga, 1-2 kuşlar, 3-4 yarasalar; şeritler üst üste binmez.
+    static readonly float[] Lane = { 4.4f, 2.9f, 1.4f, -.1f, -1.6f };
+    int speciesCursor;
     const int SkyTiles = 8; // her bölge arka planı orantısı bozulmadan yukarı doğru yan yana dizilir
     SpriteRenderer[] skies;
     SpriteRenderer[] birds;
@@ -21,9 +25,9 @@ public class AltitudeWorld : MonoBehaviour
 
     void Start()
     {
-        skies=new SpriteRenderer[3*SkyTiles];birds=new SpriteRenderer[6];skyProps=new MaterialPropertyBlock();
-        birth=new float[6];baseY=new float[6];startX=new float[6];speed=new float[6];direction=new float[6];
-        model=new int[6];
+        skies=new SpriteRenderer[3*SkyTiles];birds=new SpriteRenderer[Slots];skyProps=new MaterialPropertyBlock();
+        birth=new float[Slots];baseY=new float[Slots];startX=new float[Slots];speed=new float[Slots];direction=new float[Slots];
+        model=new int[Slots];
         view = Camera.main;
         themeFrames = new Sprite[4];
         if(themeAtlas)for(int n=0;n<4;n++)themeFrames[n]=Sprite.Create(themeAtlas,new Rect((n%2)*(themeAtlas.width/2),(1-n/2)*(themeAtlas.height/2),themeAtlas.width/2,themeAtlas.height/2),Vector2.one*.5f,100);
@@ -64,6 +68,17 @@ public class AltitudeWorld : MonoBehaviour
                 mist.transform.position = new Vector3(-7 + i*7, 6.15f, 0);
                 mist.transform.localScale = new Vector3(13,1.6f,1);
             }
+    }
+
+    int PickSpecies(int slot)
+    {
+        for (int k = 0; k < 5; k++)
+        {
+            int m = (speciesCursor + k) % 5; bool used = false;
+            for (int j = 0; j < Slots; j++) if (j != slot && birds[j].gameObject.activeSelf && model[j] == m) used = true;
+            if (!used) { speciesCursor = m + 1; return m; }
+        }
+        return speciesCursor++ % 5;
     }
 
     void LateUpdate()
@@ -107,11 +122,11 @@ public class AltitudeWorld : MonoBehaviour
             if (age > 13 || Mathf.Abs(baseY[i] - view.transform.position.y) > 8)
             {
                 direction[i] = i % 2 == 0 ? 1 : -1;
-                model[i]=SkyCreatureArt.VariantFor(i,view.transform.position.y);
+                model[i]=PickSpecies(i);
                 startX[i] = direction[i] > 0 ? -halfWidth-1.2f : halfWidth+1.2f;
-                baseY[i] = Mathf.Max(7, view.transform.position.y + Random.Range(-2f,4.5f));
+                baseY[i] = Mathf.Max(7f + Lane[model[i]] - Lane[4], view.transform.position.y + Lane[model[i]] + Random.Range(-.25f,.25f));
                 speed[i] = Random.Range(1.5f,2.6f); birth[i] = Time.time - i * .4f; age = i * .4f;
-                birds[i].transform.localScale = Vector3.one * Random.Range(.6f,.95f);
+                birds[i].transform.localScale = Vector3.one * Random.Range(.6f,.95f) * (model[i] >= 3 ? .72f : 1f); // yarasalar daha küçük
                 birds[i].flipX = direction[i] < 0;
             }
             birds[i].gameObject.SetActive(true); ActiveBirdCount++;

@@ -21,7 +21,7 @@ public class GraveDecor : MonoBehaviour
     const float CatU = .863f, CatV = .5455f, CatHeight = 1.15f; // mezar taşının tepe noktası
     const float TowerU = .383f, TowerV = .544f, TowerHeight = 1.5f; // uzaktaki tepede eğik kule; tabanı tepenin sisine karışır
     static readonly Color TowerTint = Color.white;
-    const float BatHeight = 1.9f; const int BatCount = 2, WispCount = 16;
+    const float BatHeight = 1.4f; const int BatCount = 1, WispCount = 16;
     static readonly Color OwlTint = new Color(.85f, .8f, .82f), CatTint = new Color(.8f, .78f, .86f), BatTint = new Color(.7f, .62f, .66f);
     // Kuzgunlar sağ ağacın kalın dalının düz üst yüzeyine konar: (u, v) = ayakların bastığı nokta (arka plan görselinden ölçüldü).
     static readonly Vector2[] RavenOffsets = { new Vector2(.890f, .1315f), new Vector2(.926f, .1325f) };
@@ -148,13 +148,13 @@ public class GraveDecor : MonoBehaviour
             {
                 float period = 26f + i * 11f, k = Mathf.Repeat(t / period + i * .47f, 1f);
                 bool right = i % 2 == 0; float u = right ? Mathf.Lerp(-.1f, 1.1f, k) : Mathf.Lerp(1.1f, -.1f, k);
-                float v = .16f + i * .07f + Mathf.Sin(t * 1.3f + i * 2f) * .035f;
+                float v = .31f + i * .07f + Mathf.Sin(t * 1.3f + i * 2f) * .03f; // kuzgun (v .13) ve baykuştan (v .19) ayrı şerit
                 float flap = .55f + .45f * Mathf.Abs(Mathf.Cos(t * (11f + i * 2f)));
                 bats[i].transform.position = At(u, v);
                 if(batModels[i]!=null)
                 {
                     bats[i].sprite=batModels[i][(Mathf.FloorToInt(t*(9+i))+i)%4];
-                    bats[i].transform.localScale=Vector3.one;
+                    bats[i].transform.localScale=Vector3.one*.72f; // yarasa boyutu küçültüldü
                 }
                 else bats[i].transform.localScale = new Vector3(flap, 1f, 1f);
                 bats[i].transform.rotation = Quaternion.Euler(0, 0, Mathf.Sin(t * 2.2f + i) * 6f);
