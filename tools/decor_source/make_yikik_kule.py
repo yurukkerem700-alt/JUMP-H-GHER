@@ -96,12 +96,14 @@ def build(glow):
             if 0<=nx<N: p[nx,y]=sp[x,y]
     def put2(x,y,c,al=255):
         if 0<=x<N and 0<=y<N: p[x,y]=c+(al,)
-    # base dissolves into the hill haze: smooth 4-step alpha ramp
-    for y in range(GROUND-16,N):
-        f=max(0,1-(y-(GROUND-16))/20);q=round(f*4)/4
-        for x in range(N):
-            r,g,b,al=p[x,y]
-            if al: p[x,y]=(r,g,b,int(al*q))
+    # base follows the hill slope (ground drops to the right); only the last rows are soft
+    for x in range(N):
+        g=GROUND+round((x-64)*0.31)
+        for y in range(N):
+            r,gg,b,al=p[x,y]
+            if not al: continue
+            if y>g: p[x,y]=(0,0,0,0)
+            elif y>=g-1: p[x,y]=(r,gg,b,int(al*(.45 if y==g else .75)))
     return im
 a=build(False);b=build(True)
 strip=Image.new('RGBA',(N*2,N),(0,0,0,0));strip.paste(a,(0,0));strip.paste(b,(N,0))
