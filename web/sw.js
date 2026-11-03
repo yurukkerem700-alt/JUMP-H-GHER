@@ -1,12 +1,12 @@
 // Otomatik üretildi (WebPwaExport). Her derlemede sürüm değişir.
-const VERSION='1793712548615';
+const VERSION='1793714051533';
 const CACHE='kok-yankisi-'+VERSION;
 const FILES=[
   "./",
-  "Build/web.33748f8ff0c1.data.br",
+  "Build/web.059a6bbfe3bf.data.br",
   "Build/web.d6deb44755c2.framework.js.br",
-  "Build/web.265adbb79653.loader.js",
-  "Build/web.88d49c87772f.wasm.br",
+  "Build/web.3f7d28ce9d9c.loader.js",
+  "Build/web.70407c2d1629.wasm.br",
   "TemplateData/MemoryProfiler.png",
   "TemplateData/favicon.ico",
   "TemplateData/fullscreen-button.png",
