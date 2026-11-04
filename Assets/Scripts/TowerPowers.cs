@@ -6,7 +6,16 @@ public class TowerPowers : MonoBehaviour
     public static TowerPowers Instance {get;private set;}
     public bool DoubleJumpActive=>Time.time<doubleUntil;
     public bool MagnetActive=>Time.time<magnetUntil;
-    public string Status=>DoubleJumpActive?"ÇİFT ZIPLAMA "+Mathf.CeilToInt(doubleUntil-Time.time)+" sn":MagnetActive?"MIKNATIS "+Mathf.CeilToInt(magnetUntil-Time.time)+" sn":"";
+    public string Status
+    {
+        get
+        {
+            string jump = DoubleJumpActive ? "ÇİFT ZIPLAMA " + Mathf.CeilToInt(doubleUntil - Time.time) + " sn" : "";
+            if (!MagnetActive) return jump;
+            string magnet = "MIKNATIS " + Mathf.CeilToInt(magnetUntil - Time.time) + " sn";
+            return jump.Length == 0 ? magnet : jump + "  •  " + magnet;
+        }
+    }
     float doubleUntil,magnetUntil;bool wasDouble,wasMagnet;
     int pickupFloor=4,pickupKind;
     const float DoubleSeconds=10,MagnetSeconds=7.5f,MagnetRadius=2.5f;

@@ -150,6 +150,9 @@ public class LevelRun : MonoBehaviour
         hud.gameObject.SetActive(showHud); hudBack.SetActive(showHud);
         if (tower.floorLabel) tower.floorLabel.enabled = !showHud;
         if(!Active || finished) door.gameObject.SetActive(false);
+        if (!showHud) return;
+        string power = TowerPowers.Instance ? TowerPowers.Instance.Status : "";
+        string powerHint = power.Length == 0 ? "" : "  •  " + power;
         if (showEndlessHud)
         {
             int floor = Mathf.Max(0, tower.HighestReachedFloor + 1);
@@ -157,14 +160,14 @@ public class LevelRun : MonoBehaviour
             string record = bestAtStart == 0 ? "İLK TIRMANIŞ"
                 : floor > bestAtStart ? "<color=#8CFFBF>YENİ REKOR</color>"
                 : "REKOR  " + bestAtStart;
-            hud.text = "KAT " + floor + "  •  " + theme + "\n" + record;
+            hud.text = "KAT " + floor + "  •  " + theme + "\n" + record + "  •  " + CoinTarget() + powerHint;
             return;
         }
-        if (!Active || finished) return;
+
         string foes = Def.HasEnemies ? "  •  " + Def.EnemyText : "";
         string head = "BÖLÜM " + Def.number + "  •  " + Def.TierName;
         string goal = Def.kind == GoalKind.Floor ? head + "  •  KAT " + Mathf.Max(0, tower.HighestReachedFloor + 1) + " / " + Def.target + foes
-            : Def.kind == GoalKind.Coins ? head + "  •  COIN " + tower.player.Score + " / " + Def.target + foes
+            : Def.kind == GoalKind.Coins ? head + "  •  COIN " + tower.player.Score + " / " + Def.target + (ExitReady ? "" : "  •  " + CoinTarget()) + foes
             : head + "  •  HAYATTA KAL" + foes;
         string time;
         if (Def.kind == GoalKind.Survive) time = "KALAN SÜRE " + LevelDefs.Clock(Def.survive - Elapsed);
@@ -173,7 +176,14 @@ public class LevelRun : MonoBehaviour
         int lost = PlayerHealth.Instance ? PlayerHealth.Instance.Lost : 0;
         string next = "  •  ŞU AN " + Def.StarsFor(Elapsed, lost) + " YILDIZ";
         string exit=ExitReady && Def.kind!=GoalKind.Floor ? "  •  KAPIYA GİR: KAT "+(exitFloor+1) : "";
-        hud.text = goal + "\n" + time + next + exit;
+        hud.text = goal + "\n" + time + next + exit + powerHint;
+    }
+
+    string CoinTarget()
+    {
+        var coins = tower.coins;
+        bool below = tower.player.transform.position.y - coins.coin.position.y > InfiniteTower.FloorGap;
+        return "COIN " + (below ? "AŞAĞIDA  ·  " : "") + (coins.SpawnFloor + 1) + ". KAT";
     }
 
     void Finish(bool win, string reason = null)
