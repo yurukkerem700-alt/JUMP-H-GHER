@@ -20,6 +20,7 @@ public class MovingPlatform2D : MonoBehaviour
     readonly List<SpriteRenderer> cracks = new List<SpriteRenderer>();
     readonly List<Fragment> fragments = new List<Fragment>();
     SpriteRenderer[] surfaces;
+    SpriteRenderer warningTrack, warningFill;
     Collider2D[] solidColliders;
     PlayerController rider;
     Material fragmentMaterial;
@@ -91,6 +92,7 @@ public class MovingPlatform2D : MonoBehaviour
         }
 
         float progress = (Time.time - crumbleAt) / LevelRun.Instance.PlatformCrumbleSeconds;
+        if (crumbleStage < 4) UpdateWarning(progress);
         if (crumbleStage == 1 && progress >= FirstChips)
         {
             crumbleStage = 2;
@@ -127,7 +129,25 @@ public class MovingPlatform2D : MonoBehaviour
         rider = player;
         crumbleAt = Time.time;
         crumbleStage = 1;
+        if (!warningTrack)
+        {
+            warningTrack = DebrisSprite("Çöküş Göstergesi", new Color(.08f, .035f, .02f, .95f), 22);
+            warningFill = DebrisSprite("Kalan Süre", Color.white, 23);
+        }
+        var barPosition = new Vector3(0, topOffset + .095f, 0);
+        warningTrack.transform.localPosition = warningFill.transform.localPosition = barPosition;
+        warningTrack.transform.localScale = new Vector3(halfWidth * 1.8f, .105f, 1);
+        warningTrack.enabled = warningFill.enabled = true;
+        UpdateWarning(0);
         AddCracks(2, .14f);
+    }
+
+    void UpdateWarning(float progress)
+    {
+        progress = Mathf.Clamp01(progress);
+        warningFill.transform.localScale = new Vector3(halfWidth * 1.7f * (1 - progress), .068f, 1);
+        warningFill.transform.localPosition = warningTrack.transform.localPosition + Vector3.left * (halfWidth * .85f * progress);
+        warningFill.color = Color.Lerp(new Color(1f, .78f, .32f), new Color(1f, .23f, .13f), progress);
     }
 
     void AddCracks(int count, float depth)
@@ -213,6 +233,7 @@ public class MovingPlatform2D : MonoBehaviour
     void Explode()
     {
         crumbleStage = 4;
+        warningTrack.enabled = warningFill.enabled = false;
         rebuildAt = Time.time + RebuildDelay;
         foreach (var collider in solidColliders) collider.enabled = false;
         foreach (var sprite in surfaces) sprite.forceRenderingOff = true;
@@ -227,6 +248,7 @@ public class MovingPlatform2D : MonoBehaviour
     public void ResetCrumble()
     {
         if (crumbleStage == 0) return;
+        warningTrack.enabled = warningFill.enabled = false;
         if (crumbleStage == 4)
         {
             foreach (var collider in solidColliders) if (collider) collider.enabled = true;
