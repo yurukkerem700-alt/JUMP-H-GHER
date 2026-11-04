@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
@@ -17,11 +16,17 @@ public class CoinSequence : MonoBehaviour
     float nextCollectTime;
     Vector3 coinScale, staticPosition;
     float horizontalOffset, heightOffset;
+    const float RingDuration = .30f;
+    readonly SpriteRenderer[] rings = new SpriteRenderer[3];
+    readonly float[] ringEnds = new float[3];
+    Sprite ringSprite;
+    int nextRing;
 
     void Awake() { coinScale = coin.localScale; }
     void Start() { ResetSequence(); }
     void LateUpdate()
     {
+        UpdatePickupRings();
         coin.position = GetCoinPosition();
         coin.localScale = coinScale * (1 + Mathf.Sin(Time.time * 2.5f) * .035f);
         if (hintText)
@@ -43,7 +48,52 @@ public class CoinSequence : MonoBehaviour
     public bool TryCollect(Collider2D candidate)
     {
         if (!coin.gameObject.activeSelf || candidate.transform != coin || Time.time < nextCollectTime) return false;
+        ShowPickupRing(coin.position);
         ActiveIndex++; nextCollectTime = Time.time + .15f; SpawnNext(); return true;
+    }
+
+    void ShowPickupRing(Vector3 position)
+    {
+        if (!ringSprite)
+            ringSprite = UiArt.Build(48, 48, 48, (x, y) =>
+                Mathf.Clamp01((.055f - Mathf.Abs(Mathf.Sqrt(x * x + y * y) - .39f)) * 36));
+
+        int index = nextRing;
+        nextRing = (nextRing + 1) % rings.Length;
+        var ring = rings[index];
+        if (!ring)
+        {
+            ring = new GameObject("Coin Işıması", typeof(SpriteRenderer)).GetComponent<SpriteRenderer>();
+            ring.transform.SetParent(transform, false);
+            ring.sprite = ringSprite;
+            ring.sharedMaterial = coin.GetComponentInChildren<SpriteRenderer>().sharedMaterial;
+            ring.sortingOrder = 27;
+            rings[index] = ring;
+        }
+        ring.transform.position = position;
+        ringEnds[index] = Time.time + RingDuration;
+        UpdatePickupRings();
+    }
+
+    void UpdatePickupRings()
+    {
+        for (int i = 0; i < rings.Length; i++)
+        {
+            var ring = rings[i];
+            if (!ring) continue;
+            float remaining = Mathf.Clamp01((ringEnds[i] - Time.time) / RingDuration);
+            ring.enabled = remaining > 0;
+            if (!ring.enabled) continue;
+            ring.transform.localScale = Vector3.one * Mathf.Lerp(1.25f, .35f, remaining);
+            ring.color = new Color(1f, .75f, .3f, remaining);
+        }
+    }
+
+    void OnDestroy()
+    {
+        if (!ringSprite) return;
+        Destroy(ringSprite.texture);
+        Destroy(ringSprite);
     }
     void SpawnNext()
     {
@@ -62,6 +112,8 @@ public class CoinSequence : MonoBehaviour
     }
     public void ResetSequence()
     {
+        System.Array.Clear(ringEnds, 0, ringEnds.Length);
+        UpdatePickupRings();
         ActiveIndex = 0; SpawnFloor = -1; nextCollectTime = 0;
         if (winPanel) winPanel.SetActive(false);
         SpawnNext();
