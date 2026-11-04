@@ -86,6 +86,10 @@ public class PlayerVisual2D : MonoBehaviour
         else if(Mathf.Abs(relative)>.3f) CurrentFrame=1+Mathf.FloorToInt(Time.time*(frames.Length>8?Mathf.Clamp(Mathf.Abs(relative)*2,6,12):8))%4;
         else CurrentFrame=frames.Length>8 && Mathf.Repeat(Time.time,3.4f)>3.1f?11:0;
         if (Mathf.Abs(GameInput.Horizontal) > .1f) display.flipX = GameInput.Horizontal < 0;
+        float verticalStretch = grounded ? 0 : Mathf.Clamp(body.linearVelocity.y / 80f, -.09f, .09f);
+        float landingSquash = grounded ? .15f * Mathf.Clamp01(1 - (Time.time - landedAt) / .12f) : 0;
+        float deformation = verticalStretch - landingSquash;
+        display.transform.localScale = new Vector3(1 - deformation * .65f, 1 + deformation, 1) * VisualScale;
         display.sprite=frames[CurrentFrame]; wasGrounded=grounded;
     }
     void OnKick(int style, float direction) { kickStarted = Time.time; rig.PlayAttack(style, direction); }

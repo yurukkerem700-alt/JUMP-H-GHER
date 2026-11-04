@@ -272,7 +272,9 @@ public partial class LevelMap
         cardLines[3].text = d.kind == GoalKind.Survive ? "SÜRE: " + LevelDefs.Clock(d.survive) + " dolunca kapı açılır"
             : d.HardLimit ? "SÜRE SINIRI: " + LevelDefs.Clock(d.limit) + " (aşarsan kaybedersin)" : "SÜRE SINIRI: yok";
         cardLines[4].text = d.HasEnemies ? "DÜŞMAN: " + d.EnemyText + (d.enemySpeed > 1.01f ? "  (hız x" + d.enemySpeed.ToString("0.0") + ")" : "") : "DÜŞMAN: yok";
+        int record = LevelDefs.BestTime(n);
         cardLines[5].text = "CAN: " + d.hearts;
+        if (record > 0) cardLines[5].text += "  •  EN İYİ SÜRE " + LevelDefs.RecordClock(record);
         var rules = d.StarRules;
         for (int i = 0; i < 3; i++) { cardLines[6 + i].text = (i + 1) + " YILDIZ  •  " + rules[i]; cardLines[6 + i].color = LevelDefs.Stars(n) > i ? Gold : new Color(.9f, .82f, .76f); }
         card.SetActive(true);

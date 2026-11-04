@@ -101,6 +101,21 @@ public static class LevelDefs
 
     public static int Stars(int n) => PlayerPrefs.GetInt("LvStars" + n, 0);
     public static void SaveStars(int n, int stars) { if (stars > Stars(n)) { PlayerPrefs.SetInt("LvStars" + n, stars); PlayerPrefs.Save(); } }
+    public static int BestTime(int n) => PlayerPrefs.GetInt("LvBestTimeCs" + n, 0);
+
+    public static bool SaveBestTime(int n, int centiseconds)
+    {
+        int previous = BestTime(n);
+        if (centiseconds <= 0 || (previous > 0 && centiseconds >= previous)) return false;
+
+        PlayerPrefs.SetInt("LvBestTimeCs" + n, centiseconds);
+        PlayerPrefs.Save();
+        return true;
+    }
+
+    public static string RecordClock(int centiseconds)
+        => $"{centiseconds / 6000:00}:{centiseconds / 100 % 60:00}.{centiseconds % 100:00}";
+
     public static bool Unlocked(int n) => n <= 1 || Stars(n - 1) > 0;
     public static bool GameComplete => Stars(Count) > 0;
     public static int Current() { for (int n = 1; n <= Count; n++) if (Stars(n) == 0) return n; return Count; }

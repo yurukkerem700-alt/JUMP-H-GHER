@@ -42,7 +42,7 @@ public class LevelRun : MonoBehaviour
         // Yazının arkasından geçen platformlar okunurluğu bozmasın diye koyu yarı saydam zemin.
         hudBack = new GameObject("HUD Zemin", typeof(Image)); hudBack.transform.SetParent(canvas.transform, false);
         hudBack.AddComponent<SafeHudAnchor>();
-        var hb = hudBack.GetComponent<Image>(); hb.color = new Color(.05f, .03f, .05f, .55f); hb.raycastTarget = false;
+        var hb = hudBack.GetComponent<Image>(); hb.color = new Color(.05f, .03f, .05f, .80f); hb.raycastTarget = false;
         var hr = hb.rectTransform; hr.anchorMin = hr.anchorMax = new Vector2(.5f, .815f); hr.sizeDelta = new Vector2(780, 80);
         hud = UiArt.Label(canvas.transform, font, "", .5f, .815f, 780, 80, 24, new Color(1, .86f, .66f));
         hud.enableAutoSizing = true; hud.fontSizeMin = 15; hud.fontSizeMax = 24;
@@ -182,10 +182,12 @@ public class LevelRun : MonoBehaviour
         int stars = win ? Def.StarsFor(Elapsed, PlayerHealth.Instance ? PlayerHealth.Instance.Lost : 0) : 0;
         if (win) { LevelDefs.SaveStars(Def.number, stars); PlayerProgress.AddLevel(); }
         flow.Hold(true);
-        ShowResult(win, stars, reason);
+        int finishTime = Mathf.Max(1, Mathf.RoundToInt(Elapsed * 100f));
+        bool timeRecord = win && LevelDefs.SaveBestTime(Def.number, finishTime);
+        ShowResult(win, stars, reason, finishTime, timeRecord);
     }
 
-    void ShowResult(bool win, int stars, string reason)
+    void ShowResult(bool win, int stars, string reason, int finishTime, bool timeRecord)
     {
         CloseResult();
         result = new GameObject("Bölüm Sonucu", typeof(Image)); result.transform.SetParent(canvas.transform, false);
@@ -199,11 +201,14 @@ public class LevelRun : MonoBehaviour
         for (int i = 0; i < 3; i++) UiArt.Pic(t, UiArt.Star, i < stars ? Gold : Dim, .5f + (i - 1) * .17f, .63f, 130, 130);
         if (win)
         {
-            UiArt.Label(t, font, "SÜRE  " + LevelDefs.Clock(Elapsed) + "   •   COIN  " + tower.player.Score + "   •   KAT  " + Mathf.Max(0, tower.HighestReachedFloor + 1), .5f, .52f, 900, 50, 26, new Color(1, .86f, .66f));
+            UiArt.Label(t, font, "SÜRE  " + LevelDefs.RecordClock(finishTime) + "   •   COIN  " + tower.player.Score + "   •   KAT  " + Mathf.Max(0, tower.HighestReachedFloor + 1), .5f, .52f, 900, 50, 26, new Color(1, .86f, .66f));
             var rules = Def.StarRules;
             Condition(t, .45f, rules[0], true);
             Condition(t, .40f, rules[1], stars >= 2);
             Condition(t, .35f, rules[2], stars >= 3);
+            string recordLabel = timeRecord ? "YENİ BÖLÜM REKORU" : "EN İYİ SÜRE";
+            UiArt.Label(t, font, recordLabel + "  " + LevelDefs.RecordClock(LevelDefs.BestTime(Def.number)),
+                .5f, .30f, 580, 28, 22, timeRecord ? new Color(.55f, 1f, .75f) : Gold);
         }
         else UiArt.Label(t, font, "COIN  " + tower.player.Score + "   •   KAT  " + Mathf.Max(0, tower.HighestReachedFloor + 1) + "   •   CÜZDAN  " + PlayerProgress.Wallet, .5f, .44f, 900, 50, 24, Gold);
         if (!win) UiArt.Label(t, font, reason == "CAN BİTTİ" ? "Tüm canlarını (" + Def.hearts + ") kaybettin. Bir daha dene." : "Bu bölümü " + LevelDefs.Clock(Def.limit) + " içinde bitirmelisin.", .5f, .50f, 900, 60, 24, new Color(.85f, .75f, .7f));
