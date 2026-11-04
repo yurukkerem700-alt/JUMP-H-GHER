@@ -33,6 +33,7 @@ public partial class LevelMap
     readonly TextMeshProUGUI totalText, biomeLabel;
     readonly GameObject card;
     readonly TextMeshProUGUI[] cardLines = new TextMeshProUGUI[9];
+    readonly Image[] cardStars = new Image[3];
     readonly Action<int> start;
     int cardLevel, pendingScroll;
     float tileH = 900, viewH = 900;
@@ -262,6 +263,9 @@ public partial class LevelMap
         var panel = new GameObject("Panel", typeof(Image)); panel.transform.SetParent(dimmer.transform, false);
         var pr = panel.GetComponent<RectTransform>(); pr.anchorMin = new Vector2(.06f, .2f); pr.anchorMax = new Vector2(.94f, .82f); pr.offsetMin = pr.offsetMax = Vector2.zero;
         panel.GetComponent<Image>().color = new Color(.11f, .07f, .12f, .98f);
+        var border = panel.AddComponent<Outline>();
+        border.effectColor = new Color(.68f, .48f, .29f, .8f);
+        border.effectDistance = new Vector2(2, -2);
         float[] ys = { .93f, .85f, .76f, .68f, .6f, .52f, .42f, .34f, .26f };
         int[] sizes = { 44, 30, 26, 24, 24, 24, 22, 22, 22 };
         for (int i = 0; i < cardLines.Length; i++)
@@ -274,10 +278,18 @@ public partial class LevelMap
             line.enableAutoSizing = true;
             line.fontSizeMin = 15;
             line.fontSizeMax = sizes[i];
+            if (i >= 6)
+            {
+                cardStars[i - 6] = UiArt.Pic(panel.transform, UiArt.Star, Cream, .12f, ys[i], 30, 30);
+                rect.anchorMin = new Vector2(.17f, ys[i]);
+                rect.anchorMax = new Vector2(.94f, ys[i]);
+                rect.sizeDelta = new Vector2(0, 56);
+                line.alignment = TextAlignmentOptions.Left;
+            }
         }
         cardLines[0].fontStyle = FontStyles.Bold; cardLines[1].fontStyle = FontStyles.Bold;
-        UiArt.Btn(panel.transform, font, "BAŞLA", .3f, .09f, 250, 70, () => { dimmer.SetActive(false); start(cardLevel); });
-        UiArt.Btn(panel.transform, font, "GERİ", .7f, .09f, 250, 70, () => dimmer.SetActive(false));
+        Plate(UiArt.Btn(panel.transform, font, "BAŞLA", .3f, .09f, 250, 70, () => { dimmer.SetActive(false); start(cardLevel); }).GetComponent<Image>());
+        Plate(UiArt.Btn(panel.transform, font, "GERİ", .7f, .09f, 250, 70, () => dimmer.SetActive(false)).GetComponent<Image>());
         dimmer.SetActive(false);
         return dimmer;
     }
@@ -296,7 +308,14 @@ public partial class LevelMap
         cardLines[5].text = "CAN: " + d.hearts;
         if (record > 0) cardLines[5].text += "  •  EN İYİ SÜRE " + LevelDefs.RecordClock(record);
         var rules = d.StarRules;
-        for (int i = 0; i < 3; i++) { cardLines[6 + i].text = (i + 1) + " YILDIZ  •  " + rules[i]; cardLines[6 + i].color = LevelDefs.Stars(n) > i ? Gold : new Color(.9f, .82f, .76f); }
+        int earned = LevelDefs.Stars(n);
+        for (int i = 0; i < 3; i++)
+        {
+            bool met = earned > i;
+            cardStars[i].color = met ? Gold : new Color(.53f, .48f, .56f);
+            cardLines[6 + i].text = (i + 1) + " YILDIZ  •  " + rules[i];
+            cardLines[6 + i].color = met ? Gold : new Color(.9f, .82f, .76f);
+        }
         card.SetActive(true);
     }
 }
