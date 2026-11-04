@@ -27,6 +27,9 @@ public class LevelRun : MonoBehaviour
     EnemyManager enemies;
     bool finished, endlessOver;
     TextMeshProUGUI toast; float toastUntil, nextPoll;
+    TextMeshProUGUI regionNotice;
+    int shownRegion;
+    float regionUntil;
     float endlessElapsed; int bestAtStart;
     int exitFloor=-1;
     bool wasInsideDoor, wasDoorReady;
@@ -51,6 +54,10 @@ public class LevelRun : MonoBehaviour
         BuildDoor();
         toast = UiArt.Label(canvas.transform, font, "", .5f, .70f, 900, 70, 30, new Color(.6f, 1f, .75f));
         toast.outlineColor = new Color32(10, 30, 15, 255); toast.outlineWidth = .25f; toast.gameObject.SetActive(false);
+        regionNotice = UiArt.Label(canvas.transform, font, "", .5f, .61f, 680, 56, 32, Color.white);
+        regionNotice.outlineColor = new Color32(18, 9, 21, 255);
+        regionNotice.outlineWidth = .27f;
+        regionNotice.gameObject.SetActive(false);
         enemies = gameObject.AddComponent<EnemyManager>(); enemies.Init(t);
         if (PlayerHealth.Instance) PlayerHealth.Instance.Died += OnPlayerDied;
     }
@@ -100,7 +107,14 @@ public class LevelRun : MonoBehaviour
     public void Stop() { Active = false; Endless = false; finished = false; endlessOver = false; if (PlayerHealth.Instance) PlayerHealth.Instance.SetAllowed(PlayerHealth.Max); enemies.Clear(); CloseResult(); hud.gameObject.SetActive(false); hudBack.SetActive(false); door.gameObject.SetActive(false); }
 
     // R ile yeniden başlatma bölümün süresini ve durumunu da sıfırlar.
-    public void OnRunRestarted() { if (Endless) { StartEndlessRun(); enemies.BeginEndless(); return; } if (!Active) return; Elapsed = 0; finished = false; ResetExit(); enemies.Begin(Def); }
+    public void OnRunRestarted()
+    {
+        shownRegion = 0;
+        regionUntil = 0;
+        if (Endless) { StartEndlessRun(); enemies.BeginEndless(); return; }
+        if (!Active) return;
+        Elapsed = 0; finished = false; ResetExit(); enemies.Begin(Def);
+    }
 
     void ResetExit() { exitFloor=-1; wasInsideDoor=false; wasDoorReady=false; if(door) door.gameObject.SetActive(false); }
 
@@ -145,6 +159,7 @@ public class LevelRun : MonoBehaviour
             if (msg != null) { toast.text = msg; toastUntil = Time.unscaledTime + 3.2f; SesAtolyesi.Ses.Pickup(); }
         }
         toast.gameObject.SetActive(Time.unscaledTime < toastUntil && !GameFlow.IsMenu);
+        UpdateRegionNotice();
         bool showEndlessHud = Endless && !endlessOver;
         bool showHud = (Active && !finished) || showEndlessHud;
         hud.gameObject.SetActive(showHud); hudBack.SetActive(showHud);
@@ -182,6 +197,29 @@ public class LevelRun : MonoBehaviour
         int lost = PlayerHealth.Instance ? PlayerHealth.Instance.Lost : 0;
         string next = "  •  ŞU AN " + Def.StarsFor(Elapsed, lost) + " YILDIZ";
         hud.text = goal + "\n" + time + next + powerHint;
+    }
+
+    void UpdateRegionNotice()
+    {
+        if (GameFlow.IsMenu || !CombatPlaying || !TowerThemes.Instance)
+        {
+            regionNotice.gameObject.SetActive(false);
+            return;
+        }
+
+        int floor = Mathf.Max(0, tower.HighestReachedFloor);
+        int region = floor / TowerThemes.FloorsPerTheme;
+        if (region > shownRegion)
+        {
+            shownRegion = region;
+            regionUntil = Time.time + 2.4f;
+            regionNotice.text = TowerThemes.Names[TowerThemes.ThemeAtFloor(floor)];
+            regionNotice.color = Color.Lerp(TowerThemes.TintAtFloor(floor), Color.white, .35f);
+        }
+
+        float remaining = regionUntil - Time.time;
+        regionNotice.gameObject.SetActive(remaining > 0);
+        if (remaining > 0) regionNotice.alpha = Mathf.Clamp01(remaining / .55f);
     }
 
     string CoinTarget()
