@@ -131,11 +131,10 @@ public static class PlayerProgress
         return null;
     }
 
-    public static int ClaimableCount()
+    public static bool HasClaimableTaskReward()
     {
-        int n = LoginClaimable ? 1 : 0;
-        foreach (var t in Today()) if (Ready(t)) n++;
-        for (int i = 0; i < Achievements.Length; i++) if (AchievementReady(i)) n++;
-        return n;
+        if (LoginClaimable) return true;
+        foreach (var task in Today()) if (Ready(task)) return true;
+        return false;
     }
 }

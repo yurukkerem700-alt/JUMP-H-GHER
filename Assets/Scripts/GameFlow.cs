@@ -100,6 +100,7 @@ public class GameFlow : MonoBehaviour
         MenuButton("AYARLAR",()=>settings.Open(),23,false,new Vector4(138,804,264,112),new Vector4(372,388,236,58));
         var tasksButton=MenuButton("GÖREVLER",()=>tasks.Open(),23,false,new Vector4(-138,928,264,112),new Vector4(128,456,236,58));
         taskBadge=Pic("Rozet",tasksButton.transform,UiArt.Disc,new Color(.9f,.15f,.12f)).gameObject;
+        taskBadge.SetActive(PlayerProgress.HasClaimableTaskReward());
         {var br=taskBadge.GetComponent<RectTransform>();br.anchorMin=br.anchorMax=Vector2.one;br.sizeDelta=new Vector2(34,34);br.anchoredPosition=new Vector2(-12,-8);
          var bt=Label("!",22,Color.white);bt.transform.SetParent(taskBadge.transform,false);var btr=bt.rectTransform;btr.anchorMin=Vector2.zero;btr.anchorMax=Vector2.one;btr.offsetMin=btr.offsetMax=Vector2.zero;}
         MenuButton("NASIL OYNANIR",ToggleInstructions,23,false,new Vector4(138,928,264,112),new Vector4(372,456,236,58));
@@ -171,7 +172,7 @@ public class GameFlow : MonoBehaviour
     {
         if(splash){bool ready=Time.unscaledTime>=splashUntil;start.gameObject.SetActive(ready);if(ready)splash=false;}
         if(!holding&&(Input.GetKeyDown(KeyCode.Escape)||Input.GetKeyDown(KeyCode.P))){if(settings.IsOpen)settings.Close();else if(costumes.IsOpen)costumes.Close();else if(tasks.IsOpen)tasks.Close();else if(achievements.IsOpen)achievements.Close();else if(map.IsOpen)map.Close();else if(IsMenu&&begun)Begin(true);else Show(true);}
-        if(IsMenu){Animate();bool sub=settings.IsOpen||costumes.IsOpen||tasks.IsOpen||achievements.IsOpen||map.IsOpen;if(Time.unscaledTime>=badgeCheck){badgeCheck=Time.unscaledTime+.5f;if(taskBadge)taskBadge.SetActive(PlayerProgress.ClaimableCount()>0);}if(panel.gameObject.activeSelf==sub){panel.gameObject.SetActive(!sub);halo.gameObject.SetActive(!sub);}int best=PlayerPrefs.GetInt("BestFloor",0);status.text="EN YÜKSEK KAT  "+best+"   •   YILDIZ  "+LevelDefs.TotalStars()+" / "+LevelDefs.Count*3+"   •   CÜZDAN  "+PlayerProgress.Wallet;}
+        if(IsMenu){Animate();bool sub=settings.IsOpen||costumes.IsOpen||tasks.IsOpen||achievements.IsOpen||map.IsOpen;if(Time.unscaledTime>=badgeCheck){badgeCheck=Time.unscaledTime+.5f;if(taskBadge)taskBadge.SetActive(PlayerProgress.HasClaimableTaskReward());}if(panel.gameObject.activeSelf==sub){panel.gameObject.SetActive(!sub);halo.gameObject.SetActive(!sub);}int best=PlayerPrefs.GetInt("BestFloor",0);status.text="EN YÜKSEK KAT  "+best+"   •   YILDIZ  "+LevelDefs.TotalStars()+" / "+LevelDefs.Count*3+"   •   CÜZDAN  "+PlayerProgress.Wallet;}
         else if(tower.HighestReachedFloor+1>PlayerPrefs.GetInt("BestFloor",0))PlayerPrefs.SetInt("BestFloor",tower.HighestReachedFloor+1);
     }
     public void PauseForBackground() { if(overlay && !IsMenu) Show(true); }

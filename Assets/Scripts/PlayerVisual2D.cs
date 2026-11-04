@@ -49,6 +49,7 @@ public class PlayerVisual2D : MonoBehaviour
         int rows=sheet==animationSheet?2:Costumes.FrameRows(Costumes.SelectedId);
         frames=BuildFrames(sheet,rows);
         display.sprite=frames[CurrentFrame];
+        rig.BindCostume(frames[0]);
     }
 
     public static Sprite[] BuildFrames(Texture2D sheet,int rows)

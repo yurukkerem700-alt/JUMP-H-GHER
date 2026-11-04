@@ -58,7 +58,12 @@ public static class CostumePlaySmokeVerification
                 body.linearVelocity=new Vector2(0,-5); update.Invoke(visual,null); Assert.AreEqual(6,visual.CurrentFrame);
                 contact.SetValue(player,Time.fixedTime+1); body.linearVelocity=Vector2.zero; update.Invoke(visual,null); Assert.AreEqual(7,visual.CurrentFrame);
                 GameInput.Kick(); Assert.IsTrue(GameInput.ConsumeKick()); GameInput.PlayKick(0, 1); update.Invoke(visual,null); Assert.IsFalse(display.enabled);
-                Assert.AreEqual(1, player.GetComponentsInChildren<CostumeRig2D>().Length);
+                var rig = player.GetComponentInChildren<CostumeRig2D>();
+                Assert.IsNotNull(rig);
+                var painted = rig.GetComponent<MeshRenderer>();
+                Assert.AreEqual(Costumes.Sheet(id), painted.sharedMaterial.mainTexture);
+                foreach (var part in rig.GetComponentsInChildren<SpriteRenderer>())
+                    Assert.IsFalse(part.enabled);
                 kick.SetValue(visual,Time.time-EnemyManager.StrikeDuration-.01f); update.Invoke(visual,null); Assert.IsTrue(display.enabled);
                 Debug.Log("PLAY COSTUME PASS: "+id+"; illustrated renderer, idle, walk, jump, fall, land, skeletal attack and recovery");
             }

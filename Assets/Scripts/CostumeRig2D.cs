@@ -14,6 +14,12 @@ public class CostumeRig2D : MonoBehaviour
     float facing=1;
     Material material;
     Transform bag;
+    Mesh costumeMesh;
+    Material costumeMaterial;
+    Vector3[] costumeVertices, deformedVertices;
+    BoneWeight[] weights;
+    Transform[] skinBones;
+    Matrix4x4[] bindPoses, skinMatrices;
 
     public void Init(Material mat, int index)
     {
@@ -113,6 +119,124 @@ public class CostumeRig2D : MonoBehaviour
         return root;
     }
     static void Angle(Transform t,float angle) { t.localRotation=Quaternion.Euler(0,0,angle); }
+    public void BindCostume(Sprite sprite)
+    {
+        foreach (var renderer in renderers) renderer.enabled = false;
+        skinBones = new[] { chest, head, armL, elbowL, armR, elbowR, legL, kneeL, legR, kneeR };
+        bindPoses = new Matrix4x4[skinBones.Length];
+        skinMatrices = new Matrix4x4[skinBones.Length];
+        for (int i = 0; i < skinBones.Length; i++)
+            bindPoses[i] = skinBones[i].worldToLocalMatrix * transform.localToWorldMatrix;
+
+        Rect rect = sprite.rect;
+        int width = (int)rect.width, height = (int)rect.height;
+        var pixels = sprite.texture.GetPixels((int)rect.x, (int)rect.y, width, height);
+        var minimum = new Vector2(width, height);
+        var maximum = Vector2.zero;
+        for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
+        {
+            if (pixels[y * width + x].a < .4f) continue;
+            var point = new Vector2(x, y);
+            minimum = Vector2.Min(minimum, point);
+            maximum = Vector2.Max(maximum, point);
+        }
+        const int divisions = 24, stride = divisions + 1;
+        costumeVertices = new Vector3[stride * stride];
+        deformedVertices = new Vector3[costumeVertices.Length];
+        weights = new BoneWeight[costumeVertices.Length];
+        var uv = new Vector2[costumeVertices.Length];
+        var colors = new Color32[costumeVertices.Length];
+        var indices = new int[divisions * divisions * 6];
+        int triangle = 0;
+        for (int row = 0; row <= divisions; row++)
+        for (int col = 0; col <= divisions; col++)
+        {
+            int i = row * stride + col;
+            var pixel = new Vector2(rect.width * col / divisions, rect.height * row / divisions);
+            Vector2 point = (pixel - sprite.pivot) / sprite.pixelsPerUnit;
+            costumeVertices[i] = point;
+            uv[i] = new Vector2((rect.x + pixel.x) / sprite.texture.width,
+                (rect.y + pixel.y) / sprite.texture.height);
+            colors[i] = new Color32(255, 255, 255, 255);
+            float x = Mathf.InverseLerp(minimum.x, maximum.x, pixel.x);
+            float y = Mathf.InverseLerp(minimum.y, maximum.y, pixel.y);
+            weights[i] = CostumeWeight(x, y);
+            if (row == divisions || col == divisions) continue;
+            indices[triangle++] = i;
+            indices[triangle++] = i + stride;
+            indices[triangle++] = i + 1;
+            indices[triangle++] = i + 1;
+            indices[triangle++] = i + stride;
+            indices[triangle++] = i + stride + 1;
+        }
+
+        costumeMesh = new Mesh { name = "Eklemli kostüm" };
+        costumeMesh.MarkDynamic();
+        costumeMesh.vertices = costumeVertices;
+        costumeMesh.uv = uv;
+        costumeMesh.colors32 = colors;
+        costumeMesh.triangles = indices;
+        costumeMesh.bounds = new Bounds(Vector3.up * .55f, Vector3.one * 4);
+        costumeMaterial = new Material(material) { mainTexture = sprite.texture };
+        gameObject.AddComponent<MeshFilter>().sharedMesh = costumeMesh;
+        var painted = gameObject.AddComponent<MeshRenderer>();
+        painted.sharedMaterial = costumeMaterial;
+        painted.sortingOrder = 20;
+    }
+
+    static BoneWeight CostumeWeight(float x, float y)
+    {
+        int side = x < .5f ? 0 : 2;
+        int primary, secondary;
+        float blend;
+        if (y < .43f)
+        {
+            primary = 6 + side;
+            secondary = primary + 1;
+            blend = 1 - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.14f, .28f, y));
+        }
+        else if (y > .70f)
+        {
+            primary = 0;
+            secondary = 1;
+            blend = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.70f, .84f, y));
+        }
+        else
+        {
+            int arm = 2 + side;
+            float edge = Mathf.Abs(x - .5f);
+            primary = edge > .29f ? arm : 0;
+            secondary = edge > .29f ? arm + 1 : arm;
+            blend = edge > .29f
+                ? 1 - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.46f, .63f, y))
+                : Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.17f, .29f, edge));
+        }
+        return new BoneWeight { boneIndex0 = primary, boneIndex1 = secondary,
+            weight0 = 1 - blend, weight1 = blend };
+    }
+
+    void DeformCostume()
+    {
+        if (!costumeMesh) return;
+        for (int i = 0; i < skinBones.Length; i++)
+            skinMatrices[i] = transform.worldToLocalMatrix * skinBones[i].localToWorldMatrix * bindPoses[i];
+        for (int i = 0; i < costumeVertices.Length; i++)
+        {
+            var w = weights[i];
+            var point = costumeVertices[i];
+            deformedVertices[i] = skinMatrices[w.boneIndex0].MultiplyPoint3x4(point) * w.weight0 +
+                skinMatrices[w.boneIndex1].MultiplyPoint3x4(point) * w.weight1;
+        }
+        costumeMesh.vertices = deformedVertices;
+    }
+
+    void OnDestroy()
+    {
+        if (costumeMesh) Destroy(costumeMesh);
+        if (costumeMaterial) Destroy(costumeMaterial);
+    }
+
     public void PlayAttack(int attack, float direction)
     {
         kickStyle = attack;
@@ -152,6 +276,7 @@ public class CostumeRig2D : MonoBehaviour
             skeleton.localRotation *= Quaternion.Euler(0, turn, 0);
         }
         else skeleton.localScale = Vector3.one;
+        DeformCostume();
         float alpha=PlayerHealth.Instance && PlayerHealth.Instance.Invulnerable ? (Mathf.Sin(Time.time*26)>0?1:.3f):1;
         foreach(var r in renderers) { var c=r.color; c.a=alpha; r.color=c; }
     }
