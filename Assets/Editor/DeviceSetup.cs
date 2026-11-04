@@ -1,5 +1,3 @@
-using System;
-using System.IO;
 using UnityEditor;
 using UnityEditor.Events;
 using UnityEditor.SceneManagement;
@@ -8,21 +6,9 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 
-[InitializeOnLoad]
 public static class DeviceSetup
 {
-    const string Marker = "Library/DeviceSetup.v1.done";
     static TMP_FontAsset font;
-    static DeviceSetup() { EditorApplication.delayCall += AutoSetup; }
-    static void AutoSetup()
-    {
-        if (File.Exists(Marker)) return;
-        if (EditorApplication.isCompiling || EditorApplication.isUpdating) { EditorApplication.delayCall += AutoSetup; return; }
-        if (EditorApplication.isPlayingOrWillChangePlaymode) { EditorApplication.isPlaying = false; EditorApplication.delayCall += AutoSetup; return; }
-        try { Build(); }
-        catch (Exception e) { File.WriteAllText("Library/DeviceSetup.error.txt", e.ToString()); Debug.LogException(e); }
-    }
-
     [MenuItem("Cihazlar/Dokunmatik Arayuzu Kur")]
     public static void Build()
     {
@@ -63,7 +49,6 @@ public static class DeviceSetup
         EditorSceneManager.MarkSceneDirty(canvas.gameObject.scene);
         EditorSceneManager.SaveScene(canvas.gameObject.scene);
         AssetDatabase.SaveAssets();
-        File.WriteAllText(Marker, DateTime.Now.ToString("O"));
         EditorApplication.delayCall += DeviceVerification.Run;
     }
 

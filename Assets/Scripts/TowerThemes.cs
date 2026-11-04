@@ -18,12 +18,6 @@ public class TowerThemes : MonoBehaviour
     {
         int floor=Mathf.Max(0,tower.HighestReachedFloor);
         CurrentTheme=ThemeAtFloor(floor);ThemeCycle=floor/FloorsPerTheme;
-        foreach(var step in tower.coins.steps)
-        {
-            Color tint=TintAtFloor(step.floorIndex);
-            foreach(var r in step.GetComponentsInChildren<SpriteRenderer>())
-                if(r!=step.centerLight)r.color=tint;
-        }
         var coin=tower.coins.coin.GetComponent<SpriteRenderer>();
         if(coin)coin.color=Color.Lerp(Color.white,TintAtFloor(tower.coins.SpawnFloor),.32f);
         if(tower.floorLabel)tower.floorLabel.text="KAT "+Mathf.Max(0,tower.HighestReachedFloor+1)+"  •  "+CurrentName;

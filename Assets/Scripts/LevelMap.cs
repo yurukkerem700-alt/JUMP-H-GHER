@@ -244,7 +244,17 @@ public partial class LevelMap
         panel.GetComponent<Image>().color = new Color(.11f, .07f, .12f, .98f);
         float[] ys = { .93f, .85f, .76f, .68f, .6f, .52f, .42f, .34f, .26f };
         int[] sizes = { 44, 30, 26, 24, 24, 24, 22, 22, 22 };
-        for (int i = 0; i < cardLines.Length; i++) cardLines[i] = UiArt.Label(panel.transform, font, "", .5f, ys[i], 800, 56, sizes[i], new Color(.9f, .82f, .76f));
+        for (int i = 0; i < cardLines.Length; i++)
+        {
+            var line = cardLines[i] = UiArt.Label(panel.transform, font, "", .5f, ys[i], 800, 56, sizes[i], new Color(.9f, .82f, .76f));
+            var rect = line.rectTransform;
+            rect.anchorMin = new Vector2(0, ys[i]);
+            rect.anchorMax = new Vector2(1, ys[i]);
+            rect.sizeDelta = new Vector2(-32, 56);
+            line.enableAutoSizing = true;
+            line.fontSizeMin = 15;
+            line.fontSizeMax = sizes[i];
+        }
         cardLines[0].fontStyle = FontStyles.Bold; cardLines[1].fontStyle = FontStyles.Bold;
         UiArt.Btn(panel.transform, font, "BAŞLA", .3f, .09f, 250, 70, () => { dimmer.SetActive(false); start(cardLevel); });
         UiArt.Btn(panel.transform, font, "GERİ", .7f, .09f, 250, 70, () => dimmer.SetActive(false));

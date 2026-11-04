@@ -37,7 +37,21 @@ public class MovingPlatform2D : MonoBehaviour
     public Vector2 CurrentVelocity { get; private set; }
     public float Top => transform.position.y + topOffset;
 
-    void Awake() { rb = GetComponent<Rigidbody2D>(); origin = rb.position; }
+    void Awake()
+    {
+        // An inactive clone can be configured before Unity calls Awake.
+        if (rb) return;
+        rb = GetComponent<Rigidbody2D>();
+        origin = rb.position;
+    }
+
+    public void ApplyTheme()
+    {
+        surfaces ??= GetComponentsInChildren<SpriteRenderer>(true);
+        Color tint = TowerThemes.TintAtFloor(floorIndex);
+        foreach (var sprite in surfaces)
+            if (sprite != centerLight) sprite.color = tint;
+    }
 
     public void Configure(int floor, float surfaceY)
     {
@@ -107,7 +121,7 @@ public class MovingPlatform2D : MonoBehaviour
         if (solid.Count == 0) return;
 
         solidColliders = solid.ToArray();
-        surfaces = GetComponentsInChildren<SpriteRenderer>();
+        surfaces ??= GetComponentsInChildren<SpriteRenderer>(true);
         fragmentMaterial = surfaces.Length > 0 ? surfaces[0].sharedMaterial : null;
         halfWidth = Mathf.Max(.25f, solid[0].bounds.extents.x);
         rider = player;

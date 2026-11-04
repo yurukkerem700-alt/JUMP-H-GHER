@@ -3,6 +3,7 @@ using TMPro;
 
 public class PlayerController : MonoBehaviour
 {
+    const float EdgeJumpGrace = .10f;
     public float moveSpeed = 4.8f;
     public float jumpForce = 8f;
     private Rigidbody2D rb;
@@ -16,6 +17,7 @@ public class PlayerController : MonoBehaviour
     private MovingPlatform2D standingPlatform;
     private Collider2D supportCollider;
     private float lastGroundContact = -100;
+    private float edgeJumpUntil = -1;
 #if UNITY_EDITOR
     public static bool VerificationControl;
     public static float VerificationMovement;
@@ -46,12 +48,18 @@ public class PlayerController : MonoBehaviour
 #if UNITY_EDITOR
         if (VerificationControl) { movementX = VerificationMovement; return; }
 #endif
-        if (GameFlow.IsMenu) {movementX=0;jumpBufferedUntil=-1;GameInput.Clear();return;}
+        if (GameFlow.IsMenu)
+        {
+            movementX = 0;
+            jumpBufferedUntil = edgeJumpUntil = -1;
+            GameInput.Clear();
+            return;
+        }
         movementX = GameInput.Horizontal;
         if (GameInput.ConsumeJump()) jumpBufferedUntil = Time.time + .12f;
         GroundPlatform(out bool onGround);
         bool canAirJump = TowerPowers.Instance && TowerPowers.Instance.DoubleJumpActive && !airJumpUsed;
-        if ((Time.time <= jumpBufferedUntil && (onGround || canAirJump)) || (GameInput.JumpHeld && onGround))
+        if ((Time.time <= jumpBufferedUntil && (onGround || CanEdgeJump || canAirJump)) || (GameInput.JumpHeld && onGround))
         {
             ZiplamayiDene(); jumpBufferedUntil = -1;
         }
@@ -73,7 +81,17 @@ public class PlayerController : MonoBehaviour
         return grounded && hit.rigidbody ? hit.rigidbody.GetComponent<MovingPlatform2D>() : null;
     }
 
-    private void OnCollisionEnter2D(Collision2D collision) => UpdateSupport(collision);
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        bool wasAirborne = Time.fixedTime - lastGroundContact > .06f;
+        UpdateSupport(collision);
+        float impactSpeed = Mathf.Abs(collision.relativeVelocity.y);
+        if (wasAirborne && supportCollider == collision.collider && lastGroundContact == Time.fixedTime && impactSpeed >= 4f)
+        {
+            int floor = standingPlatform ? standingPlatform.floorIndex : 0;
+            SesAtolyesi.Ses.Impact(SesWorld.Surface(floor), Mathf.Clamp(impactSpeed * .13f, .5f, 1.4f), impactSpeed);
+        }
+    }
     private void OnCollisionStay2D(Collision2D collision) => UpdateSupport(collision);
 
     private void UpdateSupport(Collision2D collision)
@@ -83,6 +101,8 @@ public class PlayerController : MonoBehaviour
             if (contact.normal.y > .5f)
             {
                 lastGroundContact = Time.fixedTime;
+                if (rb.linearVelocity.y <= .15f && !GameFlow.IsMenu)
+                    edgeJumpUntil = Time.fixedTime + EdgeJumpGrace;
                 supportCollider = collision.collider;
                 standingPlatform = collision.rigidbody ? collision.rigidbody.GetComponent<MovingPlatform2D>() : null;
                 if (standingPlatform) standingPlatform.StartCrumble(this);
@@ -98,16 +118,19 @@ public class PlayerController : MonoBehaviour
         lastGroundContact = -100;
     }
 
+    bool CanEdgeJump => Time.time <= edgeJumpUntil && rb.linearVelocity.y <= .15f;
+
     public void ZiplamayiDene()
     {
         GroundPlatform(out bool grounded);
-        if (!grounded)
+        if (!grounded && !CanEdgeJump)
         {
             if (!TowerPowers.Instance || !TowerPowers.Instance.DoubleJumpActive || airJumpUsed) return;
             airJumpUsed = true;
             SesAtolyesi.Ses.Swoosh(.8f);
         }
         else airJumpUsed = false;
+        edgeJumpUntil = -1;
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
     }
 
@@ -181,6 +204,7 @@ public class PlayerController : MonoBehaviour
         standingPlatform = null;
         airJumpUsed = false;
         jumpBufferedUntil = -1;
+        edgeJumpUntil = -1;
         supportCollider = null;
         lastGroundContact = -100;
         rb.position = startPosition;

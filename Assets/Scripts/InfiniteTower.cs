@@ -14,11 +14,13 @@ public class InfiniteTower : MonoBehaviour
     public float scrollSmoothTime = .65f;
     readonly Dictionary<int, MovingPlatform2D> active = new Dictionary<int, MovingPlatform2D>();
     readonly Queue<MovingPlatform2D> pool = new Queue<MovingPlatform2D>();
+    readonly List<int> distantFloors = new List<int>();
     GameObject template;
     Transform sectionParent;
     Camera gameCamera;
     float desiredCameraY = .3f;
     float cameraVelocity;
+    bool hasThemes;
     public int HighestGeneratedFloor { get; private set; } = 6;
     public int HighestReachedFloor { get; private set; } = -1;
     public int ActivePlatformCount => active.Count;
@@ -28,10 +30,12 @@ public class InfiniteTower : MonoBehaviour
     void Awake()
     {
         gameCamera = Camera.main;
+        hasThemes = GetComponent<TowerThemes>() != null;
         sectionParent = coins.steps[0].transform.parent;
         for (int i = 0; i < coins.steps.Length; i++)
         {
             coins.steps[i].floorIndex = i;
+            if (hasThemes) coins.steps[i].ApplyTheme();
             active.Add(i, coins.steps[i]);
         }
         template = Instantiate(coins.steps[0].gameObject, sectionParent);
@@ -45,10 +49,10 @@ public class InfiniteTower : MonoBehaviour
         if (grounded && support)
         {
             HighestReachedFloor = Mathf.Max(HighestReachedFloor, support.floorIndex);
-            EnsureThroughFloor(support.floorIndex + 10);
+            ExtendFrontier(support.floorIndex + 10);
         }
         float playerY = player.GetComponent<Rigidbody2D>().position.y;
-        EnsureThroughFloor(Mathf.Max(6, Mathf.FloorToInt((playerY - FirstSurface) / FloorGap) + 9));
+        ExtendFrontier(Mathf.FloorToInt((playerY - FirstSurface) / FloorGap) + 9);
         int nearFloor = Mathf.Clamp(Mathf.FloorToInt((playerY - .3f - FirstSurface) / FloorGap), 0, HighestGeneratedFloor);
         int nearSection = nearFloor / FloorsPerSection;
         bool changed = EnsureSection(nearSection);
@@ -72,12 +76,19 @@ public class InfiniteTower : MonoBehaviour
 
     public void EnsureThroughFloor(int floor)
     {
+        ExtendFrontier(floor);
         int lastSection = Mathf.Max(0, floor / FloorsPerSection);
         bool changed = false;
-        if (floor > HighestGeneratedFloor) HighestGeneratedFloor = (lastSection + 1) * FloorsPerSection - 1;
         int firstSection = Mathf.Max(0, lastSection - 2);
         for (int section = firstSection; section <= lastSection; section++) changed |= EnsureSection(section);
         if (changed) RefreshCoinPlatforms();
+    }
+
+    // The frontier can advance without waking platforms outside the player's window.
+    void ExtendFrontier(int floor)
+    {
+        if (floor > HighestGeneratedFloor)
+            HighestGeneratedFloor = (floor / FloorsPerSection + 1) * FloorsPerSection - 1;
     }
 
     bool EnsureSection(int section)
@@ -91,6 +102,7 @@ public class InfiniteTower : MonoBehaviour
             if (pool.Count > 0) step = pool.Dequeue();
             else step = Instantiate(template, sectionParent).GetComponent<MovingPlatform2D>();
             step.Configure(floor, SurfaceFor(floor));
+            if (hasThemes) step.ApplyTheme();
             step.gameObject.name = "Basamak " + (floor + 1);
             step.gameObject.SetActive(true);
             active.Add(floor, step); changed = true;
@@ -101,14 +113,14 @@ public class InfiniteTower : MonoBehaviour
     void RecycleDistantSections(int currentSection)
     {
         int coinSection = Mathf.Max(0, coins.SpawnFloor) / FloorsPerSection;
-        var remove = new List<int>();
+        distantFloors.Clear();
         foreach (var pair in active)
         {
             int section = pair.Key / FloorsPerSection;
-            if (Mathf.Abs(section - currentSection) > 1 && section != coinSection) remove.Add(pair.Key);
+            if (Mathf.Abs(section - currentSection) > 1 && section != coinSection) distantFloors.Add(pair.Key);
         }
-        if (remove.Count == 0) return;
-        foreach (int floor in remove)
+        if (distantFloors.Count == 0) return;
+        foreach (int floor in distantFloors)
         {
             var step = active[floor]; active.Remove(floor);
             step.gameObject.SetActive(false); pool.Enqueue(step);

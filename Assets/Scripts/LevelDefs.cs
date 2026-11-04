@@ -14,7 +14,17 @@ public struct LevelDef
     public float enemySpeed;
     public bool HardLimit => limit > 0;
     public bool HasEnemies => zombies + goblins > 0;
-    public string EnemyText => zombies > 0 && goblins > 0 ? "ZOMBİ x" + zombies + " + GOBLİN x" + goblins : zombies > 0 ? "ZOMBİ x" + zombies : goblins > 0 ? "GOBLİN x" + goblins : "";
+    public string EnemyText
+    {
+        get
+        {
+            string climber = EnemyManager.UseLegacyEnemies ? "ZOMBİ" : "KARAKONCOLOS";
+            string leaper = EnemyManager.UseLegacyEnemies ? "GOBLİN" : "KARA KURT";
+            if (zombies > 0 && goblins > 0) return $"{climber} x{zombies} + {leaper} x{goblins}";
+            if (zombies > 0) return $"{climber} x{zombies}";
+            return goblins > 0 ? $"{leaper} x{goblins}" : "";
+        }
+    }
     public string Goal => kind == GoalKind.Floor ? target + ". kata çık, kapıdan geç" : kind == GoalKind.Coins ? target + " coin topla, kapıdan geç" : LevelDefs.Clock(survive) + " hayatta kal, kapıdan geç";
     public string TierName => LevelDefs.TierNames[tier];
     public Color TierColor => LevelDefs.TierColors[tier];

@@ -43,8 +43,8 @@ public class TowerPowers : MonoBehaviour
     public void TickGameplay()
     {
         while(pickupFloor < tower.HighestReachedFloor - 2){pickupFloor+=10;pickupKind=1-pickupKind;}
-        tower.EnsureThroughFloor(pickupFloor+1);
         var platform=tower.GetPlatform(pickupFloor);
+        pickup.gameObject.SetActive(platform);
         if(platform)
         {
             var tint=pickupKind==0?DoubleColor:MagnetColor;

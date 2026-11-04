@@ -41,9 +41,12 @@ public class LevelRun : MonoBehaviour
         canvas = UiArt.NewCanvas("Bölüm Arayüzü", 900);
         // Yazının arkasından geçen platformlar okunurluğu bozmasın diye koyu yarı saydam zemin.
         hudBack = new GameObject("HUD Zemin", typeof(Image)); hudBack.transform.SetParent(canvas.transform, false);
+        hudBack.AddComponent<SafeHudAnchor>();
         var hb = hudBack.GetComponent<Image>(); hb.color = new Color(.05f, .03f, .05f, .55f); hb.raycastTarget = false;
         var hr = hb.rectTransform; hr.anchorMin = hr.anchorMax = new Vector2(.5f, .815f); hr.sizeDelta = new Vector2(780, 80);
-        hud = UiArt.Label(canvas.transform, font, "", .5f, .815f, 900, 90, 24, new Color(1, .86f, .66f));
+        hud = UiArt.Label(canvas.transform, font, "", .5f, .815f, 780, 80, 24, new Color(1, .86f, .66f));
+        hud.enableAutoSizing = true; hud.fontSizeMin = 15; hud.fontSizeMax = 24;
+        hud.margin = new Vector4(12, 3, 12, 3);
         hud.richText = true; hud.gameObject.SetActive(false); hudBack.SetActive(false);
         BuildDoor();
         toast = UiArt.Label(canvas.transform, font, "", .5f, .70f, 900, 70, 30, new Color(.6f, 1f, .75f));
@@ -142,10 +145,21 @@ public class LevelRun : MonoBehaviour
             if (msg != null) { toast.text = msg; toastUntil = Time.unscaledTime + 3.2f; SesAtolyesi.Ses.Pickup(); }
         }
         toast.gameObject.SetActive(Time.unscaledTime < toastUntil && !GameFlow.IsMenu);
-        hud.gameObject.SetActive(Active && !finished); hudBack.SetActive(Active && !finished);
-        // Bölüm HUD'u aynı yerde durduğu için kule modunun "KAT • tema" yazısını bölümde gizle (üst üste biniyordu).
-        if (tower.floorLabel) tower.floorLabel.enabled = !(Active && !finished);
+        bool showEndlessHud = Endless && !endlessOver;
+        bool showHud = (Active && !finished) || showEndlessHud;
+        hud.gameObject.SetActive(showHud); hudBack.SetActive(showHud);
+        if (tower.floorLabel) tower.floorLabel.enabled = !showHud;
         if(!Active || finished) door.gameObject.SetActive(false);
+        if (showEndlessHud)
+        {
+            int floor = Mathf.Max(0, tower.HighestReachedFloor + 1);
+            string theme = TowerThemes.Instance ? TowerThemes.Instance.CurrentName : "";
+            string record = bestAtStart == 0 ? "İLK TIRMANIŞ"
+                : floor > bestAtStart ? "<color=#8CFFBF>YENİ REKOR</color>"
+                : "REKOR  " + bestAtStart;
+            hud.text = "KAT " + floor + "  •  " + theme + "\n" + record;
+            return;
+        }
         if (!Active || finished) return;
         string foes = Def.HasEnemies ? "  •  " + Def.EnemyText : "";
         string head = "BÖLÜM " + Def.number + "  •  " + Def.TierName;
