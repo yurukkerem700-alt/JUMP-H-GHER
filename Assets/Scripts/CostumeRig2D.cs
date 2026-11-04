@@ -7,20 +7,17 @@ public class CostumeRig2D : MonoBehaviour
     public static readonly Color[] Tints = { new Color(.35f,.5f,1), new Color(1,.4f,.55f), new Color(1,.75f,.25f), new Color(.45f,1,1), new Color(.58f,.035f,.14f) };
     public static int Index(string id) { return System.Array.IndexOf(Ids,id); }
     Transform skeleton, chest, head, armL, armR, elbowL, elbowR, legL, legR, kneeL, kneeR, accessoryL, accessoryR;
-    PlayerController controller;
-    Rigidbody2D body;
     SpriteRenderer[] renderers;
     int style;
-    float phase, landUntil, kickUntil;
+    float kickUntil;
     int kickStyle;
-    bool wasGrounded;
     float facing=1;
     Material material;
     Transform bag;
 
-    public void Init(PlayerController owner, Material mat, int index)
+    public void Init(Material mat, int index)
     {
-        controller=owner; body=owner.GetComponent<Rigidbody2D>(); material=mat; style=index;
+        material=mat; style=index;
         skeleton=Bone("Iskelet",transform,Vector2.zero);
         var dark=Color.Lerp(Tints[style],new Color(.07f,.06f,.13f),.7f);
         var skin=new Color(.98f,.91f,.86f);
@@ -30,7 +27,7 @@ public class CostumeRig2D : MonoBehaviour
         Part("Govde",chest,Vector2.zero,new Vector2(.36f,.42f),dark,22);
         Part("Zirh",chest,new Vector2(0,.04f),new Vector2(.28f,.29f),Tints[style],23);
         Part("Ruh",chest,new Vector2(0,.08f),Vector2.one*.1f,Color.white,25);
-        head=Bone("Boyun",chest,new Vector2(0,EnemyManager.StrikeDuration));
+        head=Bone("Boyun",chest,new Vector2(0,.32f));
         Part("Bas",head,Vector2.zero,new Vector2(.29f,.28f),style==4?skin:dark,24);
         Color eyes=style==4?new Color(1,.025f,.025f):Tints[style]*1.3f;
         Part("Goz Sol",head,new Vector2(-.06f,.025f),new Vector2(.045f,.055f),eyes,26);
@@ -74,7 +71,7 @@ public class CostumeRig2D : MonoBehaviour
             Part("Kakul",head,new Vector2(0,.1f),new Vector2(.29f,.1f),blonde,25);
             Part("Bordo Fotr Kenari",head,new Vector2(0,.17f),new Vector2(.55f,.085f),Tints[style],27);
             Part("Bordo Fotr Tepesi",head,new Vector2(0,.26f),new Vector2(.31f,.21f),Tints[style],27);
-            Part("Siyah Sapka Bandi",head,new Vector2(0,.205f),new Vector2(EnemyManager.StrikeDuration,.035f),dark,28);
+            Part("Siyah Sapka Bandi",head,new Vector2(0,.205f),new Vector2(.32f,.035f),dark,28);
             Part("Dekolte",chest,new Vector2(0,.15f),new Vector2(.14f,.19f),skin,24);
             Part("Bordo Etek Sol",chest,new Vector2(-.09f,-.24f),new Vector2(.22f,.42f),Tints[style],25);
             Part("Yirtmacli Etek Sag",chest,new Vector2(.13f,-.19f),new Vector2(.1f,.31f),Tints[style],25);
@@ -96,7 +93,7 @@ public class CostumeRig2D : MonoBehaviour
             Part("Canta Tokasi",bag,new Vector2(0,-.1f),Vector2.one*.035f,new Color(1,.8f,.4f),28);
         }
         renderers=GetComponentsInChildren<SpriteRenderer>();
-        GameInput.Kicked+=Kick;
+
     }
     static Transform Bone(string name, Transform parent, Vector2 at)
     {
@@ -116,45 +113,49 @@ public class CostumeRig2D : MonoBehaviour
         return root;
     }
     static void Angle(Transform t,float angle) { t.localRotation=Quaternion.Euler(0,0,angle); }
-    void Kick(int style, float direction) { if(isActiveAndEnabled) { kickStyle = style; facing = direction; kickUntil = Time.time + EnemyManager.StrikeDuration; } }
+    public void PlayAttack(int attack, float direction)
+    {
+        kickStyle = attack;
+        facing = direction;
+        kickUntil = Time.time + EnemyManager.StrikeDuration;
+    }
+
     void LateUpdate()
     {
-        if(!controller || GameFlow.IsMenu) return;
-        var support=controller.GroundPlatform(out bool ground);
-        float speed=body.linearVelocity.x-(support?support.CurrentVelocity.x:0);
-        if(Time.time >= kickUntil && Mathf.Abs(GameInput.Horizontal)>.1f) facing=Mathf.Sign(GameInput.Horizontal);
-        transform.localScale=new Vector3(1.25f*facing,1.25f,1);
-        if(ground&&!wasGrounded) landUntil=Time.time+.14f;
-        phase+=Time.deltaTime*(Mathf.Abs(speed)>.3f?10+style:2);
-        float stride=ground?Mathf.Clamp01(Mathf.Abs(speed)/3)*Mathf.Sin(phase)*30:0;
-        float jump=ground?0:body.linearVelocity.y>0?1:-1;
-        Angle(legL,stride+(jump>0?-28:jump<0?15:0)); Angle(legR,-stride+(jump>0?20:jump<0?-12:0));
-        Angle(kneeL,Mathf.Max(0,-stride)*1.2f+(jump>0?50:0)); Angle(kneeR,Mathf.Max(0,stride)*1.2f+(jump>0?35:0));
-        Angle(armL,-stride*.8f+jump*35); Angle(armR,stride*.8f-jump*35);
-        Angle(elbowL,-15-Mathf.Abs(stride)*.4f); Angle(elbowR,15+Mathf.Abs(stride)*.4f);
-        float strike = Mathf.Sin(Mathf.PI * Mathf.Clamp01((kickUntil - Time.time) / EnemyManager.StrikeDuration));
-        if (Time.time < kickUntil)
+        float progress = 1 - Mathf.Clamp01((kickUntil - Time.time) / EnemyManager.StrikeDuration);
+        float impact = EnemyManager.StrikeContact / EnemyManager.StrikeDuration;
+        float chamber = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(0, .24f, progress)) *
+            (1 - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.24f, impact, progress)));
+        float extension = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.24f, impact, progress)) *
+            (1 - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(impact + .10f, 1, progress)));
+        bool punch = kickStyle == 3;
+        bool rising = kickStyle == 1;
+        bool roundhouse = kickStyle == 2;
+        float lift = rising ? .40f * Mathf.Sin(progress * Mathf.PI) : 0;
+        transform.localScale = new Vector3(1.25f * facing, 1.25f, 1);
+        transform.localPosition = new Vector3(facing * (.18f * extension - .07f * chamber), -.3f + lift, 0);
+
+        Angle(chest, 20 * chamber - (punch ? 24 : 14) * extension);
+        Angle(head, -15 * chamber + 12 * extension);
+        Angle(armL, 45 + 30 * chamber - 42 * extension);
+        Angle(elbowL, 70 - 20 * extension);
+        Angle(armR, punch ? 40 - 75 * chamber + 67 * extension : -25 - 25 * extension);
+        Angle(elbowR, punch ? 80 + 32 * chamber - 80 * extension : 65);
+        Angle(legL, -15 - (rising ? 52 : 12) * extension);
+        Angle(kneeL, -20 - (rising ? 44 : 14) * extension);
+        Angle(legR, punch ? 15 + 16 * extension : 15 + 65 * chamber + (rising ? 121 : 78) * extension);
+        Angle(kneeR, punch ? -25 : -18 - 92 * chamber + 13 * extension);
+        Angle(skeleton, roundhouse ? -28 * extension + 23 * chamber : 0);
+        if (roundhouse)
         {
-            if (kickStyle == 3) Angle(armR, 95 * strike);
-            else Angle(legR, (kickStyle == 0 ? 90 : kickStyle == 1 ? 145 : 65) * strike);
-            Angle(kneeR, 20 * (1 - strike));
-            Angle(armL, -45 * strike);
+            float turn = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(0, impact, progress)) * 360;
+            skeleton.localRotation *= Quaternion.Euler(0, turn, 0);
         }
-        float kickPhase = 1 - Mathf.Clamp01((kickUntil - Time.time) / EnemyManager.StrikeDuration);
-        transform.localRotation = Quaternion.Euler(0, 0, kickStyle == 2 ? -360 * facing * Mathf.SmoothStep(0, 1, kickPhase) : 0);
-        transform.localPosition = new Vector3(strike * facing * .17f, -.3f + strike * (kickStyle == 1 ? .62f : .12f), 0);
-        bool land=Time.time<landUntil;
-        skeleton.localScale=new Vector3(land?1.12f:1,land?.85f:1,1);
-        skeleton.localPosition=new Vector3(0,ground?Mathf.Abs(Mathf.Sin(phase))*.025f:0,0);
-        Angle(chest,Mathf.Sin(phase)* (style==1?6:2) - strike * (kickStyle == 2 ? 38 : 15)); Angle(head,-Mathf.Sin(phase)*3);
-        Angle(accessoryL,Mathf.Sin(phase*(style==3?2:1))*(style==3?35:12));
-        Angle(accessoryR,-Mathf.Sin(phase*(style==3?2:1))*(style==3?35:12));
-        if(bag) Angle(bag,Mathf.Sin(phase)*18);
+        else skeleton.localScale = Vector3.one;
         float alpha=PlayerHealth.Instance && PlayerHealth.Instance.Invulnerable ? (Mathf.Sin(Time.time*26)>0?1:.3f):1;
         foreach(var r in renderers) { var c=r.color; c.a=alpha; r.color=c; }
-        wasGrounded=ground;
     }
-    void OnDestroy() { GameInput.Kicked-=Kick; }
+
 
     // Selection cards use the same illustrated texture as the player.
     public static Sprite Preview(int index)

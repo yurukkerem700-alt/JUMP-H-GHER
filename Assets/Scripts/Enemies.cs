@@ -78,17 +78,16 @@ public class EnemyManager : MonoBehaviour
     public static bool UseLegacyEnemies = false;
     static EnemyKind Climbers => UseLegacyEnemies ? EnemyKind.Zombie : EnemyKind.Karakoncolos;
     static EnemyKind Leapers => UseLegacyEnemies ? EnemyKind.Goblin : EnemyKind.KaraKurt;
-    const float FirstDelay = 8f, RespawnDelay = 7f, SlotGap = 4f, SpeedScale = .6f, KickCooldown = .5f, KickReach = 1.7f;
+    const float FirstDelay = 8f, RespawnDelay = 7f, SlotGap = 4f, SpeedScale = .6f, KickCooldown = .56f, KickReach = 1.7f;
     InfiniteTower tower;
     Material material;
-    SpriteRenderer coinArt, kickTrail;
-    Sprite clawArt, sweepArt, fistArt;
+    SpriteRenderer coinArt;
+    Sprite clawArt;
     float kickReadyAt, kickStarted, facing = 1, kickDirection;
     int kickStyle = 3;
-    public const float StrikeDuration = .44f;
+    public const float StrikeDuration = .54f, StrikeContact = .22f;
     bool kickPending;
     readonly List<EnemyCoin> drops = new List<EnemyCoin>();
-    static readonly Color[] KickColors = { new Color(1f,.8f,.3f), new Color(.3f,.9f,1f), new Color(.94f,.45f,1f), new Color(1f,.46f,.25f) };
     float Speed => def.enemySpeed * SpeedScale; // tüm düşman hızları bu çarpanla yavaşlatılır
     readonly List<EnemySlot> slots = new List<EnemySlot>();
     LevelDef def; bool active, endless; float startAt; int playerFloor;
@@ -102,14 +101,7 @@ public class EnemyManager : MonoBehaviour
         material = coinArt.sharedMaterial;
         clawArt = UiArt.Build(96, 96, 96, (x, y) => SweepAlpha(x, y, .48f, .018f) +
             SweepAlpha(x + .12f, y + .04f, .49f, .015f) + SweepAlpha(x - .12f, y - .04f, .47f, .013f));
-        sweepArt = UiArt.Build(96, 96, 96, (x, y) => SweepAlpha(x, y, .52f, .053f));
-        fistArt = UiArt.Build(64, 64, 64, (x, y) =>
-        {
-            float fingers = Mathf.Max(Mathf.Abs(x - .08f) - .25f, Mathf.Abs(y - .07f) - .22f);
-            float wrist = Mathf.Max(Mathf.Abs(x + .22f) - .15f, Mathf.Abs(y + .04f) - .15f);
-            return Mathf.Clamp01(-Mathf.Min(fingers, wrist) * 64);
-        });
-        kickTrail = MakeEffect("Tekme izi", sweepArt);
+
     }
 
     static float SweepAlpha(float x, float y, float radius, float width)
@@ -137,7 +129,7 @@ public class EnemyManager : MonoBehaviour
         kickStarted = now;
         kickPending = true;
         kickDirection = facing;
-        kickStyle = (kickStyle + 1) % KickColors.Length;
+        kickStyle = (kickStyle + 1) % 4;
         GameInput.PlayKick(kickStyle, kickDirection);
         SesAtolyesi.Ses.Swoosh(1f);
     }
@@ -145,24 +137,7 @@ public class EnemyManager : MonoBehaviour
     void TickKick(float now)
     {
         float elapsed = now - kickStarted;
-        kickTrail.enabled = now < kickReadyAt && elapsed < StrikeDuration;
-        if (kickTrail.enabled)
-        {
-            float phase = elapsed / StrikeDuration;
-            kickTrail.sprite = kickStyle == 3 ? fistArt : sweepArt;
-            var p = tower.player.transform.position;
-            float height = kickStyle == 0 ? .03f : kickStyle == 1 ? Mathf.Lerp(-.12f, .62f, phase) : -.18f;
-            kickTrail.transform.position = p + new Vector3(kickDirection * Mathf.Lerp(.32f, 1.15f, phase), height, 0);
-            kickTrail.transform.localScale = new Vector3(kickStyle == 2 ? 1.65f : 1.1f, 1.2f, 1);
-            if (kickStyle == 3) kickTrail.transform.localScale = new Vector3(.68f, .48f, 1);
-            float angle = kickStyle == 0 ? -25 : kickStyle == 1 ? 45 : kickStyle == 2 ? -85 : 0;
-            kickTrail.transform.rotation = Quaternion.Euler(0, 0, kickDirection * (angle - 40 * phase));
-            kickTrail.flipX = kickDirection < 0;
-            var color = KickColors[kickStyle];
-            color.a = Mathf.Sin(Mathf.PI * phase);
-            kickTrail.color = color;
-        }
-        if (!kickPending || elapsed < .17f) return;
+        if (!kickPending || elapsed < StrikeContact) return;
         kickPending = false;
         var pHit = tower.player.transform.position;
         foreach (var slot in slots)
@@ -171,7 +146,7 @@ public class EnemyManager : MonoBehaviour
             if (e == null || e.dead || e.state == Enemy.Leap || e.state == Enemy.Fall) continue;
             var pos = e.go.transform.position;
             float dx = pos.x - pHit.x, centerY = pos.y + e.art.height * .45f;
-            if (dx * kickDirection < -.2f || Mathf.Abs(dx) > KickReach || Mathf.Abs(pHit.y - centerY) > 1.4f) continue;
+            if (dx * kickDirection < -.2f || Mathf.Abs(dx) > (kickStyle == 3 ? 1.15f : KickReach) || Mathf.Abs(pHit.y - centerY) > 1.4f) continue;
             Knock(e, kickDirection, now);
         }
     }
@@ -292,7 +267,6 @@ public class EnemyManager : MonoBehaviour
         drops.Clear();
         kickPending = false;
         kickReadyAt = 0;
-        if (kickTrail) kickTrail.enabled = false;
     }
 
     void Update()
@@ -302,7 +276,6 @@ public class EnemyManager : MonoBehaviour
         if (!run || !run.CombatPlaying || GameFlow.IsMenu)
         {
             kickPending = false;
-            if (kickTrail) kickTrail.enabled = false;
             return;
         }
         float now = Time.time, dt = Time.deltaTime;
@@ -561,5 +534,5 @@ public class EnemyManager : MonoBehaviour
         if(phase>=1){e.state=Enemy.Stand;e.attackReadyAt=now+.65f;e.waitSince=now;}
     }
 
-    void OnDestroy() { Clear(); EnemyArt.Release(); EnemySfx.Release(); if (clawArt) { Destroy(clawArt.texture); Destroy(clawArt); } if (sweepArt) { Destroy(sweepArt.texture); Destroy(sweepArt); } if (fistArt) { Destroy(fistArt.texture); Destroy(fistArt); } }
+    void OnDestroy() { Clear(); EnemyArt.Release(); EnemySfx.Release(); if (clawArt) { Destroy(clawArt.texture); Destroy(clawArt); } }
 }

@@ -57,10 +57,10 @@ public static class CostumePlaySmokeVerification
                 contact.SetValue(player,-100f); body.linearVelocity=new Vector2(0,5); update.Invoke(visual,null); Assert.AreEqual(5,visual.CurrentFrame);
                 body.linearVelocity=new Vector2(0,-5); update.Invoke(visual,null); Assert.AreEqual(6,visual.CurrentFrame);
                 contact.SetValue(player,Time.fixedTime+1); body.linearVelocity=Vector2.zero; update.Invoke(visual,null); Assert.AreEqual(7,visual.CurrentFrame);
-                GameInput.Kick(); Assert.IsTrue(GameInput.ConsumeKick()); GameInput.PlayKick(0, 1); update.Invoke(visual,null); Assert.AreEqual(8,visual.CurrentFrame);
-                kick.SetValue(visual,Time.time-.15f); update.Invoke(visual,null); Assert.AreEqual(9,visual.CurrentFrame);
-                kick.SetValue(visual,Time.time-.25f); update.Invoke(visual,null); Assert.AreEqual(10,visual.CurrentFrame);
-                Debug.Log("PLAY COSTUME PASS: "+id+"; illustrated renderer, idle, walk, jump, fall, land, kick x3");
+                GameInput.Kick(); Assert.IsTrue(GameInput.ConsumeKick()); GameInput.PlayKick(0, 1); update.Invoke(visual,null); Assert.IsFalse(display.enabled);
+                Assert.AreEqual(1, player.GetComponentsInChildren<CostumeRig2D>().Length);
+                kick.SetValue(visual,Time.time-EnemyManager.StrikeDuration-.01f); update.Invoke(visual,null); Assert.IsTrue(display.enabled);
+                Debug.Log("PLAY COSTUME PASS: "+id+"; illustrated renderer, idle, walk, jump, fall, land, skeletal attack and recovery");
             }
             MobileEnemyVerification.Check();
             CheckCrumbling(tower, player);
