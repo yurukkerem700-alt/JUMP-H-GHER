@@ -193,11 +193,22 @@ public class LevelRun : MonoBehaviour
         if (win) { LevelDefs.SaveStars(Def.number, stars); PlayerProgress.AddLevel(); }
         flow.Hold(true);
         int finishTime = Mathf.Max(1, Mathf.RoundToInt(Elapsed * 100f));
-        bool timeRecord = win && LevelDefs.SaveBestTime(Def.number, finishTime);
-        ShowResult(win, stars, reason, finishTime, timeRecord);
+        int previousTime = win ? LevelDefs.BestTime(Def.number) : 0;
+        if (win) LevelDefs.SaveBestTime(Def.number, finishTime);
+        ShowResult(win, stars, reason, finishTime, previousTime);
     }
 
-    void ShowResult(bool win, int stars, string reason, int finishTime, bool timeRecord)
+    static string TimeRecordText(int finishTime, int previousTime)
+    {
+        string current = LevelDefs.RecordClock(finishTime);
+        if (previousTime <= 0) return "İLK DERECE  " + current;
+        int delta = finishTime - previousTime;
+        if (delta == 0) return "REKORA EŞİT  " + current;
+        if (delta < 0) return "YENİ REKOR  " + current + "  •  -" + LevelDefs.RecordClock(-delta);
+        return "EN İYİ  " + LevelDefs.RecordClock(previousTime) + "  •  +" + LevelDefs.RecordClock(delta);
+    }
+
+    void ShowResult(bool win, int stars, string reason, int finishTime, int previousTime)
     {
         CloseResult();
         result = new GameObject("Bölüm Sonucu", typeof(Image)); result.transform.SetParent(canvas.transform, false);
@@ -216,9 +227,9 @@ public class LevelRun : MonoBehaviour
             Condition(t, .45f, rules[0], true);
             Condition(t, .40f, rules[1], stars >= 2);
             Condition(t, .35f, rules[2], stars >= 3);
-            string recordLabel = timeRecord ? "YENİ BÖLÜM REKORU" : "EN İYİ SÜRE";
-            UiArt.Label(t, font, recordLabel + "  " + LevelDefs.RecordClock(LevelDefs.BestTime(Def.number)),
-                .5f, .30f, 580, 28, 22, timeRecord ? new Color(.55f, 1f, .75f) : Gold);
+            bool timeRecord = previousTime <= 0 || finishTime < previousTime;
+            UiArt.Label(t, font, TimeRecordText(finishTime, previousTime),
+                .5f, .30f, 620, 28, 22, timeRecord ? new Color(.55f, 1f, .75f) : Gold);
         }
         else UiArt.Label(t, font, "COIN  " + tower.player.Score + "   •   KAT  " + Mathf.Max(0, tower.HighestReachedFloor + 1) + "   •   CÜZDAN  " + PlayerProgress.Wallet, .5f, .44f, 900, 50, 24, Gold);
         if (!win) UiArt.Label(t, font, reason == "CAN BİTTİ" ? "Tüm canlarını (" + Def.hearts + ") kaybettin. Bir daha dene." : "Bu bölümü " + LevelDefs.Clock(Def.limit) + " içinde bitirmelisin.", .5f, .50f, 900, 60, 24, new Color(.85f, .75f, .7f));
