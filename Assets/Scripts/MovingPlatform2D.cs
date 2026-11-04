@@ -20,7 +20,7 @@ public class MovingPlatform2D : MonoBehaviour
     readonly List<SpriteRenderer> cracks = new List<SpriteRenderer>();
     readonly List<Fragment> fragments = new List<Fragment>();
     SpriteRenderer[] surfaces;
-    SpriteRenderer warningTrack, warningFill;
+    SpriteRenderer warningTrack, warningFill, surfaceEdge;
     Collider2D[] solidColliders;
     PlayerController rider;
     Material fragmentMaterial;
@@ -46,12 +46,27 @@ public class MovingPlatform2D : MonoBehaviour
         origin = rb.position;
     }
 
+    void Start()
+    {
+        var collider = GetComponent<BoxCollider2D>();
+        if (!collider || surfaceEdge) return;
+
+        surfaces ??= GetComponentsInChildren<SpriteRenderer>(true);
+        surfaceEdge = DebrisSprite("Basamak Kenarı", EdgeColor(), 18);
+        if (surfaces.Length > 0) surfaceEdge.sharedMaterial = surfaces[0].sharedMaterial;
+        surfaceEdge.transform.localPosition = new Vector3(collider.offset.x, topOffset, 0);
+        surfaceEdge.transform.localScale = new Vector3(collider.size.x * .86f, .045f, 1);
+    }
+
+    Color EdgeColor() => Color.Lerp(TowerThemes.TintAtFloor(floorIndex), Color.white, .35f);
+
     public void ApplyTheme()
     {
         surfaces ??= GetComponentsInChildren<SpriteRenderer>(true);
         Color tint = TowerThemes.TintAtFloor(floorIndex);
         foreach (var sprite in surfaces)
             if (sprite != centerLight) sprite.color = tint;
+        if (surfaceEdge) surfaceEdge.color = EdgeColor();
     }
 
     public void Configure(int floor, float surfaceY)
@@ -237,6 +252,7 @@ public class MovingPlatform2D : MonoBehaviour
         rebuildAt = Time.time + RebuildDelay;
         foreach (var collider in solidColliders) collider.enabled = false;
         foreach (var sprite in surfaces) sprite.forceRenderingOff = true;
+        if (surfaceEdge) surfaceEdge.enabled = false;
         foreach (var crack in cracks) Destroy(crack.gameObject);
         cracks.Clear();
         Scatter(18, true, false);
@@ -253,6 +269,7 @@ public class MovingPlatform2D : MonoBehaviour
         {
             foreach (var collider in solidColliders) if (collider) collider.enabled = true;
             foreach (var sprite in surfaces) if (sprite) sprite.forceRenderingOff = false;
+            if (surfaceEdge) surfaceEdge.enabled = true;
         }
         foreach (var crack in cracks) if (crack) Destroy(crack.gameObject);
         foreach (var piece in fragments) if (piece.sprite) Destroy(piece.sprite.gameObject);
