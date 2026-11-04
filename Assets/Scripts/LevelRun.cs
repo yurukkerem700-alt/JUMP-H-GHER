@@ -257,6 +257,15 @@ public class LevelRun : MonoBehaviour
         ShowEndlessResult(floor, coins, record);
     }
 
+    static string FloorRecordText(int floor, int previousBest)
+    {
+        if (previousBest == 0) return floor > 0 ? "İLK DERECE" : "İLK BASAMAĞA ULAŞ";
+        int difference = floor - previousBest;
+        if (difference > 0) return "YENİ REKOR  •  +" + difference + " KAT";
+        if (difference == 0) return "REKORA EŞİT";
+        return "REKOR " + previousBest + "  •  " + (-difference) + " KAT KALDI";
+    }
+
     void ShowEndlessResult(int floor, int coins, bool record)
     {
         CloseResult();
@@ -267,8 +276,8 @@ public class LevelRun : MonoBehaviour
         var soft = new Color(.85f, .75f, .7f);
         UiArt.Label(t, font, "CAN BİTTİ", .5f, .84f, 900, 110, 52, new Color(1, .42f, .38f));
         UiArt.Label(t, font, "KAT  " + floor, .5f, .70f, 900, 130, 84, Gold);
-        if (record) UiArt.Label(t, font, "YENİ REKOR!", .5f, .59f, 900, 70, 40, new Color(.55f, 1f, .75f));
-        else UiArt.Label(t, font, "EN İYİ KAT  " + Mathf.Max(floor, PlayerPrefs.GetInt("BestFloor", 0)), .5f, .59f, 900, 60, 28, soft);
+        UiArt.Label(t, font, FloorRecordText(floor, bestAtStart), .5f, .59f, 900, 60, 28,
+            record ? new Color(.55f, 1f, .75f) : soft);
         UiArt.Label(t, font, "COIN  " + coins + "   •   SÜRE  " + LevelDefs.Clock(endlessElapsed), .5f, .50f, 900, 56, 28, new Color(1, .86f, .66f));
         UiArt.Label(t, font, "CÜZDAN  " + PlayerProgress.Wallet + " COIN", .5f, .43f, 900, 50, 24, Gold);
         UiArt.Btn(t, font, "TEKRAR", .5f, .29f, 440, 70, () => { flow.Hold(false); CloseResult(); tower.player.RestartRun(); });
