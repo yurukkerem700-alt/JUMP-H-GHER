@@ -24,7 +24,7 @@ public partial class LevelMap
     };
     static readonly Color Gold = new Color(1f, .77f, .3f), Dim = new Color(.25f, .2f, .26f), Cream = new Color(1, .88f, .65f);
 
-    class Node { public RectTransform holder; public Image dim, halo, medal; public TextMeshProUGUI number; public Image[] stars; }
+    class Node { public RectTransform holder; public Image dim, halo, medal, lockBadge; public TextMeshProUGUI number, nextBadge; public Image[] stars; }
 
     readonly GameObject root;
     readonly ScrollRect scroll;
@@ -140,6 +140,11 @@ public partial class LevelMap
         n.dim = Put(holder.transform, UiArt.Disc, new Color(0, 0, 0, .55f), 0, 0, 124);
         n.number = UiArt.Label(holder.transform, font, (i + 1).ToString(), .5f, .5f, 128, 128, 56, Cream);
         n.number.fontStyle = FontStyles.Bold; n.number.rectTransform.anchoredPosition = Vector2.zero; n.number.raycastTarget = false;
+        n.lockBadge = Put(holder.transform, LockSprite, new Color(.78f, .72f, .81f), 48, 42, 38);
+        n.nextBadge = UiArt.Label(holder.transform, font, "SIRADAKİ", .5f, .5f, 145, 34, 22, Color.white);
+        n.nextBadge.rectTransform.anchoredPosition = new Vector2(0, -77);
+        n.nextBadge.outlineColor = new Color32(21, 10, 25, 255);
+        n.nextBadge.outlineWidth = .28f;
         n.stars = new Image[3];
         for (int s = 0; s < 3; s++) n.stars[s] = Put(holder.transform, UiArt.Star, Dim, (s - 1) * 46, -70 + (s == 1 ? -9 : 0), 48);
         foreach (var img in holder.GetComponentsInChildren<Image>()) img.raycastTarget = false;
@@ -162,6 +167,13 @@ public partial class LevelMap
 
     static float Seeded(float seed) { float v = Mathf.Sin(seed * 127.1f + 311.7f) * 43758.5453f; return v - Mathf.Floor(v); }
 
+    static Sprite lockSprite;
+    static Sprite LockSprite => lockSprite ? lockSprite : lockSprite = UiArt.Build(40, 40, 40, (x, y) =>
+    {
+        float body = Mathf.Max(Mathf.Abs(x) - .32f, Mathf.Abs(y + .16f) - .19f);
+        float shackle = Mathf.Max(Mathf.Abs(Mathf.Sqrt(x * x + (y - .035f) * (y - .035f)) - .19f) - .052f, .035f - y);
+        return Mathf.Clamp01(.5f - Mathf.Min(body, shackle) * 40);
+    });
     static Sprite fadeSprite, haloSprite, blobSprite;
     // Alt kenar saydam, üst kenar opak
     static Sprite FadeSprite => fadeSprite ? fadeSprite : fadeSprite = UiArt.Build(4, 64, 64, (u, v) => Mathf.SmoothStep(0, 1, Mathf.Clamp01(v + .5f)));
@@ -231,6 +243,8 @@ public partial class LevelMap
             var n = nodes[i];
             n.number.color = unlocked ? Cream : new Color(.5f, .46f, .52f);
             n.dim.gameObject.SetActive(!unlocked);
+            n.lockBadge.gameObject.SetActive(!unlocked);
+            n.nextBadge.gameObject.SetActive(unlocked && level == current && s == 0);
             n.halo.gameObject.SetActive(unlocked);
             n.halo.color = s > 0 ? Gold : level == current ? Color.white : LevelDefs.TierColors[tier];
             n.medal.color = s > 0 ? new Color(.3f, .19f, .08f, .97f) : new Color(.15f, .09f, .11f, .96f);
