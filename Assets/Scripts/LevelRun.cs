@@ -280,8 +280,15 @@ public class LevelRun : MonoBehaviour
             record ? new Color(.55f, 1f, .75f) : soft);
         UiArt.Label(t, font, "COIN  " + coins + "   •   SÜRE  " + LevelDefs.Clock(endlessElapsed), .5f, .50f, 900, 56, 28, new Color(1, .86f, .66f));
         UiArt.Label(t, font, "CÜZDAN  " + PlayerProgress.Wallet + " COIN", .5f, .43f, 900, 50, 24, Gold);
-        UiArt.Btn(t, font, "TEKRAR", .5f, .29f, 440, 70, () => { flow.Hold(false); CloseResult(); tower.player.RestartRun(); });
+        UiArt.Btn(t, font, Application.isMobilePlatform ? "TEKRAR" : "TEKRAR  (R)", .5f, .29f, 440, 70, RetryEndlessResult);
         UiArt.Btn(t, font, "ANA MENÜ", .5f, .20f, 440, 70, () => { flow.Hold(false); CloseResult(); Stop(); tower.player.RestartRun(); flow.ToMenu(); });
+    }
+
+    public void RetryEndlessResult()
+    {
+        if (!Endless || !endlessOver || !result) return;
+        flow.Hold(false);
+        tower.player.RestartRun();
     }
 
     void Condition(Transform parent, float y, string text, bool met)

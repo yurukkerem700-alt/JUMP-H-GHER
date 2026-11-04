@@ -53,6 +53,8 @@ public class PlayerController : MonoBehaviour
             movementX = 0;
             jumpBufferedUntil = edgeJumpUntil = -1;
             GameInput.Clear();
+            if (Input.GetKeyDown(KeyCode.R) && LevelRun.Instance)
+                LevelRun.Instance.RetryEndlessResult();
             return;
         }
         movementX = GameInput.Horizontal;
