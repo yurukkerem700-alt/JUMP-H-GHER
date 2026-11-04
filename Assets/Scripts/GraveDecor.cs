@@ -187,7 +187,7 @@ public class GraveDecor : MonoBehaviour
         // Küçük (piksel sanatı) kareler keskin kalsın
         if (h <= 128) texture.filterMode = FilterMode.Point;
         var frames = new Sprite[n];
-        for (int i = 0; i < n; i++) frames[i] = Sprite.Create(texture, new Rect(i * h, 0, h, h), new Vector2(.5f, 0), h / targetHeight);
+        for (int i = 0; i < n; i++) frames[i] = Sprite.Create(texture, new Rect(i * h, 0, h, h), new Vector2(.5f, 0), h / targetHeight, 0, SpriteMeshType.FullRect);
         return frames;
     }
 

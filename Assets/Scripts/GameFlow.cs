@@ -41,7 +41,7 @@ public class GameFlow : MonoBehaviour
     // Ana menü: boyalı harita resmi arkada, çelik levha içinde ikon, başlık ve butonlar. Geniş ekranda iki sütun, dikeyde tek sütun.
     Sprite plate,glowSprite;RectTransform panel,halo;Image haloImg,iconGlow;TextMeshProUGUI titleGlow;
     const string Tagline="100 BÖLÜMDE ZİRVEYE YÜKSEL";
-    const string HowTo="A / D veya oklar: yürü   •   W / Boşluk: zıpla   •   F / K: tekme (düşmanı bir kat aşağı düşürür)\nBölümün hedefini tamamla, hızlı bitirerek 3 yıldız topla.\nTelefon / tablet: soldaki halka ile yürü. Sağdaki ZIPLA ve TEKME düğmelerini kullan.";
+    const string HowTo="A / D veya oklar: yürü   •   W / Boşluk: zıpla   •   Sol tık / F / K: tekme (düşmanı geri savurur)\nBölümün hedefini tamamla, hızlı bitirerek 3 yıldız topla.\nTelefon / tablet: soldaki halka ile yürü. Sağdaki ZIPLA ve TEKME düğmelerini kullan.";
     struct SlotInfo{public RectTransform r;public Vector4 n,w;}
     readonly System.Collections.Generic.List<SlotInfo> slots=new System.Collections.Generic.List<SlotInfo>();
     Image[] embers;float[] emberSeed;Vector2 lastSize;float panelScale=1;
@@ -201,7 +201,7 @@ public class GameFlow : MonoBehaviour
         go.GetComponent<Image>().color=new Color(.03f,.02f,.04f,.93f);
         var f=tower.floorLabel.font;
         UiArt.Label(go.transform,f,"HAZIR MISIN?",.5f,.88f,900,100,50,new Color(1,.82f,.56f));
-        string move=touch?"Soldaki halkayla yürü, sağdaki ZIPLA ve TEKME düğmelerini kullan.":"A / D ile yürü, W veya Boşluk ile zıpla, F / K ile tekme at.";
+        string move=touch?"Soldaki halkayla yürü, sağdaki ZIPLA ve TEKME düğmelerini kullan.":"A / D ile yürü, W veya Boşluk ile zıpla, Sol tık veya F / K ile tekme at.";
         string[] lines={"Coin'i topla: her coin bir üst basamakta çıkar. Basamaklar kayar, zıplayarak üstüne çık.",move,"Düşmanı tekmeyle bir kat aşağı it. 3 canın var; zemine düşmek ya da düşman darbesi can götürür.","Menüdeki GÖREVLER sayfasından her gün ödül al."};
         for(int i=0;i<lines.Length;i++)
         {

@@ -12,6 +12,8 @@ public class PlayerVisual2D : MonoBehaviour
     PlayerController controller;
     bool wasGrounded = true;
     float landedAt = -100;
+    int kickStyle;
+    float kickDirection;
     float kickStarted = -100;
     public int CurrentFrame { get; private set; }
 
@@ -80,15 +82,23 @@ public class PlayerVisual2D : MonoBehaviour
         var support=controller.GroundPlatform(out bool grounded);
         float relative=body.linearVelocity.x-(support?support.CurrentVelocity.x:0);
         if(grounded&&!wasGrounded) landedAt=Time.time;
-        if(frames.Length>8 && Time.time-kickStarted<.3f) CurrentFrame=8+Mathf.Clamp(Mathf.FloorToInt((Time.time-kickStarted)*10),0,2);
+        if(frames.Length>8 && kickStyle != 3 && Time.time-kickStarted<.3f) CurrentFrame=8+Mathf.Clamp(Mathf.FloorToInt((Time.time-kickStarted)*10),0,2);
         else if(!grounded) CurrentFrame=body.linearVelocity.y>.15f?5:6;
         else if(Time.time-landedAt<.12f) CurrentFrame=7;
         else if(Mathf.Abs(relative)>.3f) CurrentFrame=1+Mathf.FloorToInt(Time.time*(frames.Length>8?Mathf.Clamp(Mathf.Abs(relative)*2,6,12):8))%4;
         else CurrentFrame=frames.Length>8 && Mathf.Repeat(Time.time,3.4f)>3.1f?11:0;
-        if(GameInput.Horizontal>.1f) display.flipX=false;
-        if(GameInput.Horizontal<-.1f) display.flipX=true;
+        if (Time.time - kickStarted < EnemyManager.StrikeDuration) display.flipX = kickDirection < 0;
+        else if (Mathf.Abs(GameInput.Horizontal) > .1f) display.flipX = GameInput.Horizontal < 0;
+        float strike = Mathf.Sin(Mathf.PI * Mathf.Clamp01((Time.time - kickStarted) / EnemyManager.StrikeDuration));
+        float direction = display.flipX ? -1 : 1;
+        float phase = Mathf.Clamp01((Time.time - kickStarted) / EnemyManager.StrikeDuration);
+        float angle = kickStyle == 2 ? -360 * Mathf.SmoothStep(0, 1, phase) : (kickStyle == 1 ? 55 : -22) * strike;
+        display.transform.localPosition = new Vector3(direction * strike * (kickStyle == 3 ? .30f : .17f),
+            -.3f + strike * (kickStyle == 1 ? .62f : kickStyle == 2 ? .22f : 0), 0);
+        display.transform.localRotation = Quaternion.Euler(0, 0, angle * direction);
+        display.transform.localScale = new Vector3(1 + .22f * strike, 1 - .12f * strike, 1) * VisualScale;
         display.sprite=frames[CurrentFrame]; wasGrounded=grounded;
     }
-    void OnKick() { if(!rig && frames!=null && frames.Length>8 && !GameFlow.IsMenu) kickStarted=Time.time; }
+    void OnKick(int style, float direction) { kickStyle = style; kickDirection = direction; kickStarted = Time.time; }
     void OnDestroy() {Costumes.Changed-=ApplyCostume; GameInput.Kicked-=OnKick; if(frames!=null) foreach(var frame in frames) if(frame) Destroy(frame);}
 }

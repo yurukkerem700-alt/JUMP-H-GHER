@@ -57,17 +57,77 @@ public static class CostumePlaySmokeVerification
                 contact.SetValue(player,-100f); body.linearVelocity=new Vector2(0,5); update.Invoke(visual,null); Assert.AreEqual(5,visual.CurrentFrame);
                 body.linearVelocity=new Vector2(0,-5); update.Invoke(visual,null); Assert.AreEqual(6,visual.CurrentFrame);
                 contact.SetValue(player,Time.fixedTime+1); body.linearVelocity=Vector2.zero; update.Invoke(visual,null); Assert.AreEqual(7,visual.CurrentFrame);
-                GameInput.Kick(); GameInput.ConsumeKick(); update.Invoke(visual,null); Assert.AreEqual(8,visual.CurrentFrame);
+                GameInput.Kick(); Assert.IsTrue(GameInput.ConsumeKick()); GameInput.PlayKick(0, 1); update.Invoke(visual,null); Assert.AreEqual(8,visual.CurrentFrame);
                 kick.SetValue(visual,Time.time-.15f); update.Invoke(visual,null); Assert.AreEqual(9,visual.CurrentFrame);
                 kick.SetValue(visual,Time.time-.25f); update.Invoke(visual,null); Assert.AreEqual(10,visual.CurrentFrame);
                 Debug.Log("PLAY COSTUME PASS: "+id+"; illustrated renderer, idle, walk, jump, fall, land, kick x3");
             }
             MobileEnemyVerification.Check();
-            Finish(0,"PASS: 6 illustrated costumes x8 poses; mobile single-camera layout; help dismissal; enemy grip and attack timing");
+            CheckCrumbling(tower, player);
+            Finish(0,"PASS: 6 illustrated costumes x8 poses; mobile single-camera layout; help dismissal; enemy grip and attack timing; platform cracks, explosion damage and recovery");
         }
         catch(Exception error) {Debug.LogException(error); Finish(1,"FAIL: "+error);}
         finally {if(had) PlayerPrefs.SetString("Costume",saved); else PlayerPrefs.DeleteKey("Costume"); PlayerPrefs.Save();}
     }
+    static void CheckCrumbling(InfiniteTower tower, PlayerController player)
+    {
+        var run = LevelRun.Instance;
+        var platform = tower.GetPlatform(0);
+        var collider = platform.GetComponentInChildren<Collider2D>();
+        var stage = typeof(MovingPlatform2D).GetField("crumbleStage", Private);
+        var started = typeof(MovingPlatform2D).GetField("crumbleAt", Private);
+        var tick = typeof(MovingPlatform2D).GetMethod("Update", Private);
+        var contact = typeof(PlayerController).GetField("lastGroundContact", Private);
+        void StandOnPlatform()
+        {
+            typeof(PlayerController).GetField("supportCollider", Private).SetValue(player, collider);
+            typeof(PlayerController).GetField("standingPlatform", Private).SetValue(player, platform);
+            contact.SetValue(player, Time.fixedTime);
+            player.GetComponent<Rigidbody2D>().linearVelocity = Vector2.zero;
+        }
+        void Advance(float age, int expected)
+        {
+            started.SetValue(platform, Time.time - age);
+            tick.Invoke(platform, null);
+            Assert.AreEqual(expected, (int)stage.GetValue(platform));
+        }
+
+        run.Begin(20);
+        platform.StartCrumble(player);
+        Assert.AreEqual(0, (int)stage.GetValue(platform));
+        run.Begin(21);
+        Assert.AreEqual(5f, run.PlatformCrumbleSeconds);
+        StandOnPlatform();
+        platform.StartCrumble(player);
+        Assert.AreEqual(1, (int)stage.GetValue(platform));
+        Advance(2.2f, 2);
+        contact.SetValue(player, -100f);
+        Advance(3f, 0);
+        Assert.IsTrue(collider.enabled);
+
+        StandOnPlatform();
+        platform.StartCrumble(player);
+        Advance(3.8f, 3);
+        int hearts = PlayerHealth.Instance.Hearts;
+        Advance(4.99f, 3);
+        Assert.AreEqual(hearts, PlayerHealth.Instance.Hearts);
+        Advance(5.01f, 4);
+        Assert.IsFalse(collider.enabled);
+        Assert.AreEqual(hearts - 1, PlayerHealth.Instance.Hearts);
+        Advance(6f, 4);
+        Assert.AreEqual(hearts - 1, PlayerHealth.Instance.Hearts);
+        typeof(MovingPlatform2D).GetField("rebuildAt", Private).SetValue(platform, Time.time - .01f);
+        Advance(7.3f, 0);
+        Assert.IsTrue(collider.enabled);
+        run.Begin(30);
+        Assert.AreEqual(5f, run.PlatformCrumbleSeconds);
+        run.Begin(31);
+        Assert.AreEqual(3.5f, run.PlatformCrumbleSeconds);
+        run.Begin(91);
+        Assert.AreEqual(2.5f, run.PlatformCrumbleSeconds);
+        Debug.Log("CRUMBLE PASS: 20 stable; 21 heals after departure, bursts at 5 seconds, costs one heart and rebuilds; later levels accelerate");
+    }
+
     static void Finish(int code,string report)
     {
         File.WriteAllText("Library/CostumePlaySmoke.txt",report); SessionState.SetBool("CostumeSmokeActive",false);

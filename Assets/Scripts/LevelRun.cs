@@ -8,6 +8,16 @@ public class LevelRun : MonoBehaviour
     public static LevelRun Instance { get; private set; }
     public bool Active { get; private set; }
     public bool Finished => finished;
+    public bool CombatPlaying => (Active && !finished) || (Endless && !endlessOver);
+    public bool CrumblingPlatforms => Active && !finished && Def.number > 20;
+    public float PlatformCrumbleSeconds => Def.number switch
+    {
+        <= 30 => 5f,
+        <= 50 => 3.5f,
+        <= 70 => 3f,
+        <= 90 => 2.75f,
+        _ => 2.5f
+    };
     public bool Endless { get; private set; }
     public LevelDef Def { get; private set; }
     public float Elapsed { get; private set; }

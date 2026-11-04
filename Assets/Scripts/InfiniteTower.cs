@@ -134,7 +134,11 @@ public class InfiniteTower : MonoBehaviour
         HighestReachedFloor = -1;
         HighestGeneratedFloor = 6;
         var remove = new List<int>();
-        foreach (var pair in active) if (pair.Key >= 7) remove.Add(pair.Key);
+        foreach (var pair in active)
+        {
+            if (pair.Key >= 7) remove.Add(pair.Key);
+            else pair.Value.ResetCrumble();
+        }
         foreach (int floor in remove)
         {
             var step = active[floor]; active.Remove(floor);

@@ -61,7 +61,7 @@ public class PlayerController : MonoBehaviour
 
     public MovingPlatform2D GroundPlatform(out bool grounded)
     {
-        if (Time.fixedTime - lastGroundContact <= .06f && rb.linearVelocity.y <= .15f)
+        if ((!supportCollider || supportCollider.enabled) && Time.fixedTime - lastGroundContact <= .06f && rb.linearVelocity.y <= .15f)
         {
             grounded = true;
             return standingPlatform;
@@ -73,7 +73,10 @@ public class PlayerController : MonoBehaviour
         return grounded && hit.rigidbody ? hit.rigidbody.GetComponent<MovingPlatform2D>() : null;
     }
 
-    private void OnCollisionStay2D(Collision2D collision)
+    private void OnCollisionEnter2D(Collision2D collision) => UpdateSupport(collision);
+    private void OnCollisionStay2D(Collision2D collision) => UpdateSupport(collision);
+
+    private void UpdateSupport(Collision2D collision)
     {
         if ((zeminMask & (1 << collision.gameObject.layer)) == 0) return;
         foreach (var contact in collision.contacts)
@@ -82,6 +85,7 @@ public class PlayerController : MonoBehaviour
                 lastGroundContact = Time.fixedTime;
                 supportCollider = collision.collider;
                 standingPlatform = collision.rigidbody ? collision.rigidbody.GetComponent<MovingPlatform2D>() : null;
+                if (standingPlatform) standingPlatform.StartCrumble(this);
                 break;
             }
     }
@@ -135,6 +139,11 @@ public class PlayerController : MonoBehaviour
     {
         if (!collision.CompareTag("altin")) return;
         if (coinSequence && !coinSequence.TryCollect(collision)) return;
+        AwardCoin();
+    }
+
+    public void AwardCoin()
+    {
         SesAtolyesi.Ses.Coin();
         skor++;
         PlayerProgress.AddCoin();

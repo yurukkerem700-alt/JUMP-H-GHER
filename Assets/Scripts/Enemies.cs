@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public enum EnemyKind { Zombie, Goblin, Karakoncolos, KaraKurt }
 
@@ -36,9 +35,11 @@ class EnemyArt
         var texture = Resources.Load<Texture2D>("Enemies/" + name);
         var meta = JsonUtility.FromJson<Meta>(Resources.Load<TextAsset>("Enemies/" + name).text);
         int rows = Mathf.CeilToInt(meta.frames / (float)meta.cols);
+        float pixelScale = texture.width / (float)(meta.cols * meta.cellW);
+        float cellW = texture.width / (float)meta.cols, cellH = texture.height / (float)rows;
         art = new EnemyArt { frames = new Sprite[meta.frames], height = target };
         for (int i = 0; i < meta.frames; i++)
-            art.frames[i] = Sprite.Create(texture, new Rect((i % meta.cols) * meta.cellW, (rows - 1 - i / meta.cols) * meta.cellH, meta.cellW, meta.cellH), new Vector2(.5f, 0), referencePixels / target);
+            art.frames[i] = Sprite.Create(texture, new Rect((i % meta.cols) * cellW, (rows - 1 - i / meta.cols) * cellH, cellW, cellH), new Vector2(.5f, 0), referencePixels * pixelScale / target, 0, SpriteMeshType.FullRect);
         cache[kind] = art; return art;
     }
 
@@ -53,6 +54,18 @@ class Enemy
     public int floor, state, toFloor; public float offset, toOffset, side = 1, t0, dur, readyAt, staggerUntil, spawnedAt, waitSince;
     public Vector3 from; public bool faceRight = true, dead, moving, attackResolved;
     public float attackReadyAt;
+    public int hits;
+    public bool defeated;
+    public float knockDirection;
+    public SpriteRenderer claw;
+}
+
+class EnemyCoin
+{
+    public SpriteRenderer sprite;
+    public Vector3 from;
+    public float offset, spawnedAt;
+    public int floor;
 }
 
 class EnemySlot { public EnemyKind kind; public Enemy enemy; public float readyAt; }
@@ -66,8 +79,16 @@ public class EnemyManager : MonoBehaviour
     static EnemyKind Climbers => UseLegacyEnemies ? EnemyKind.Zombie : EnemyKind.Karakoncolos;
     static EnemyKind Leapers => UseLegacyEnemies ? EnemyKind.Goblin : EnemyKind.KaraKurt;
     const float FirstDelay = 8f, RespawnDelay = 7f, SlotGap = 4f, SpeedScale = .6f, KickCooldown = .5f, KickReach = 1.7f;
-    InfiniteTower tower; Material material; Canvas kickCanvas;
-    GameObject kickButton; GameDeviceLayout layout; float kickReadyAt;
+    InfiniteTower tower;
+    Material material;
+    SpriteRenderer coinArt, kickTrail;
+    Sprite clawArt, sweepArt, fistArt;
+    float kickReadyAt, kickStarted, facing = 1, kickDirection;
+    int kickStyle = 3;
+    public const float StrikeDuration = .44f;
+    bool kickPending;
+    readonly List<EnemyCoin> drops = new List<EnemyCoin>();
+    static readonly Color[] KickColors = { new Color(1f,.8f,.3f), new Color(.3f,.9f,1f), new Color(.94f,.45f,1f), new Color(1f,.46f,.25f) };
     float Speed => def.enemySpeed * SpeedScale; // tüm düşman hızları bu çarpanla yavaşlatılır
     readonly List<EnemySlot> slots = new List<EnemySlot>();
     LevelDef def; bool active, endless; float startAt; int playerFloor;
@@ -76,25 +97,82 @@ public class EnemyManager : MonoBehaviour
 
     public void Init(InfiniteTower t)
     {
-        tower = t; material = t.coins.coin.GetComponentInChildren<SpriteRenderer>().sharedMaterial;
-        // TouchJoystick owns the mobile kick button.
+        tower = t;
+        coinArt = t.coins.coin.GetComponentInChildren<SpriteRenderer>();
+        material = coinArt.sharedMaterial;
+        clawArt = UiArt.Build(96, 96, 96, (x, y) => SweepAlpha(x, y, .48f, .018f) +
+            SweepAlpha(x + .12f, y + .04f, .49f, .015f) + SweepAlpha(x - .12f, y - .04f, .47f, .013f));
+        sweepArt = UiArt.Build(96, 96, 96, (x, y) => SweepAlpha(x, y, .52f, .053f));
+        fistArt = UiArt.Build(64, 64, 64, (x, y) =>
+        {
+            float fingers = Mathf.Max(Mathf.Abs(x - .08f) - .25f, Mathf.Abs(y - .07f) - .22f);
+            float wrist = Mathf.Max(Mathf.Abs(x + .22f) - .15f, Mathf.Abs(y + .04f) - .15f);
+            return Mathf.Clamp01(-Mathf.Min(fingers, wrist) * 64);
+        });
+        kickTrail = MakeEffect("Tekme izi", sweepArt);
     }
 
-    // Yakındaki düşmanları tekmeler: bir alt basamağa düşerler, bir süre sersemleyip geri çekilirler.
-    void TryKick(float now)
+    static float SweepAlpha(float x, float y, float radius, float width)
+    {
+        float taper = Mathf.Clamp01((.45f - Mathf.Abs(y)) * 6);
+        float curve = Mathf.Sqrt(Mathf.Max(0, radius * radius - y * y)) - radius * .63f;
+        return Mathf.Clamp01((width * taper - Mathf.Abs(x - curve)) * 95) * taper;
+    }
+
+    SpriteRenderer MakeEffect(string label, Sprite sprite)
+    {
+        var effect = new GameObject(label, typeof(SpriteRenderer)).GetComponent<SpriteRenderer>();
+        effect.transform.SetParent(transform, false);
+        effect.sprite = sprite;
+        effect.sharedMaterial = material;
+        effect.sortingOrder = 31;
+        effect.enabled = false;
+        return effect;
+    }
+
+    void StartKick(float now)
     {
         if (now < kickReadyAt) return;
         kickReadyAt = now + KickCooldown;
+        kickStarted = now;
+        kickPending = true;
+        kickDirection = facing;
+        kickStyle = (kickStyle + 1) % KickColors.Length;
+        GameInput.PlayKick(kickStyle, kickDirection);
         SesAtolyesi.Ses.Swoosh(1f);
-        var p = tower.player.transform.position;
+    }
+
+    void TickKick(float now)
+    {
+        float elapsed = now - kickStarted;
+        kickTrail.enabled = now < kickReadyAt && elapsed < StrikeDuration;
+        if (kickTrail.enabled)
+        {
+            float phase = elapsed / StrikeDuration;
+            kickTrail.sprite = kickStyle == 3 ? fistArt : sweepArt;
+            var p = tower.player.transform.position;
+            float height = kickStyle == 0 ? .03f : kickStyle == 1 ? Mathf.Lerp(-.12f, .62f, phase) : -.18f;
+            kickTrail.transform.position = p + new Vector3(kickDirection * Mathf.Lerp(.32f, 1.15f, phase), height, 0);
+            kickTrail.transform.localScale = new Vector3(kickStyle == 2 ? 1.65f : 1.1f, 1.2f, 1);
+            if (kickStyle == 3) kickTrail.transform.localScale = new Vector3(.68f, .48f, 1);
+            float angle = kickStyle == 0 ? -25 : kickStyle == 1 ? 45 : kickStyle == 2 ? -85 : 0;
+            kickTrail.transform.rotation = Quaternion.Euler(0, 0, kickDirection * (angle - 40 * phase));
+            kickTrail.flipX = kickDirection < 0;
+            var color = KickColors[kickStyle];
+            color.a = Mathf.Sin(Mathf.PI * phase);
+            kickTrail.color = color;
+        }
+        if (!kickPending || elapsed < .17f) return;
+        kickPending = false;
+        var pHit = tower.player.transform.position;
         foreach (var slot in slots)
         {
             var e = slot.enemy;
             if (e == null || e.dead || e.state == Enemy.Leap || e.state == Enemy.Fall) continue;
             var pos = e.go.transform.position;
-            float dx = pos.x - p.x, centerY = pos.y + e.art.height * .45f;
-            if (Mathf.Abs(dx) > KickReach || Mathf.Abs(p.y - centerY) > 1.4f) continue;
-            Knock(e, dx >= 0 ? 1 : -1, now);
+            float dx = pos.x - pHit.x, centerY = pos.y + e.art.height * .45f;
+            if (dx * kickDirection < -.2f || Mathf.Abs(dx) > KickReach || Mathf.Abs(pHit.y - centerY) > 1.4f) continue;
+            Knock(e, kickDirection, now);
         }
     }
 
@@ -103,22 +181,40 @@ public class EnemyManager : MonoBehaviour
         PlayerProgress.AddKick();
         e.staggerUntil = now + 1.8f;
         EnemySfx.Play(EnemyKinds.Hurt(e.kind), 1f);
+        e.knockDirection = dir;
         var below = e.floor > 0 ? tower.GetPlatform(e.floor - 1) : null;
-        if (!below) { e.dead = true; return; } // en alt basamaktaysa kulenin dışına düşer
-        float limit = Half(below) - .25f;
-        e.state = Enemy.Fall; e.t0 = now; e.dur = .5f; e.toFloor = e.floor - 1; e.from = e.go.transform.position;
-        e.toOffset = Mathf.Clamp(e.from.x + dir * 1.2f - below.transform.position.x, -limit, limit);
+        e.hits++;
+        e.defeated = e.hits >= 3 || !below;
+        e.state = Enemy.Fall;
+        e.t0 = now;
+        e.dur = .48f;
+        e.toFloor = e.defeated ? e.floor : e.floor - 1;
+        e.from = e.go.transform.position;
         e.faceRight = dir < 0;
     }
 
     void TickFall(Enemy e, float now)
     {
-        var dest = tower.GetPlatform(e.toFloor); if (!dest) { e.dead = true; return; }
-        float s = Mathf.Clamp01((now - e.t0) / e.dur);
-        var target = StandPos(dest, e.toOffset);
-        var pos = new Vector3(Mathf.Lerp(e.from.x, target.x, s), Mathf.Lerp(e.from.y, target.y, s * s) + Mathf.Sin(Mathf.PI * s) * .4f * (1 - s), 0);
-        Place(e, pos);
-        if (s < 1) return;
+        var dest = tower.GetPlatform(e.toFloor);
+        float phase = Mathf.Clamp01((now - e.t0) / e.dur);
+        float shoveX = e.from.x + e.knockDirection * Mathf.Lerp(0, 2.1f, 1 - (1 - phase) * (1 - phase));
+        float y = e.from.y + Mathf.Sin(Mathf.PI * phase) * .62f;
+        if (dest)
+        {
+            float limit = Half(dest) - .25f;
+            e.toOffset = Mathf.Clamp(shoveX - dest.transform.position.x, -limit, limit);
+            y += (dest.Top - e.from.y) * phase * phase;
+            // Travel away first, then meet the lower moving platform.
+            shoveX = Mathf.Lerp(shoveX, dest.transform.position.x + e.toOffset, Mathf.InverseLerp(.5f, 1, phase));
+        }
+        Place(e, new Vector3(shoveX, y, 0));
+        if (phase < 1) return;
+        if (e.defeated || !dest)
+        {
+            if (e.defeated) DropCoins(e.go.transform.position, dest, now);
+            e.dead = true;
+            return;
+        }
         e.floor = e.toFloor; e.offset = e.toOffset; e.state = Enemy.Stand; e.waitSince = now;
         e.readyAt = now + 1f / Speed;
         SesWorld.EnemyLand(e.go.transform.position, tower.player.transform.position, e.floor);
@@ -150,21 +246,72 @@ public class EnemyManager : MonoBehaviour
         for (; goblins < wantGoblins; goblins++) slots.Add(new EnemySlot { kind = Leapers, readyAt = now + 8f + goblins * SlotGap });
     }
 
+    void DropCoins(Vector3 point, MovingPlatform2D platform, float now)
+    {
+        float span = platform ? Mathf.Max(.3f, Half(platform) - .15f) : 1;
+        for (int i = 0; i < 5; i++)
+        {
+            var sprite = MakeEffect("Düşman coini", coinArt.sprite);
+            sprite.sortingOrder = 24;
+            sprite.color = new Color(1f, .82f, .28f);
+            sprite.transform.localScale = Vector3.one * (.28f / Mathf.Max(.01f, coinArt.sprite.bounds.size.x));
+            sprite.transform.position = point;
+            sprite.enabled = true;
+            drops.Add(new EnemyCoin { sprite = sprite, floor = platform ? platform.floorIndex : -1, from = point,
+                offset = Mathf.Lerp(-span, span, i / 4f), spawnedAt = now });
+        }
+    }
+
+    void TickCoins(float now)
+    {
+        for (int i = drops.Count - 1; i >= 0; i--)
+        {
+            var coin = drops[i];
+            float age = now - coin.spawnedAt;
+            float phase = Mathf.Clamp01(age / .48f);
+            var platform = tower.GetPlatform(coin.floor);
+            var target = platform ? StandPos(platform, coin.offset) : coin.from + Vector3.right * coin.offset;
+            target.y += .35f + Mathf.Sin(now * 4 + coin.offset) * .06f;
+            var pos = Vector3.Lerp(coin.from, target, phase);
+            pos.y += Mathf.Sin(phase * Mathf.PI) * .85f;
+            coin.sprite.transform.position = pos;
+            bool collect = age >= .25f && (tower.player.transform.position - pos).sqrMagnitude < .48f * .48f;
+            if (!collect && age < 24f) continue;
+            drops.RemoveAt(i);
+            Destroy(coin.sprite.gameObject);
+            if (collect) tower.player.AwardCoin();
+        }
+    }
+
     public void Clear()
     {
         endless = false;
         foreach (var s in slots) if (s.enemy != null && s.enemy.go) Destroy(s.enemy.go);
         slots.Clear(); active = false;
+        foreach (var coin in drops) if (coin.sprite) Destroy(coin.sprite.gameObject);
+        drops.Clear();
+        kickPending = false;
+        kickReadyAt = 0;
+        if (kickTrail) kickTrail.enabled = false;
     }
 
     void Update()
     {
-        bool playing = active && !GameFlow.IsMenu && LevelRun.Instance && !LevelRun.Instance.Finished;
-        if (!layout) layout = FindFirstObjectByType<GameDeviceLayout>();
-        if (kickButton) kickButton.SetActive(false); // Mobil panel tekme girdisinin tek sahibidir.
-        if (!playing) { GameInput.ConsumeKick(); return; }
+        var run = LevelRun.Instance;
+        bool pressed = GameInput.ConsumeKick();
+        if (!run || !run.CombatPlaying || GameFlow.IsMenu)
+        {
+            kickPending = false;
+            if (kickTrail) kickTrail.enabled = false;
+            return;
+        }
         float now = Time.time, dt = Time.deltaTime;
-        if (GameInput.ConsumeKick()) TryKick(now);
+        float movement = GameInput.Horizontal;
+        if (Mathf.Abs(movement) > .1f) facing = Mathf.Sign(movement);
+        if (pressed) StartKick(now);
+        TickKick(now);
+        TickCoins(now);
+        if (!active) return;
         if (endless) GrowEndless(now);
         var support = tower.player.GroundPlatform(out bool grounded);
         if (grounded && support) playerFloor = support.floorIndex;
@@ -179,7 +326,7 @@ public class EnemyManager : MonoBehaviour
             var e = slot.enemy;
             Tick(e, dt, now);
             if (slots.Count == 0) return;
-            if (!e.dead && (e.floor < playerFloor - 9 || e.floor > playerFloor + 7)) e.dead = true;
+            if (!e.dead && !e.defeated && (e.floor < playerFloor - 9 || e.floor > playerFloor + 7)) e.dead = true;
             if (e.dead) { Destroy(e.go); slot.enemy = null; slot.readyAt = now + RespawnDelay; continue; }
             Touch(e, now);
             if (slots.Count == 0) return; // darbe son canı aldıysa liste temizlenmiş olabilir
@@ -196,6 +343,8 @@ public class EnemyManager : MonoBehaviour
         var sr = go.GetComponent<SpriteRenderer>(); sr.sharedMaterial = material; sr.sortingOrder = 18; sr.sprite = art.frames[IdleFrame(slot.kind)];
         float half = Half(plat);
         var e = new Enemy { kind = slot.kind, go = go, sr = sr, art = art, floor = floor, offset = Random.Range(-half + .3f, half - .3f), spawnedAt = Time.time, readyAt = Time.time + .4f, waitSince = Time.time };
+        e.claw = MakeEffect("Pençe izi", clawArt);
+        e.claw.transform.SetParent(go.transform, false);
         slot.enemy = e; Place(e, StandPos(plat, e.offset));
         EnemySfx.Play(EnemyKinds.Spawn(slot.kind), 1f);
     }
@@ -266,9 +415,21 @@ public class EnemyManager : MonoBehaviour
         else if (e.state == Enemy.Attack) TickAttack(e, now);
         else TickLand(e, now);
         e.sr.flipX = !e.faceRight;
-        float attackPhase=e.state==Enemy.Attack ? Mathf.Clamp01((now-e.t0)/e.dur) : 0;
-        float lean = e.state == Enemy.Fall ? (e.faceRight ? -60f : 60f) : e.state==Enemy.Attack ? Mathf.Sin(attackPhase*Mathf.PI)*(e.faceRight?-18:18) : 0;
-        float stretch = e.state == Enemy.Leap ? 1.06f : 1;
+        float attackPhase = e.state == Enemy.Attack ? Mathf.Clamp01((now - e.t0) / e.dur) : 0;
+        float swing = Mathf.Sin(Mathf.PI * Mathf.InverseLerp(.3f, .75f, attackPhase));
+        float windup = Mathf.Sin(Mathf.PI * Mathf.InverseLerp(0, .43f, attackPhase));
+        float direction = e.faceRight ? 1 : -1;
+        float lean = e.state == Enemy.Fall ? -direction * 65 : direction * (windup * 16 - swing * 34);
+        float stretch = e.state == Enemy.Leap ? 1.06f : 1 - .16f * windup + .12f * swing;
+        e.claw.enabled = swing > .015f;
+        if (e.claw.enabled)
+        {
+            e.claw.transform.localPosition = new Vector3(direction * (.32f + swing * .36f), e.art.height * .55f, 0);
+            e.claw.transform.localScale = Vector3.one * (zombie ? 1.55f : 1.08f);
+            e.claw.transform.localRotation = Quaternion.Euler(0, 0, direction * Mathf.Lerp(55, -60, Mathf.InverseLerp(.3f, .75f, attackPhase)));
+            e.claw.flipX = !e.faceRight;
+            e.claw.color = zombie ? new Color(1f,.22f,.16f,swing) : new Color(1f,.68f,.25f,swing);
+        }
         e.go.transform.rotation = Quaternion.Euler(0, 0, lean);
         e.go.transform.localScale = new Vector3(1f / stretch, stretch, 1);
         e.sr.sprite = e.art.frames[FrameFor(e, now)];
@@ -384,18 +545,21 @@ public class EnemyManager : MonoBehaviour
     {
         var plat=tower.GetPlatform(e.floor); if(!plat){e.dead=true;return;}
         float phase=Mathf.Clamp01((now-e.t0)/e.dur);
-        Place(e,StandPos(plat,e.offset));
+        var strikePos = StandPos(plat, e.offset);
+        float lunge = Mathf.Sin(Mathf.PI * Mathf.InverseLerp(.28f, .78f, phase));
+        strikePos.x += (e.faceRight ? 1 : -1) * lunge * (EnemyKinds.Climber(e.kind) ? .28f : .44f);
+        Place(e, strikePos);
         if(phase>=.45f && !e.attackResolved)
         {
             e.attackResolved=true;
             var p=tower.player.transform.position; var pos=e.go.transform.position;
             float scale=e.art.height/(EnemyKinds.Climber(e.kind)?1.35f:1);
-            bool inFront=(p.x-pos.x)*(e.faceRight?1:-1)>=-.15f;
+            bool inFront=(p.x-StandPos(plat,e.offset).x)*(e.faceRight?1:-1)>=-.15f;
             if(inFront && Mathf.Abs(p.x-pos.x)<.65f*scale && Mathf.Abs(p.y-(pos.y+e.art.height*.45f))<.8f*scale)
                 PlayerHealth.Instance?.Hit();
         }
         if(phase>=1){e.state=Enemy.Stand;e.attackReadyAt=now+.65f;e.waitSince=now;}
     }
 
-    void OnDestroy() { Clear(); EnemyArt.Release(); EnemySfx.Release(); if (kickCanvas) Destroy(kickCanvas.gameObject); }
+    void OnDestroy() { Clear(); EnemyArt.Release(); EnemySfx.Release(); if (clawArt) { Destroy(clawArt.texture); Destroy(clawArt); } if (sweepArt) { Destroy(sweepArt.texture); Destroy(sweepArt); } if (fistArt) { Destroy(fistArt.texture); Destroy(fistArt); } }
 }

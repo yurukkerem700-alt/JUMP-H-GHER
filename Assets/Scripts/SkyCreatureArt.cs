@@ -52,7 +52,7 @@ public static class SkyCreatureArt
                     if(c.a>180 && eye){ex+=x+.5f;ey+=y+.5f;n++;}
                 }
                 var pivot=n>0?new Vector2((ex/n-left)/rect.width,(ey/n-bottom)/rect.height):new Vector2(.78f,.5f);
-                cache[row][col]=Sprite.Create(texture,rect,pivot,cell/1.65f);
+                cache[row][col]=Sprite.Create(texture,rect,pivot,cell/1.65f,0,SpriteMeshType.FullRect);
                 cache[row][col].name="Sky species "+row+" frame "+col;
             }
         }
