@@ -9,7 +9,7 @@ public class GameFlow : MonoBehaviour
     public static GameFlow Instance {get;private set;}
     public static bool IsMenu {get;private set;}
     bool menuVisible,holding;LevelMap map;SettingsScreen settings;CostumeScreen costumes;TasksScreen tasks;AchievementsScreen achievements;GameObject taskBadge;float badgeCheck;LevelRun run;PlayerHealth health;
-    Canvas canvas;GameObject overlay;TextMeshProUGUI heading,subtitle,status;Button start;float splashUntil;bool splash=true;bool begun;
+    Canvas canvas;GameObject overlay;TextMeshProUGUI heading,subtitle,status;Button start,endlessShortcut;float splashUntil;bool splash=true;bool begun;
     InfiniteTower tower;
     void Awake(){Instance=this;}
     void Start()
@@ -95,7 +95,8 @@ public class GameFlow : MonoBehaviour
         subtitle.enableAutoSizing=true;subtitle.fontSizeMin=11;subtitle.fontSizeMax=23;subtitle.outlineColor=new Color32(10,2,4,255);subtitle.outlineWidth=.15f;
         status=Slot(Label("",18,new Color(.9f,.75f,.5f)),new Vector4(0,510,580,30),new Vector4(-270,420,420,30));status.enableAutoSizing=true;status.fontSizeMin=10;status.fontSizeMax=18;
         start=MenuButton("OYNA",()=>{if(begun)Begin(true);else map.Open();},44,true,new Vector4(0,556,540,112),new Vector4(250,226,480,84));
-        MenuButton("BÖLÜM HARİTASI",()=>map.Open(),25,false,new Vector4(0,680,540,112),new Vector4(250,320,480,58));
+        MenuButton("BÖLÜM HARİTASI",()=>map.Open(),25,false,new Vector4(-138,680,264,112),new Vector4(128,320,236,58));
+        endlessShortcut=MenuButton("SONSUZ MOD",OpenEndlessShortcut,25,false,new Vector4(138,680,264,112),new Vector4(372,320,236,58));
         MenuButton("KOSTÜMLER",()=>costumes.Open(),23,false,new Vector4(-138,804,264,112),new Vector4(128,388,236,58));
         MenuButton("AYARLAR",()=>settings.Open(),23,false,new Vector4(138,804,264,112),new Vector4(372,388,236,58));
         var tasksButton=MenuButton("GÖREVLER",()=>tasks.Open(),23,false,new Vector4(-138,928,264,112),new Vector4(128,456,236,58));
@@ -177,13 +178,18 @@ public class GameFlow : MonoBehaviour
     }
     public void PauseForBackground() { if(overlay && !IsMenu) Show(true); }
     public void Begin(bool resume){if(!resume&&begun)tower.player.RestartRun();begun=true;Show(false);}
-    public void Show(bool visible){menuVisible=visible;if(subtitle)subtitle.text=Tagline;overlay.SetActive(visible);Apply();start.GetComponentInChildren<TextMeshProUGUI>(true).text=begun?"DEVAM ET":"OYNA";}
+    public void Show(bool visible){menuVisible=visible;if(subtitle)subtitle.text=Tagline;overlay.SetActive(visible);Apply();start.GetComponentInChildren<TextMeshProUGUI>(true).text=begun?"DEVAM ET":"OYNA";endlessShortcut.interactable=!begun||run.Endless;}
     public void ToMenu(){begun=false;Show(true);}
     // Sonuç ekranı açıkken oyun donar ama ana menü görünmez.
     public void Hold(bool on){holding=on;Apply();}
     void Apply(){IsMenu=menuVisible||holding;Time.timeScale=IsMenu?0:1;GameInput.Clear();}
     public void StartLevel(int n){map.Close();begun=true;Show(false);run.Begin(n);FirstRunLayout();}
     void StartEndless(){map.Close();run.Stop();run.BeginEndless();begun=true;Show(false);tower.player.RestartRun();FirstRunLayout();}
+    void OpenEndlessShortcut()
+    {
+        if (!begun) StartEndless();
+        else if (run.Endless) Begin(true);
+    }
     // Dokunmatik cihazda ilk oyun başlangıcında kontrol yerleşim ekranı açılır; oyun bu sırada durur.
     void FirstRunLayout()
     {
