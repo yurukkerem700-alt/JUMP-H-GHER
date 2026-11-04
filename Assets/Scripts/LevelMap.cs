@@ -212,6 +212,12 @@ public partial class LevelMap
         root.SetActive(true); Refresh();
         pendingScroll = Mathf.Clamp(LevelDefs.Current(), 1, Total);
     }
+    public void OpenCurrent()
+    {
+        Open();
+        ShowCard(pendingScroll);
+    }
+
     public void Close() { card.SetActive(false); root.SetActive(false); }
 
     void Refresh()

@@ -94,7 +94,7 @@ public class GameFlow : MonoBehaviour
         subtitle=Slot(Label(Tagline,23,new Color(.82f,.72f,.66f)),new Vector4(0,398,560,104),new Vector4(250,146,480,70));
         subtitle.enableAutoSizing=true;subtitle.fontSizeMin=11;subtitle.fontSizeMax=23;subtitle.outlineColor=new Color32(10,2,4,255);subtitle.outlineWidth=.15f;
         status=Slot(Label("",18,new Color(.9f,.75f,.5f)),new Vector4(0,510,580,30),new Vector4(-270,420,420,30));status.enableAutoSizing=true;status.fontSizeMin=10;status.fontSizeMax=18;
-        start=MenuButton("OYNA",()=>{if(begun)Begin(true);else map.Open();},44,true,new Vector4(0,556,540,112),new Vector4(250,226,480,84));
+        start=MenuButton("OYNA",()=>{if(begun)Begin(true);else map.OpenCurrent();},44,true,new Vector4(0,556,540,112),new Vector4(250,226,480,84));
         MenuButton("BÖLÜM HARİTASI",()=>map.Open(),25,false,new Vector4(-138,680,264,112),new Vector4(128,320,236,58));
         endlessShortcut=MenuButton("SONSUZ MOD",OpenEndlessShortcut,25,false,new Vector4(138,680,264,112),new Vector4(372,320,236,58));
         MenuButton("KOSTÜMLER",()=>costumes.Open(),23,false,new Vector4(-138,804,264,112),new Vector4(128,388,236,58));
@@ -209,7 +209,10 @@ public class GameFlow : MonoBehaviour
         var f=tower.floorLabel.font;
         UiArt.Label(go.transform,f,"HAZIR MISIN?",.5f,.88f,900,100,50,new Color(1,.82f,.56f));
         string move=touch?"Soldaki halkayla yürü, sağdaki ZIPLA ve TEKME düğmelerini kullan.":"A / D ile yürü, W veya Boşluk ile zıpla, Sol tık veya F / K ile tekme at.";
-        string[] lines={"Coin'i topla: her coin bir üst basamakta çıkar. Basamaklar kayar, zıplayarak üstüne çık.",move,"Düşmanı tekmeyle bir kat aşağı it. 3 canın var; zemine düşmek ya da düşman darbesi can götürür.","Menüdeki GÖREVLER sayfasından her gün ödül al."};
+        string objective = run.Active ? "Bu bölümün hedefi: " + run.Def.Goal + "."
+            : "Yüksel ve kat rekorunu geç. Her coin bir üst basamakta çıkar.";
+        string lives = health.Allowed + " canın var. Düşman darbesi ve zemine düşmek can götürür.";
+        string[] lines = { objective, move, lives, "Katını ve hedefini oyun içi göstergeden takip et." };
         for(int i=0;i<lines.Length;i++)
         {
             var l=UiArt.Label(go.transform,f,(i+1)+".  "+lines[i],.5f,.74f-i*.12f,900,110,28,Color.white);
