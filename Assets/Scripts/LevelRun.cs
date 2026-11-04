@@ -170,13 +170,18 @@ public class LevelRun : MonoBehaviour
             : Def.kind == GoalKind.Coins ? head + "  •  COIN " + tower.player.Score + " / " + Def.target + (ExitReady ? "" : "  •  " + CoinTarget()) + foes
             : head + "  •  HAYATTA KAL" + foes;
         string time;
+        bool exitOpen = Def.kind != GoalKind.Floor && ExitReady && exitFloor >= 0;
         if (Def.kind == GoalKind.Survive) time = "KALAN SÜRE " + LevelDefs.Clock(Def.survive - Elapsed);
         else if (Def.HardLimit) time = "KALAN SÜRE " + LevelDefs.Clock(Def.limit - Elapsed);
         else time = "SÜRE " + LevelDefs.Clock(Elapsed);
+        if (exitOpen)
+        {
+            string exit = "<color=#85F3FF>KAPI AÇIK  •  " + (exitFloor + 1) + ". KAT</color>";
+            time = Def.HardLimit ? exit + "  •  " + time : exit;
+        }
         int lost = PlayerHealth.Instance ? PlayerHealth.Instance.Lost : 0;
         string next = "  •  ŞU AN " + Def.StarsFor(Elapsed, lost) + " YILDIZ";
-        string exit=ExitReady && Def.kind!=GoalKind.Floor ? "  •  KAPIYA GİR: KAT "+(exitFloor+1) : "";
-        hud.text = goal + "\n" + time + next + exit + powerHint;
+        hud.text = goal + "\n" + time + next + powerHint;
     }
 
     string CoinTarget()
